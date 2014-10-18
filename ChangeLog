@@ -1,0 +1,251 @@
+TODO
+* add password keep
+* remove deprecated function
+  - libfvde_volume_read_random
+* double check 0x0505 findings with debug logs
+* git version
+  - make sure dependent local libs are in git
+  - fix synclibs.sh for libfvalue Makefile.am
+* merge reading metadata and encrypted metadata ?
+* logical volume size: get from com.apple.corestorage.lv.size instead of
+  first 0x001d or 0x0505 block? or compare values?
+
+* API add volume identifier functions
+* complete libfvde_xml_plist
+
+* add handling of FVDE volumes with corrupt metadata, e.g. file header
+
+* read and compare second physical volume header
+
+* complete msvscpp build
+  - add libxml2 support
+
+* move initialize of volume specific runtime data to open and clean up to close
+* store passwords as hashes?
+* libxml
+  integrate into packaging system
+  print status info in configure
+* split off AES KEK functions
+* fvdemount add osxmount support
+* code clean up
+  - check for leading spaces
+  - check for () without spaces
+  - check for = alignment
+  - check for if ( instead of if(
+  - check error codes
+* check README files
+  - make sure pkg-config and libxml2 are mentioned as dependencies
+* add debug output
+  - encryption method
+  - checksum algorithm
+
+Future considerations:
+* how does tie into CS volume management
+  - rename library to libvcs ?
+  - rename FileVault to CoreStorage ?
+
+20141018
+* removed README.macosx
+
+20141017
+* changes for deployment
+
+20140907
+* updated dependencies
+* updated msvscpp files, not operational yet
+
+20140531
+* updated dependencies
+
+20140112
+* 2014 update
+* updated dependencies
+* exposed some encryption context plist functions in API
+
+20130909
+* updated dependencies
+* worked on libcthreads build support
+
+20131205
+* updated dependencies
+
+20130716
+* updated dependencies
+* replaced AES-XTS code by libcaes XTS implementation
+* worked on git support
+* code clean up
+
+20130703
+* code clean up
+
+20130412
+* updated README files
+* updated dependencies
+* added tests directory
+
+20130331
+* updated dependencies
+* code clean up
+
+20130305
+* added safe-guards for XML plist data
+* added check for block serial number
+* added support for 0x0505 block that is defined before 0x001a block
+
+20130228
+* worked on improving logical volume offset detection
+
+20130227
+* worked on improving logical volume size detection
+* code clean up
+
+20130226
+* worked on improving logical volume size detection
+* code clean up
+
+20130221
+* fix for value overwrite of logical volume size by successive block
+
+20130220
+* small change to include/types.h
+
+20130113
+* 2013 update
+* updated dependencies
+* updated msvscpp files
+
+20121217
+* bug fixes
+
+20121212
+* updates to debug output
+
+20121114
+* updated libfvde.3 man page
+* added volume get offset function
+* worked on set keys
+* code clean up
+* worked on msvscpp files
+
+20121113
+* updated man pages
+* added change to support number of iterations in password
+  wrapped kek
+
+20121112
+* updated dependencies
+* replaced libfvde_parse_uuid_string by libfguid function
+* fixes in pc and spec file
+
+20120916
+* worked on fvdemount
+
+20120915
+* applied updates
+* worked on fvdemount
+  - added -X option
+  - replaced EBADFD by EIO
+
+20120813
+* worked on encrypted removable media
+* worked on man pages
+* fixed issue for debug output for libfvde_io_handle_read_unencrypted_volume_header
+* worked on function to pass VMK directly
+
+20120808
+* applied updates
+
+20120724
+* code clean up
+
+20120723
+* code clean up
+* removed key and volume master key files they served no purpose in contrast
+  to original libbde code
+
+20120722
+* code clean up
+* fixed potential memory and data leak in set password functions
+
+20120721
+* fix for acinclude.m4 and libxml2.m4
+* added libcsplit
+* applied updates
+* switched library order in tools
+* updated .pc and .spec file
+* preparations for msvscpp build
+
+20120521
+* configure.ac fixes for dpkg files
+
+20120520
+* code clean up
+
+20120519
+* removed libfvalue
+* code clean up
+  - renamed plist
+  - change naming of volume offset and size
+* add support for secondary encrypted metadata block
+* added XML parsing to encrypted metadata block
+
+20120518
+* code clean up of fvdemount
+* code clean up
+  - removed more unused code
+  - fix for relative volume offset
+
+20120516
+* bug fixes for plist
+* code clean up
+* added more debug output
+
+20120514
+* fixes for wide character build
+
+20120510
+* updated dependencies
+* code clean up
+
+20120405
+* fix for libxml2 detection on MacOS-X
+
+20120208
+* code clean up
+
+20120207
+* code clean up
+* fixed wrong context for decryption
+
+20120206
+* code clean up
+
+20120202
+* code clean up
+
+20120124
+* added debug output
+* rewrite of dealing with metadata
+* removed AES CCM code
+* removed BDE metadata definitions
+
+20120117
+* added debug output
+
+20120116
+* 2012 update
+* updated pc file
+* updated dependencies
+* removed libbde
+* renamed to libfvde
+* added libfcache
+* updates for array type changes
+* updates for libcaes changes
+* updates for libbfio changes
+* updated for libfcache/libfdata changes
+* fixed a several potential memory leaks
+* fixed a several integer overflow/truncation issues
+
+20111007
+* initial version based on libbde
+
