@@ -74,7 +74,7 @@ int libfvde_set_codepage(
      int codepage,
      libfvde_error_t **error );
 
-/* Determines if a volume is a VSS volume (check for the VSS identifier)
+/* Determines if a file contains a FVDE volume signature
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -82,7 +82,9 @@ int libfvde_check_volume_signature(
      const char *filename,
      libfvde_error_t **error );
 
-/* Determines if a volume is a VSS volume (check for the VSS identifier)
+#if defined( LIBFVDE_HAVE_WIDE_CHARACTER_TYPE )
+
+/* Determines if a file contains a FVDE volume signature
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -90,15 +92,19 @@ int libfvde_check_volume_signature_wide(
      const wchar_t *filename,
      libfvde_error_t **error );
 
+#endif /* defined( LIBFVDE_HAVE_WIDE_CHARACTER_TYPE ) */
+
 #if defined( LIBFVDE_HAVE_BFIO )
-/* Determines if a volume is a VSS volume (check for the VSS identifier) using a Basic File IO (bfio) handle
+
+/* Determines if a file contains a FVDE volume signature using a Basic File IO (bfio) handle
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_check_volume_signature_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libfvde_error_t **error );
-#endif
+
+#endif /* defined( LIBFVDE_HAVE_BFIO ) */
 
 /* -------------------------------------------------------------------------
  * Notify functions
@@ -220,6 +226,7 @@ int libfvde_volume_open(
      libfvde_error_t **error );
 
 #if defined( LIBFVDE_HAVE_WIDE_CHARACTER_TYPE )
+
 /* Opens a volume
  * Returns 1 if successful, 0 if the keys could not be read or -1 on error
  */
@@ -229,9 +236,11 @@ int libfvde_volume_open_wide(
      const wchar_t *filename,
      int access_flags,
      libfvde_error_t **error );
-#endif
+
+#endif /* defined( LIBFVDE_HAVE_WIDE_CHARACTER_TYPE ) */
 
 #if defined( LIBFVDE_HAVE_BFIO )
+
 /* Opens a volume using a Basic File IO (bfio) handle
  * Returns 1 if successful, 0 if the keys could not be read or -1 on error
  */
@@ -241,7 +250,8 @@ int libfvde_volume_open_file_io_handle(
      libbfio_handle_t *file_io_handle,
      int access_flags,
      libfvde_error_t **error );
-#endif
+
+#endif /* defined( LIBFVDE_HAVE_BFIO ) */
 
 /* Closes a volume
  * Returns 0 if successful or -1 on error
@@ -272,19 +282,7 @@ ssize_t libfvde_volume_read_buffer_at_offset(
          off64_t offset,
          libfvde_error_t **error );
 
-/* Reads (media) data at a specific offset
- * Returns the number of bytes read or -1 on error
- */
-LIBFVDE_DEPRECATED \
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_read_random(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libfvde_error_t **error );
-
-#ifdef TODO
+#ifdef TODO_WRITE_SUPPORT
 
 /* Writes (media) data at the current offset
  * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
@@ -307,7 +305,7 @@ ssize_t libfvde_volume_write_buffer_at_offset(
          off64_t offset,
          libfvde_error_t **error );
 
-#endif
+#endif /* TODO_WRITE_SUPPORT */
 
 /* Seeks a certain offset of the data
  * Returns the offset if seek is successful or -1 on error
@@ -430,6 +428,7 @@ int libfvde_volume_read_encrypted_root_plist(
      libfvde_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 /* Reads the EncryptedRoot.plist file
  * This function needs to be used before one of the open functions
  * Returns 1 if successful or -1 on error
@@ -439,9 +438,11 @@ int libfvde_volume_read_encrypted_root_plist_wide(
      libfvde_volume_t *volume,
      const wchar_t *filename,
      libfvde_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 #if defined( LIBFVDE_HAVE_BFIO )
+
 /* Reads the EncryptedRoot.plist file using a Basic File IO (bfio) handle
  * This function needs to be used before one of the open functions
  * Returns 1 if successful or -1 on error
@@ -451,7 +452,8 @@ int libfvde_volume_read_encrypted_root_plist_file_io_handle(
      libfvde_volume_t *volume,
      libbfio_handle_t *file_io_handle,
      libfvde_error_t **error );
-#endif
+
+#endif /* defined( LIBFVDE_HAVE_BFIO ) */
 
 /* -------------------------------------------------------------------------
  * Volume functions - deprecated
@@ -522,6 +524,7 @@ int libfvde_encryption_context_plist_copy_data(
      libfvde_error_t **error );
 
 #if defined( LIBFVDE_HAVE_BFIO )
+
 /* Reads an encryption context plist file (EncryptedRoot.plist) using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
@@ -530,7 +533,8 @@ int libfvde_encryption_context_plist_read_file_io_handle(
      libfvde_encryption_context_plist_t *plist,
      libbfio_handle_t *file_io_handle,
      libfvde_error_t **error );
-#endif
+
+#endif /* defined( LIBFVDE_HAVE_BFIO ) */
 
 /* Decrypts the previously read encryption context plist file (EncryptedRoot.plist) with the given key.
  * Returns 1 if successful, 0 if not or -1 on error

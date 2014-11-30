@@ -139,13 +139,15 @@ int libfvde_volume_open(
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 LIBFVDE_EXTERN \
 int libfvde_volume_open_wide(
      libfvde_volume_t *volume,
      const wchar_t *filename,
      int access_flags,
      libcerror_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 LIBFVDE_EXTERN \
 int libfvde_volume_open_file_io_handle(
@@ -184,15 +186,8 @@ ssize_t libfvde_volume_read_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error );
 
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_read_random(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libcerror_error_t **error );
+#ifdef TODO_WRITE_SUPPORT
 
-#ifdef TODO
 LIBFVDE_EXTERN \
 ssize_t libfvde_volume_write_buffer(
          libfvde_volume_t *volume,
@@ -207,7 +202,8 @@ ssize_t libfvde_volume_write_buffer_at_offset(
          size_t buffer_size,
          off64_t offset,
          libcerror_error_t **error );
-#endif
+
+#endif /* TODO_WRITE_SUPPORT */
 
 LIBFVDE_EXTERN \
 off64_t libfvde_volume_seek_offset(
@@ -309,12 +305,14 @@ int libfvde_volume_read_encrypted_root_plist(
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 LIBFVDE_EXTERN \
 int libfvde_volume_read_encrypted_root_plist_wide(
      libfvde_volume_t *volume,
      const wchar_t *filename,
      libcerror_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 LIBFVDE_EXTERN \
 int libfvde_volume_read_encrypted_root_plist_file_io_handle(

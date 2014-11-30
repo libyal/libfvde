@@ -44,6 +44,12 @@ Future considerations:
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
 
+20141130
+* code clean up
+
+20141120
+* code clean up
+
 20141018
 * removed README.macosx
 

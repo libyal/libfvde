@@ -612,8 +612,26 @@ int libfvde_volume_open(
 
 		goto on_error;
 	}
-	internal_volume->file_io_handle_created_in_library = 1;
+	else if( result != 0 )
+	{
+		internal_volume->file_io_handle_created_in_library = 1;
+	}
+	else
+	{
+		if( libbfio_handle_free(
+		     &file_io_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free file IO handle.",
+			 function );
 
+			goto on_error;
+		}
+	}
 	return( result );
 
 on_error:
@@ -766,8 +784,26 @@ int libfvde_volume_open_wide(
 
 		goto on_error;
 	}
-	internal_volume->file_io_handle_created_in_library = 1;
+	else if( result != 0 )
+	{
+		internal_volume->file_io_handle_created_in_library = 1;
+	}
+	else
+	{
+		if( libbfio_handle_free(
+		     &file_io_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free file IO handle.",
+			 function );
 
+			goto on_error;
+		}
+	}
 	return( result );
 
 on_error:
@@ -780,7 +816,7 @@ on_error:
 	return( -1 );
 }
 
-#endif
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Opens a volume using a Basic File IO (bfio) handle
  * Returns 1 if successful, 0 if the keys could not be read or -1 on error
@@ -3686,7 +3722,7 @@ on_error:
 	return( -1 );
 }
 
-#endif
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Reads the EncryptedRoot.plist file using a Basic File IO (bfio) handle
  * This function needs to be used before one of the open functions.

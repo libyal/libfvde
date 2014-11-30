@@ -62,11 +62,13 @@ int libfvde_check_volume_signature(
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 LIBFVDE_EXTERN \
 int libfvde_check_volume_signature_wide(
      const wchar_t *volumename,
      libcerror_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 LIBFVDE_EXTERN \
 int libfvde_check_volume_signature_file_io_handle(

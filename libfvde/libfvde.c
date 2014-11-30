@@ -1,5 +1,5 @@
 /*
- * Library to access the BitLocker Drive Encryption (FVDE) format
+ * Library to access the  FileVault Drive Encryption (FVDE) format
  *
  * Copyright (C) 2011-2014, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>

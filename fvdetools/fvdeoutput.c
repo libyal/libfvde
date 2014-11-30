@@ -25,12 +25,6 @@
 #include <memory.h>
 #include <types.h>
 
-#if defined( HAVE_LOCAL_LIBUNA )
-#include <libuna_definitions.h>
-#elif defined( HAVE_LIBUNA_H )
-#include <libuna.h>
-#endif
-
 #include "fvdeoutput.h"
 #include "fvdetools_libbfio.h"
 #include "fvdetools_libcerror.h"
@@ -39,6 +33,7 @@
 #include "fvdetools_libcstring.h"
 #include "fvdetools_libcsystem.h"
 #include "fvdetools_libfvde.h"
+#include "fvdetools_libuna.h"
 
 /* Prints the copyright information
  */
@@ -49,12 +44,26 @@ void fvdeoutput_copyright_fprint(
 	{
 		return;
 	}
+	/* TRANSLATORS: These are proper names.
+	 */
 	fprintf(
 	 stream,
-	 "Copyright (c) 2011-2014, Omar Choudary <choudary.omar@gmail.com>\n"
-	 "                         Joachim Metz <%s>.\n"
-	 "This is free software; see the source for copying conditions. There is NO\n"
-	 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
+	 _( "Copyright (c) 2011-2014, %s.\n" ),
+	 _( "Omar Choudary, Joachim Metz" ) );
+
+	fprintf(
+	 stream,
+	 _( "This is free software; see the source for copying conditions. There is NO\n"
+	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n" ) );
+
+	/* TRANSLATORS: The placeholder indicates the bug-reporting address
+	 * for this package.  Please add _another line_ saying
+	 * "Report translation bugs to <...>\n" with the address for translation
+	 * bugs (typically your translation team's web or email address).
+	 */
+	fprintf(
+	 stream,
+	 _( "Report bugs to <%s>.\n" ),
 	 PACKAGE_BUGREPORT );
 }
 
