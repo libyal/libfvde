@@ -49,6 +49,7 @@ int libfvde_password_pbkdf2(
 	uint8_t *data_buffer       = NULL;
 	uint8_t *output_ptr        = NULL;
 	static char *function      = "libfvde_password_pbkdf2";
+	size_t block_offset        = 0;
 	size_t data_buffer_size    = 0;
 	size_t hash_size           = LIBHMAC_SHA256_HASH_SIZE;
 	size_t remaining_data_size = 0;
@@ -238,7 +239,7 @@ int libfvde_password_pbkdf2(
 	     block_index < number_of_blocks;
 	     block_index++ )
 	{
-		output_ptr = &( output_data[ block_index * hash_size ] );
+		output_ptr = &( output_data[ block_offset ] );
 
 		byte_stream_copy_from_uint32_big_endian(
 		 &( data_buffer[ salt_size ] ),
@@ -311,10 +312,11 @@ int libfvde_password_pbkdf2(
 				output_ptr[ byte_index ] ^= hash_buffer[ byte_index ];
 			}
 		}
+		block_offset += hash_size;
 	}
 	if( remaining_data_size > 0 )
 	{
-		output_ptr = &( output_data[ block_index * hash_size ] );
+		output_ptr = &( output_data[ block_offset ] );
 
 		byte_stream_copy_from_uint32_big_endian(
 		 &( data_buffer[ salt_size ] ),
