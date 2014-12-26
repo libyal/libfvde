@@ -1,4 +1,6 @@
 TODO
+* Make sure to detect PassphraseWrappedKEKStruct in different locations within
+  the XML
 * add password keep
 * remove deprecated function
   - libfvde_volume_read_random
@@ -43,6 +45,9 @@ Future considerations:
 * how does tie into CS volume management
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
+
+20141226
+* changes for updated dependencies
 
 20141130
 * code clean up

@@ -1,6 +1,6 @@
 dnl Functions for libhmac
 dnl
-dnl Version: 20130714
+dnl Version: 20141205
 
 dnl Function to detect if libhmac is available
 dnl ac_libhmac_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -92,6 +92,28 @@ AC_DEFUN([AX_LIBHMAC_CHECK_LIB],
      [ac_cv_libhmac_dummy=yes],
      [ac_cv_libhmac=no])
 
+    dnl SHA224 functions
+    AC_CHECK_LIB(
+     hmac,
+     libhmac_sha224_initialize,
+     [ac_cv_libhmac_dummy=yes],
+     [ac_cv_libhmac=no])
+    AC_CHECK_LIB(
+     hmac,
+     libhmac_sha224_update,
+     [ac_cv_libhmac_dummy=yes],
+     [ac_cv_libhmac=no])
+    AC_CHECK_LIB(
+     hmac,
+     libhmac_sha224_finalize,
+     [ac_cv_libhmac_dummy=yes],
+     [ac_cv_libhmac=no])
+    AC_CHECK_LIB(
+     hmac,
+     libhmac_sha224_free,
+     [ac_cv_libhmac_dummy=yes],
+     [ac_cv_libhmac=no])
+
     dnl SHA256 functions
     AC_CHECK_LIB(
      hmac,
@@ -153,10 +175,12 @@ AC_DEFUN([AX_LIBHMAC_CHECK_LIB],
   [test "x$ac_cv_libhmac" = xyes],
   [ac_cv_libhmac_md5=libhmac
   ac_cv_libhmac_sha1=libhmac
+  ac_cv_libhmac_sha224=libhmac
   ac_cv_libhmac_sha256=libhmac
   ac_cv_libhmac_sha512=libhmac],
   [ac_cv_libhmac_md5=no
   ac_cv_libhmac_sha1=no
+  ac_cv_libhmac_sha224=no
   ac_cv_libhmac_sha256=no
   ac_cv_libhmac_sha512=no])
 
@@ -175,6 +199,7 @@ dnl Function to detect if libhmac dependencies are available
 AC_DEFUN([AX_LIBHMAC_CHECK_LOCAL],
  [ac_cv_libhmac_md5=no
  ac_cv_libhmac_sha1=no
+ ac_cv_libhmac_sha224=no
  ac_cv_libhmac_sha256=no
  ac_cv_libhmac_sha512=no
 
@@ -187,11 +212,13 @@ AC_DEFUN([AX_LIBHMAC_CHECK_LOCAL],
    [test "x$ac_cv_wincrypt" != xno],
    [AX_WINCRYPT_CHECK_MD5
    AX_WINCRYPT_CHECK_SHA1
+   AX_WINCRYPT_CHECK_SHA224
    AX_WINCRYPT_CHECK_SHA256
    AX_WINCRYPT_CHECK_SHA512
 
    ac_cv_libhmac_md5=$ac_cv_wincrypt_md5
    ac_cv_libhmac_sha1=$ac_cv_wincrypt_sha1
+   ac_cv_libhmac_sha224=$ac_cv_wincrypt_sha224
    ac_cv_libhmac_sha256=$ac_cv_wincrypt_sha256
    ac_cv_libhmac_sha521=$ac_cv_wincrypt_sha521
   ])
@@ -199,18 +226,20 @@ AC_DEFUN([AX_LIBHMAC_CHECK_LOCAL],
 
  dnl Check for libcrypto (openssl) support
  AS_IF(
-  [test "x$ac_cv_libhmac_md5" = xno && test "x$ac_cv_libhmac_sha1" = xno && test "x$ac_cv_libhmac_sha256" = xno && test "x$ac_cv_libhmac_sha512" = xno],
+  [test "x$ac_cv_libhmac_md5" = xno && test "x$ac_cv_libhmac_sha1" = xno && test "x$ac_cv_libhmac_sha224" = xno && test "x$ac_cv_libhmac_sha256" = xno && test "x$ac_cv_libhmac_sha512" = xno],
   [AX_LIBCRYPTO_CHECK_ENABLE
 
   AS_IF(
    [test "x$ac_cv_libcrypto" != xno],
    [AX_LIBCRYPTO_CHECK_MD5
    AX_LIBCRYPTO_CHECK_SHA1
+   AX_LIBCRYPTO_CHECK_SHA224
    AX_LIBCRYPTO_CHECK_SHA256
    AX_LIBCRYPTO_CHECK_SHA512
 
    ac_cv_libhmac_md5=$ac_cv_libcrypto_md5
    ac_cv_libhmac_sha1=$ac_cv_libcrypto_sha1
+   ac_cv_libhmac_sha224=$ac_cv_libcrypto_sha224
    ac_cv_libhmac_sha256=$ac_cv_libcrypto_sha256
    ac_cv_libhmac_sha512=$ac_cv_libcrypto_sha512
   ])
@@ -229,6 +258,10 @@ AC_DEFUN([AX_LIBHMAC_CHECK_LOCAL],
  AS_IF(
   [test "x$ac_cv_libhmac_sha1" = xno],
   [ac_cv_libhmac_sha1=local])
+
+ AS_IF(
+  [test "x$ac_cv_libhmac_sha224" = xno],
+  [ac_cv_libhmac_sha224=local])
 
  AS_IF(
   [test "x$ac_cv_libhmac_sha256" = xno],

@@ -163,6 +163,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libhmac\libhmac_sha224.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libhmac\libhmac_sha256.c"
 				>
 			</File>
@@ -206,6 +210,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libhmac\libhmac_sha1.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libhmac\libhmac_sha224.h"
 				>
 			</File>
 			<File
