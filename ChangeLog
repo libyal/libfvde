@@ -46,6 +46,9 @@ Future considerations:
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
 
+20150106
+* 2015 update
+
 20141226
 * changes for updated dependencies
 

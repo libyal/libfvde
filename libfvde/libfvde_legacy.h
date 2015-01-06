@@ -1,7 +1,7 @@
 /*
  * Legacy functions
  *
- * Copyright (C) 2011-2014, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2015, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.

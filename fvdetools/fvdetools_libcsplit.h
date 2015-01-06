@@ -1,7 +1,7 @@
 /*
  * The internal libcsplit header
  *
- * Copyright (c) 2011-2014, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2015, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *

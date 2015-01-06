@@ -1,13 +1,12 @@
 Source: libfvde
-Section: unknown
+Section: libs
 Priority: extra
 Maintainer: Joachim Metz <joachim.metz@gmail.com>
 Build-Depends: debhelper (>= 7), autotools-dev, libssl-dev, libxml2-dev, libfuse-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.9.5
 Homepage: http://code.google.com/p/libfvde/
 
 Package: libfvde
-Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Suggests: libfvde-dbg
@@ -17,21 +16,21 @@ Description: Library to access the FileVault Drive Encryption (FVDE) format
 Package: libfvde-dbg
 Architecture: any
 Section: debug
-Depends: libfvde (= ${Source-Version}), ${misc:Depends}
+Depends: libfvde (= ${binary:Version}), ${misc:Depends}
 Description: Debugging symbols for libfvde
  Debugging symbols for libfvde.
 
 Package: libfvde-dev
 Section: libdevel
 Architecture: any
-Depends: libfvde (= ${Source-Version})
+Depends: libfvde (= ${binary:Version}), ${misc:Depends}
 Description: Header files and libraries for developing applications for libfvde
  Header files and libraries for developing applications for libfvde.
 
 Package: libfvde-tools
 Section: utils
 Architecture: any
-Depends: libfvde (= ${Source-Version}), ${shlibs:Depends}
+Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Several tools for reading FileVault Drive Encrypted volumes
  Several tools for reading FileVault Drive Encrypted volumes.
 
