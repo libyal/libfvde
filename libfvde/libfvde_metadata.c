@@ -298,7 +298,7 @@ int libfvde_metadata_read_type_0x0011(
 		libcnotify_print_data(
 		 &( block_data[ 96 - 64 ] ),
 		 72,
-		 0 );
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 
 		libcnotify_printf(
 		 "%s: unknown7:\n",
@@ -306,7 +306,7 @@ int libfvde_metadata_read_type_0x0011(
 		libcnotify_print_data(
 		 &( block_data[ 168 - 64 ] ),
 		 52,
-		 0 );
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 
 		libcnotify_printf(
 		 "%s: volume groups descriptor offset\t\t: 0x%08" PRIx32 "\n",
