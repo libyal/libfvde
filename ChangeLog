@@ -1,4 +1,6 @@
 TODO
+* check for partial encrypted volumes
+
 * Make sure to detect PassphraseWrappedKEKStruct in different locations within
   the XML
 * add password keep
@@ -45,6 +47,10 @@ Future considerations:
 * how does tie into CS volume management
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
+
+20150222
+* Code clean up
+* Worked on documenation
 
 20150106
 * 2015 update

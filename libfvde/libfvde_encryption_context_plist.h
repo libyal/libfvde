@@ -59,6 +59,10 @@ struct libfvde_internal_encryption_context_plist
 	 */
 	libfvde_xml_plist_t *xml_plist;
 
+	/* The XML ConversionInfo key node
+	 */
+	xmlNode *xml_conversion_info_node;
+
 	/* The XML CryptoUsers key node
 	 */
 	xmlNode *xml_crypto_users_node;
@@ -112,6 +116,12 @@ int libfvde_encryption_context_plist_decrypt(
 
 int libfvde_encryption_context_plist_read_xml(
      libfvde_encryption_context_plist_t *plist,
+     libcerror_error_t **error );
+
+int libfvde_encryption_context_plist_get_conversion_status(
+     libfvde_encryption_context_plist_t *plist,
+     uint8_t **conversion_status,
+     size_t *conversion_status_size,
      libcerror_error_t **error );
 
 int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(

@@ -1007,7 +1007,54 @@ int libfvde_encryption_context_plist_read_xml(
 	}
 	xml_dict_node = xml_node;
 
-	/* Find the CrytpoUsers key
+	/* Find the ConversionInfo key
+	 */
+	xml_node = xml_dict_node->children;
+
+	while( xml_node != NULL )
+	{
+		if( xmlStrcmp(
+		     xml_node->name,
+		     (const xmlChar *) "key" ) == 0 )
+		{
+			xml_content = xmlNodeGetContent(
+				       xml_node );
+
+			if( xml_content != NULL )
+			{
+				if( xmlStrcmp(
+				     xml_content,
+				     (const xmlChar *) "ConversionInfo" ) == 0 )
+				{
+					xmlFree(
+					 xml_content );
+
+					xml_content = NULL;
+
+					break;
+				}
+				xmlFree(
+				 xml_content );
+
+				xml_content = NULL;
+			}
+		}
+		xml_node = xml_node->next;
+	}
+	if( xml_node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve XML ConversionInfo key element.",
+		 function );
+
+		goto on_error;
+	}
+	internal_plist->xml_conversion_info_node = xml_node;
+
+	/* Find the CryptoUsers key
 	 */
 	xml_node = xml_dict_node->children;
 
@@ -1113,8 +1160,276 @@ on_error:
 	return( -1 );
 }
 
+/* Retrieves the conversion status from the given plist data.
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encryption_context_plist_get_conversion_status(
+     libfvde_encryption_context_plist_t *plist,
+     uint8_t **conversion_status,
+     size_t *conversion_status_size,
+     libcerror_error_t **error )
+{
+	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
+	xmlChar *xml_content                                        = NULL;
+	xmlNode *xml_node                                           = NULL;
+	static char *function                                       = "libfvde_encryption_context_plist_get_conversion_status";
+	size_t xml_content_index                                    = 0;
+	size_t xml_content_length                                   = 0;
+	uint8_t node_index                                          = 0;
+
+	if( plist == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid plist.",
+		 function );
+
+		return( -1 );
+	}
+	internal_plist = (libfvde_internal_encryption_context_plist_t *) plist;
+
+	if( internal_plist->xml_conversion_info_node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid plist - missing XML ConversionInfo key node.",
+		 function );
+
+		return( -1 );
+	}
+	if( conversion_status == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid conversion status.",
+		 function );
+
+		return( -1 );
+	}
+	if( *conversion_status != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid conversion status value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( conversion_status_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid conversion status size.",
+		 function );
+
+		return( -1 );
+	}
+	/* Find the next dict element
+	 */
+	xml_node = internal_plist->xml_conversion_info_node;
+
+	while( xml_node != NULL )
+	{
+		if( xmlStrcmp(
+		     xml_node->name,
+		     (const xmlChar *) "dict" ) == 0 )
+		{
+			break;
+		}
+		xml_node = xml_node->next;
+	}
+	if( xml_node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve XML dict element.",
+		 function );
+
+		goto on_error;
+	}
+	/* Get the key element that contains ConversionStatus
+	 */
+	xml_node = xml_node->children;
+
+	while( xml_node != NULL )
+	{
+		if( xmlStrcmp(
+		     xml_node->name,
+		     (const xmlChar *) "key" ) == 0 )
+		{
+			xml_content = xmlNodeGetContent(
+			               xml_node );
+
+			if( xmlStrcmp(
+			     xml_content,
+			     (const xmlChar *) "ConversionStatus" ) == 0 )
+			{
+				xmlFree(
+				 xml_content );
+
+				xml_content = NULL;
+
+				break;
+			}
+			if( xml_content != NULL )
+			{
+				xmlFree(
+				 xml_content );
+
+				xml_content = NULL;
+			}
+		}
+		xml_node = xml_node->next;
+	}
+	if( xml_node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve XML key element.",
+		 function );
+
+		goto on_error;
+	}
+	xml_node = xml_node->next;
+
+	/* Ignore text nodes
+	 */
+	while( xml_node != NULL )
+	{
+		if( xmlStrcmp(
+		     xml_node->name,
+		     (const xmlChar *) "text" ) != 0 )
+		{
+			break;
+		}
+		xml_node = xml_node->next;
+	}
+	if( xml_node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve XML string element.",
+		 function );
+
+		goto on_error;
+	}
+	if( xmlStrcmp(
+	     xml_node->name,
+	     (const xmlChar *) "string" ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve XML string element.",
+		 function );
+
+		goto on_error;
+	}
+	xml_content = xmlNodeGetContent(
+	               xml_node );
+
+	if( xml_content == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve content of XML string element.",
+		 function );
+
+		goto on_error;
+	}
+	xml_content_length = xmlStrlen(
+	                      xml_content );
+
+	*conversion_status_size = xml_content_length + 1;
+
+	*conversion_status = memory_allocate(
+	                      sizeof( uint8_t ) * *conversion_status_size );
+
+	if( *conversion_status == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create conversion status.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     *conversion_status,
+	     xml_content,
+	     xml_content_length ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy plist data.",
+		 function );
+
+		goto on_error;
+	}
+	*conversion_status[ xml_content_length ] = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: conversion status:\n",
+		 function );
+		libcnotify_print_data(
+		 *conversion_status,
+		 *conversion_status_size,
+		 0 );
+	}
+#endif
+	xmlFree(
+	 xml_content );
+
+	xml_content = NULL;
+
+	return( 1 );
+
+on_error:
+	if( xml_content != NULL )
+	{
+		xmlFree(
+		 xml_content );
+	}
+	if( *conversion_status != NULL )
+	{
+		memory_free(
+		 *conversion_status );
+
+		*conversion_status = NULL;
+	}
+	*conversion_status_size = 0;
+
+	return( -1 );
+}
+
 /* Retrieves the index-specified passphrase wrapped kek from the given plist data.
- * Returns 1 if successful, 0 if no such passphrase wrapped KEK or -1 on error
+ * Returns 1 if successful, 0 if no such value or -1 on error
  */
 int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
      libfvde_encryption_context_plist_t *plist,
