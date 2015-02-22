@@ -4,7 +4,7 @@ Analysis of FVDE
 :numbered!:
 [abstract]
 == Summary
-The FileVault Drive Encryption (FVDE) format is used by Apple MacOS-X to 
+The FileVault Drive Encryption (FVDE) format is used by Apple Mac OS X to 
 encrypt volumes. This specification is based on available documentation and was 
 enhanced by reverse engineering of the file format.
 
@@ -18,7 +18,7 @@ forensic tooling to be able to process this volume type.
 |===
 | Author(s): | Omar Choudary <choudary.omar@gmail.com> +
 Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the MacOS-X FileVault Drive Encryption (FVDE) format
+| Abstract: | This document contains information about the Mac OS X FileVault Drive Encryption (FVDE) format
 | Classification: | Public
 | Keywords: | FileVault 2, FileVault Drive Encryption, FVDE, Core Storage, CoreStorage
 |===
@@ -58,7 +58,7 @@ Additional information about partially compressed volumes.
 :numbered:
 == Overview
 FileVault Drive Encryption (FVDE) is the volume encryption used by Apple 
-MacOS-X as of Lion (10.7).
+Mac OS X as of Lion (10.7).
 
 This document was initially written for FVDE, but the structures mentioned are 
 also used by the Core Storage (CS) volume management system. CS supports both 
@@ -85,10 +85,10 @@ Except for UUID/GUID values, which are stored in big-endian
 === Test version
 The following version of programs were used to test the information within this document:
 
-* MacOS-X Lion (10.7)
-* MacOS-X Mountain Lion (10.8)
-* MacOS-X (10.9) Mavericks
-* MacOS-X (10.10) Yosemite
+* Mac OS X Lion (10.7)
+* Mac OS X Mountain Lion (10.8)
+* Mac OS X Mavericks (10.9)
+* Mac OS X Yosemite (10.10)
 
 == Keys
 To encrypt storage media CoreStorage uses different kind of keys.
@@ -460,6 +460,11 @@ libfvde_metadata_block_read: unknown2                                   : 0x0000
 000001b0: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
 ...
 00001fb0: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
+
+24 byte structures:
+0 - 8 unknown
+8 - 8 unknown
+12 - 8 unknown
 ....
 
 === Volume groups descriptor
@@ -1386,6 +1391,9 @@ Contains an UUID
 | com.apple.corestorage.lv.uuid | The logical volume identifier +
 Contains an UUID
 |===
+
+[NOTE]
+There is no specific ordering to the keys.
 
 === Metadata block data type 0x001c
 ....

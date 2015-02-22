@@ -51,6 +51,7 @@ Future considerations:
 20150222
 * Code clean up
 * Worked on documenation
+* Changes for handling 0x001a metadata with different plist key sequence
 
 20150106
 * 2015 update

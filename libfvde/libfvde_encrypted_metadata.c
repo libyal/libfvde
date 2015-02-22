@@ -669,16 +669,18 @@ int libfvde_encrypted_metadata_read_type_0x001a(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	xmlChar *xml_content           = NULL;
-	xmlDoc *xml_document           = NULL;
-	xmlNode *xml_node              = NULL;
-	xmlNode *xml_root_node         = NULL;
-	const uint8_t *xml_plist_data  = NULL;
-	static char *function          = "libfvde_encrypted_metadata_read_type_0x001a";
-	size_t xml_content_length      = 0;
-	size_t xml_length              = 0;
-	uint32_t xml_plist_data_offset = 0;
-	uint32_t xml_plist_data_size   = 0;
+	xmlChar *xml_content                               = NULL;
+	xmlDoc *xml_document                               = NULL;
+	xmlNode *logical_volume_family_identifier_xml_node = NULL;
+	xmlNode *logical_volume_size_xml_node              = NULL;
+	xmlNode *xml_node                                  = NULL;
+	xmlNode *xml_root_node                             = NULL;
+	const uint8_t *xml_plist_data                      = NULL;
+	static char *function                              = "libfvde_encrypted_metadata_read_type_0x001a";
+	size_t xml_content_length                          = 0;
+	size_t xml_length                                  = 0;
+	uint32_t xml_plist_data_offset                     = 0;
+	uint32_t xml_plist_data_size                       = 0;
 
 	if( encrypted_metadata == NULL )
 	{
@@ -835,8 +837,6 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		}
 		xml_node = xml_root_node->children;
 
-		/* Find the key element that contains com.apple.corestorage.lv.familyUUID
-		 */
 		while( xml_node != NULL )
 		{
 			if( xmlStrcmp(
@@ -850,12 +850,13 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 				     xml_content,
 				     (const xmlChar *) "com.apple.corestorage.lv.familyUUID" ) == 0 )
 				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-
-					break;
+					logical_volume_family_identifier_xml_node = xml_node;
+				}
+				else if( xmlStrcmp(
+				          xml_content,
+				          (const xmlChar *) "com.apple.corestorage.lv.size" ) == 0 )
+				{
+					logical_volume_size_xml_node = xml_node;
 				}
 				if( xml_content != NULL )
 				{
@@ -867,18 +868,20 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			}
 			xml_node = xml_node->next;
 		}
-		if( xml_node == NULL )
+		/* Key element that contains com.apple.corestorage.lv.familyUUID
+		 */
+		if( logical_volume_family_identifier_xml_node == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML key element.",
+			 "%s: unable to retrieve XML key element: com.apple.corestorage.lv.familyUUID.",
 			 function );
 
 			goto on_error;
 		}
-		xml_node = xml_node->next;
+		xml_node = logical_volume_family_identifier_xml_node->next;
 
 		/* Ignore text nodes
 		 */
@@ -963,52 +966,20 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 		xml_content = NULL;
 
-		xml_node = xml_node->next;
-
-		/* Find the key element that contains com.apple.corestorage.lv.size
+		/* Key element that contains com.apple.corestorage.lv.size
 		 */
-		while( xml_node != NULL )
-		{
-			if( xmlStrcmp(
-			     xml_node->name,
-			     (const xmlChar *) "key" ) == 0 )
-			{
-				xml_content = xmlNodeGetContent(
-				               xml_node );
-
-				if( xmlStrcmp(
-				     xml_content,
-				     (const xmlChar *) "com.apple.corestorage.lv.size" ) == 0 )
-				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-
-					break;
-				}
-				if( xml_content != NULL )
-				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-				}
-			}
-			xml_node = xml_node->next;
-		}
-		if( xml_node == NULL )
+		if( logical_volume_size_xml_node == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML key element.",
+			 "%s: unable to retrieve XML key element: com.apple.corestorage.lv.size.",
 			 function );
 
 			goto on_error;
 		}
-		xml_node = xml_node->next;
+		xml_node = logical_volume_size_xml_node->next;
 
 		/* Ignore text nodes
 		 */

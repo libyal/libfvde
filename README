@@ -7,8 +7,10 @@ Project information:
 * Licence: LGPLv3+
 
 Supported FileVault2 implementations:
-* Mac OS X Lion
-* Mac OS X Mountain Lion
+* Mac OS X Lion (10.7)
+* Mac OS X Mountain Lion (10.8)
+* Mac OS X Mavericks (10.9)
+* Mac OS X Yosemite (10.10)
 
 Supported encryption volume types:
 * removable media volume - with encrypted context (initial support as of 20121113 version)
