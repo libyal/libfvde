@@ -132,10 +132,10 @@ digits. The corresponding recovery key is calculated using the PBKDF2 algorithm
 with:
 
 * Apply the PBKDF2 algorithm using:
-  * number of iterations
-  * SHA256 as the pseudo-random function (PRF)
-  * a salt, as stored in the corresponding PassphraseWrappedKEKStruct in the EncryptedRoot.plist.wipekey file
-  * the recovery password
+** number of iterations
+** SHA256 as the pseudo-random function (PRF)
+** a salt, as stored in the corresponding PassphraseWrappedKEKStruct in the EncryptedRoot.plist.wipekey file
+** the recovery password
 
 The PassphraseWrappedKEKStruct contains the primary key to unlock the 
 KEKWrappedVolumeKeyStruct containing the volume master key.
@@ -291,8 +291,8 @@ The CRC-32 calculation does not use the XOR with 0xffffffff before and after the
 The metadata (section) (also referred to CS as disk label) consists of:
 
 * a metadata block type 0x0011
-  * a metadata block header
-  * metadata block data
+** a metadata block header
+** metadata block data
 * volume groups descriptor
 
 [yellow-background]*TODO, value index and plist ?*
@@ -2376,8 +2376,8 @@ will decrypt the volume but the data on-disk is still encrypted with the key dat
 Logical Volume Group
 
 * One or more physical volumes
-  * Logical Volume Family
-  * Logical Volume
+** Logical Volume Family
+** Logical Volume
 
 === Partial encrypted volume
 Encrypted volume header:
