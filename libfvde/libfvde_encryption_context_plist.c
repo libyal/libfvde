@@ -1173,9 +1173,7 @@ int libfvde_encryption_context_plist_get_conversion_status(
 	xmlChar *xml_content                                        = NULL;
 	xmlNode *xml_node                                           = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_conversion_status";
-	size_t xml_content_index                                    = 0;
 	size_t xml_content_length                                   = 0;
-	uint8_t node_index                                          = 0;
 
 	if( plist == NULL )
 	{
