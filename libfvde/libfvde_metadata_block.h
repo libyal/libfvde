@@ -69,15 +69,15 @@ int libfvde_metadata_block_free(
      libfvde_metadata_block_t **metadata_block,
      libcerror_error_t **error );
 
+int libfvde_metadata_block_check_for_empty_block(
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
+
 int libfvde_metadata_block_read(
      libfvde_metadata_block_t *metadata_block,
      const uint8_t *block_data,
      size_t block_data_size,
-     libcerror_error_t **error );
-
-int libfvde_metadata_block_check_for_empty_block(
-     const uint8_t *data,
-     size_t data_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

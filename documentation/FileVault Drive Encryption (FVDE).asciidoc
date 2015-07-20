@@ -467,6 +467,9 @@ libfvde_metadata_block_read: unknown2                                   : 0x0000
 12 - 8 unknown
 ....
 
+[yellow-background]*Seen encrypted data in the metadata block in 10.10.
+Is this remnant data?*
+
 === Volume groups descriptor
 
 [cols="1,1,1,5",options="header"]
@@ -502,12 +505,13 @@ The XML plist data consists of a single dict containing the following keys.
 Consists of a 32-bits integer
 | com.apple.corestorage.lvg.uuid | The logical volume group identifier +
 Consists of a string containing an UUID
-| com.apple.corestorage.lvg. name | Name of the logical volume group +
+| com.apple.corestorage.lvg.name | Name of the logical volume group +
 Contains a string
 | com.apple.corestorage.pv.uuid | The physical volume identifier +
 Consists of a string containing an UUID or "internal error"
 | com.apple.corestorage.lvg.physicalVolumes | The physical volume identifiers +
 Consist of an array containing strings of UUIDs
+| com.apple.corestorage.lvg.ssd-unit-nbytes | [yellow-background]*Unknown*
 |===
 
 [yellow-background]*Same as XML plist data in block 0x0012*
@@ -528,6 +532,8 @@ The encrypted metadata consists of:
 * encrypted metadata blocks of various block types
 * trailing zero byte filled data
 * [yellow-background]*unknown trailing data*
+
+[yellow-background]*Seen other trailing data?*
 
 === LVFwiped
 Some blocks contain the string "LVFwiped" where the checksum and initial value 

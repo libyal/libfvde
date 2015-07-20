@@ -1,4 +1,5 @@
 TODO
+* print metadata block offset for debugging
 * check for partial encrypted volumes
 
 * Make sure to detect PassphraseWrappedKEKStruct in different locations within
@@ -47,6 +48,9 @@ Future considerations:
 * how does tie into CS volume management
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
+
+20150720
+* worked on signature check
 
 20150222
 * Code clean up
