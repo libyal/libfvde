@@ -49,6 +49,9 @@ Future considerations:
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
 
+20150926
+* added ps1 scripts
+
 20150720
 * worked on signature check
 
