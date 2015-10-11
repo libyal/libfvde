@@ -679,8 +679,10 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	static char *function                              = "libfvde_encrypted_metadata_read_type_0x001a";
 	size_t xml_content_length                          = 0;
 	size_t xml_length                                  = 0;
-	uint32_t xml_plist_data_offset                     = 0;
-	uint32_t xml_plist_data_size                       = 0;
+	uint32_t compressed_xml_plist_data_size            = 0;
+	uint32_t stored_xml_plist_data_offset              = 0;
+	uint32_t stored_xml_plist_data_size                = 0;
+	uint32_t uncompressed_xml_plist_data_size          = 0;
 
 	if( encrypted_metadata == NULL )
 	{
@@ -727,31 +729,71 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		return( -1 );
 	}
 	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 56 ] ),
+	 compressed_xml_plist_data_size );
+
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 60 ] ),
+	 uncompressed_xml_plist_data_size );
+
+	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 64 ] ),
-	 xml_plist_data_offset );
+	 stored_xml_plist_data_offset );
 
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 68 ] ),
-	 xml_plist_data_size );
+	 stored_xml_plist_data_size );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: XML plist data offset\t\t: 0x%08" PRIx32 "\n",
+		 "%s: compressed XML plist data size\t: %" PRIu32 "\n",
 		 function,
-		 xml_plist_data_offset );
+		 compressed_xml_plist_data_size );
 
 		libcnotify_printf(
-		 "%s: XML plist data size\t\t: %" PRIu32 "\n",
+		 "%s: uncompressed XML plist data size\t: %" PRIu32 "\n",
 		 function,
-		 xml_plist_data_size );
+		 uncompressed_xml_plist_data_size );
+
+		libcnotify_printf(
+		 "%s: stored XML plist data offset\t: 0x%08" PRIx32 "\n",
+		 function,
+		 stored_xml_plist_data_offset );
+
+		libcnotify_printf(
+		 "%s: stored XML plist data size\t: %" PRIu32 "\n",
+		 function,
+		 stored_xml_plist_data_size );
 	}
 #endif
-/* TODO bounds check */
+	if( ( stored_xml_plist_data_offset < 64 )
+	 || ( (size_t) stored_xml_plist_data_offset > block_data_size ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid stored XML plist data offset value out of bounds.",
+		 function );
 
-	xml_plist_data = &( block_data[ xml_plist_data_offset - 64 ] );
+		goto on_error;
+	}
+	if( stored_xml_plist_data_size > ( block_data_size - stored_xml_plist_data_offset ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid stored XML plist data size value out of bounds.",
+		 function );
 
+		goto on_error;
+	}
+	xml_plist_data = &( block_data[ stored_xml_plist_data_offset - 64 ] );
+
+/* TODO handle compressed XML plist data */
 	if( ( xml_plist_data[ 0 ] == (uint8_t) '<' )
 	 && ( xml_plist_data[ 1 ] == (uint8_t) 'd' )
 	 && ( xml_plist_data[ 2 ] == (uint8_t) 'i' )
