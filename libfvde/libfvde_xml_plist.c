@@ -31,6 +31,7 @@
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
 #include "libfvde_xml_plist.h"
+#include "libfvde_xml_plist_key.h"
 
 /* Creates an XML plist
  * Make sure the value plist is referencing, is set to NULL
@@ -202,7 +203,7 @@ int libfvde_xml_plist_copy_from_byte_stream(
 	plist->xml_document = xmlReadMemory(
 			       (char *) byte_stream,
 			       (int) byte_stream_size,
-			       "noname.xml",
+			       "plist.xml",
 			       NULL,
 			       0 );
 
@@ -219,16 +220,16 @@ int libfvde_xml_plist_copy_from_byte_stream(
 	}
 	/* Get the root node
 	 */
-	plist->root_node = xmlDocGetRootElement(
-	                    plist->xml_document );
+	plist->root_xml_node = xmlDocGetRootElement(
+	                        plist->xml_document );
 
-	if( plist->root_node == NULL )
+	if( plist->root_xml_node == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve root node.",
+		 "%s: unable to retrieve root XML node.",
 		 function );
 
 		goto on_error;
@@ -244,5 +245,113 @@ on_error:
 		plist->xml_document = NULL;
 	}
 	return( -1 );
+}
+
+/* Retrieves the root key
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfvde_xml_plist_get_root_key(
+     libfvde_xml_plist_t *plist,
+     libfvde_xml_plist_key_t **key,
+     libcerror_error_t **error )
+{
+	xmlNode *xml_node     = NULL;
+	static char *function = "libfvde_xml_plist_get_root_key";
+
+	if( plist == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid plist.",
+		 function );
+
+		return( -1 );
+	}
+	if( plist->xml_document == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid plist - missing XML document.",
+		 function );
+
+		return( -1 );
+	}
+	if( key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid key.",
+		 function );
+
+		return( -1 );
+	}
+	if( *key != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid key value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( plist->dict_xml_node == NULL )
+	{
+		/* Find the main dict XML node
+		 */
+		if( plist->root_xml_node != NULL )
+		{
+			xml_node = plist->root_xml_node->children;
+
+			/* Skip the plist XML node
+			 * <plist version="1.0">
+			 */
+			if( ( xml_node != NULL )
+			 && ( xmlStrcmp(
+			       xml_node->name,
+			       (const xmlChar *) "plist" ) == 0 ) )
+			{
+				/* TODO: determine version
+				 */
+				xml_node = xml_node->next;
+			}
+			/* TODO: check for comment in between plist and dict XML nodes?
+			 */
+			if( ( xml_node != NULL )
+			 && ( xmlStrcmp(
+			       xml_node->name,
+			       (const xmlChar *) "dict" ) == 0 ) )
+			{
+				plist->dict_xml_node = xml_node;
+			}
+		}
+	}
+	if( plist->dict_xml_node == NULL )
+	{
+		return( 0 );
+	}
+	if( libfvde_xml_plist_key_initialize(
+	     key,
+	     plist->dict_xml_node,
+	     1,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create key.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 

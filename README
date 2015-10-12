@@ -32,6 +32,7 @@ in Advances in Digital Forensics IX, IFIP Advances in Information and Communicat
 2013, pp 349-363.
 
 Work in progress:
+* DEFLATE compressed XML plist
 * removable media volume - without encrypted context
 * removable media volume - decrypted
 * extend CoreStorage volume support

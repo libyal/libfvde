@@ -38,18 +38,38 @@ typedef struct libfvde_xml_plist_key libfvde_xml_plist_key_t;
 
 struct libfvde_xml_plist_key
 {
-/* TODO refactor */
-	/* The node
+	/* The key XML node
 	 */
-	xmlNode *node;
+	xmlNode *key_xml_node;
+
+	/* The key XML content which contains the name.
+	 */
+	xmlChar *key_xml_content;
+
+	/* The value XML node
+	 */
+	xmlNode *value_xml_node;
 };
 
 int libfvde_xml_plist_key_initialize(
-     libfvde_xml_plist_key_t **plist_key,
+     libfvde_xml_plist_key_t **key,
+     xmlNode *xml_node,
+     uint8_t is_root,
      libcerror_error_t **error );
 
 int libfvde_xml_plist_key_free(
-     libfvde_xml_plist_key_t **plist_key,
+     libfvde_xml_plist_key_t **key,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_key_is_dict(
+     libfvde_xml_plist_key_t *key,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+     libfvde_xml_plist_key_t *key,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfvde_xml_plist_key_t **sub_key,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

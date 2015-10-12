@@ -29,6 +29,7 @@
 #include <libxml/tree.h>
 
 #include "libfvde_libcerror.h"
+#include "libfvde_xml_plist_key.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -38,18 +39,17 @@ typedef struct libfvde_xml_plist libfvde_xml_plist_t;
 
 struct libfvde_xml_plist
 {
-/* TODO refactor */
         /* The XML document
 	 */
         xmlDoc *xml_document;
 
-	/* The root node
+	/* The root XML node
 	 */
-	xmlNode *root_node;
+	xmlNode *root_xml_node;
 
-	/* The main dict node
+	/* The (main) dict XML node
 	 */
-	xmlNode *main_dict_node;
+	xmlNode *dict_xml_node;
 };
 
 int libfvde_xml_plist_initialize(
@@ -64,6 +64,11 @@ int libfvde_xml_plist_copy_from_byte_stream(
      libfvde_xml_plist_t *plist,
      const uint8_t *byte_stream,
      size_t byte_stream_size,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_get_root_key(
+     libfvde_xml_plist_t *plist,
+     libfvde_xml_plist_key_t **key,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

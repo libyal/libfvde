@@ -1150,6 +1150,8 @@ XML plist main dict containing:
 [cols="1,1",options="header"]
 |===
 | Key | Description
+| com.apple.corestorage.lvf.revertState | Revert state +
+This key is optional
 | com.apple.corestorage.lvf.encryption.context | Encryption context dict +
 This key is optional
 | DefaultEncryptionContext | Reference to an identifier (ID) in the encryption context
