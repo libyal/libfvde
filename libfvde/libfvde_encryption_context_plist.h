@@ -26,8 +26,6 @@
 #include <common.h>
 #include <types.h>
 
-#include <libxml/tree.h>
-
 #include "libfvde_encryption.h"
 #include "libfvde_extern.h"
 #include "libfvde_libbfio.h"

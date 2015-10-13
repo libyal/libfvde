@@ -1407,6 +1407,15 @@ int libfvde_volume_open_read(
 		}
 		encrypted_metadata_offset += internal_volume->primary_metadata->encrypted_metadata_size;
 
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: fallback logical volume offset\t\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 encrypted_metadata_offset );
+		}
+#endif
 		internal_volume->primary_encrypted_metadata->logical_volume_offset = encrypted_metadata_offset;
 
 		internal_volume->primary_encrypted_metadata->logical_volume_values_are_set = 1;

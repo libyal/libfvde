@@ -89,6 +89,10 @@ struct libfvde_encrypted_metadata
 	/* Value to indicate the logical volume block values are set
 	 */
 	uint8_t logical_volume_block_values_are_set;
+
+	/* Value to indicate the logical volume size value is set
+	 */
+	uint8_t logical_volume_size_value_is_set;
 };
 
 int libfvde_encrypted_metadata_uuid_string_copy_to_byte_stream(

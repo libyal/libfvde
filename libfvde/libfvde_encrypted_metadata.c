@@ -676,6 +676,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	static char *function                     = "libfvde_encrypted_metadata_read_type_0x001a";
 	size_t string_size                        = 0;
 	size_t xml_length                         = 0;
+	uint64_t logical_volume_size              = 0;
 	uint32_t compressed_xml_plist_data_size   = 0;
 	uint32_t stored_xml_plist_data_offset     = 0;
 	uint32_t stored_xml_plist_data_size       = 0;
@@ -962,7 +963,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		}
 		if( libfvde_xml_plist_key_get_value_integer(
 		     xml_plist_key,
-		     (uint64_t *) &( encrypted_metadata->logical_volume_size ),
+		     (uint64_t *) &logical_volume_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -980,7 +981,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			libcnotify_printf(
 			 "%s: logical volume size\t\t: %" PRIu64 "\n",
 			 function,
-			 encrypted_metadata->logical_volume_size );
+			 logical_volume_size );
 		}
 #endif
 		if( libfvde_xml_plist_key_free(
@@ -1008,6 +1009,12 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			 function );
 
 			goto on_error;
+		}
+		if( encrypted_metadata->logical_volume_size_value_is_set == 0 )
+		{
+			encrypted_metadata->logical_volume_size = logical_volume_size;
+
+			encrypted_metadata->logical_volume_size_value_is_set = 1;
 		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -1683,7 +1690,8 @@ int libfvde_encrypted_metadata_read(
 	 * metadata block.
 	 */
 	if( ( encrypted_metadata->logical_volume_values_are_set == 0 )
-	 && ( encrypted_metadata->logical_volume_block_values_are_set != 0 ) )
+	 && ( encrypted_metadata->logical_volume_block_values_are_set != 0 )
+	 && ( encrypted_metadata->logical_volume_size_value_is_set != 0 ) )
 	{
 		encrypted_metadata->logical_volume_number_of_blocks *= io_handle->block_size;
 
