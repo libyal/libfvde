@@ -721,7 +721,7 @@ int libfvde_xml_plist_key_get_value_string(
 
 		goto on_error;
 	}
-	*string[ xml_content_length ] = 0;
+	( *string )[ xml_content_length ] = 0;
 
 	return( 1 );
 
