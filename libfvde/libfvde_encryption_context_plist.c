@@ -24,9 +24,6 @@
 #include <memory.h>
 #include <types.h>
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-
 #include "libfvde_encryption_context_plist.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
@@ -34,6 +31,7 @@
 #include "libfvde_libuna.h"
 #include "libfvde_types.h"
 #include "libfvde_xml_plist.h"
+#include "libfvde_xml_plist_key.h"
 
 /* Creates an encryption context plist
  * Make sure the value plist is referencing, is set to NULL
@@ -145,6 +143,54 @@ int libfvde_encryption_context_plist_free(
 		{
 			memory_free(
 			 internal_plist->data_decrypted );
+		}
+		if( internal_plist->wrapped_volume_keys_key != NULL )
+		{
+			if( libfvde_xml_plist_key_free(
+			     &( internal_plist->wrapped_volume_keys_key ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free WrappedVolumeKeys key.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( internal_plist->crypto_users_key != NULL )
+		{
+			if( libfvde_xml_plist_key_free(
+			     &( internal_plist->crypto_users_key ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free CryptoUsers key.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( internal_plist->conversion_info_key != NULL )
+		{
+			if( libfvde_xml_plist_key_free(
+			     &( internal_plist->conversion_info_key ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free ConversionInfo key.",
+				 function );
+
+				result = -1;
+			}
 		}
 		if( internal_plist->xml_plist != NULL )
 		{
@@ -833,9 +879,8 @@ int libfvde_encryption_context_plist_read_xml(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	xmlChar *xml_content                                        = NULL;
-	xmlNode *xml_dict_node                                      = NULL;
-	xmlNode *xml_node                                           = NULL;
+	libfvde_xml_plist_key_t *encryption_context_key             = NULL;
+	libfvde_xml_plist_key_t *root_key                           = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_read_xml";
 	int result                                                  = 0;
 
@@ -880,7 +925,7 @@ int libfvde_encryption_context_plist_read_xml(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: decrypted data: %s\n\n",
+		 "%s: decrypted data:\n%s\n\n",
 		 function,
 		 internal_plist->data_decrypted );
 	}
@@ -924,49 +969,46 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	/* Find the main dict
-	 */
-	xml_node = internal_plist->xml_plist->root_node->children;
-
-	if( xmlStrcmp(
-	     internal_plist->xml_plist->root_node->name,
-	     (const xmlChar *) "plist" ) != 0 )
+	if( libfvde_xml_plist_get_root_key(
+	     internal_plist->xml_plist,
+	     &root_key,
+	     error ) != 1 )
 	{
-		if( xml_node == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML key element.",
-			 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve root key.",
+		 function );
 
-			goto on_error;
-		}
-		result = 0;
+		goto on_error;
+	}
+	result = libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	          root_key,
+	          (uint8_t *) "com.apple.corestorage.lvf.encryption.context",
+	          44,
+	          &encryption_context_key,
+	          error );
 
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
-		{
-			xml_content = xmlNodeGetContent(
-				       xml_node );
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve encryption context key.",
+		 function );
 
-			if( xml_content != NULL )
-			{
-				if( xmlStrcmp(
-				     xml_content,
-				     (const xmlChar *) "com.apple.corestorage.lvf.encryption.context" ) == 0 )
-				{
-					result = 1;
-				}
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-			}
-		}
-		if( result == 0 )
+		goto on_error;
+	}
+	else if( result == 0 )
+	{
+		encryption_context_key = root_key;
+	}
+	else
+	{
+/* TODO replace by function after refactoring */
+		if( internal_plist->xml_plist->plist_xml_node != NULL )
 		{
 			if( libfvde_xml_plist_free(
 			     &( internal_plist->xml_plist ),
@@ -984,173 +1026,130 @@ int libfvde_encryption_context_plist_read_xml(
 			return( 0 );
 		}
 	}
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "dict" ) == 0 )
-		{
-			break;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_is_dict(
+	     encryption_context_key,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML dict element.",
+		 "%s: unable to determine if encryption context key contains a dict.",
 		 function );
 
 		goto on_error;
 	}
-	xml_dict_node = xml_node;
-
-	/* Find the ConversionInfo key
-	 */
-	xml_node = xml_dict_node->children;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
-		{
-			xml_content = xmlNodeGetContent(
-				       xml_node );
-
-			if( xml_content != NULL )
-			{
-				if( xmlStrcmp(
-				     xml_content,
-				     (const xmlChar *) "ConversionInfo" ) == 0 )
-				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-
-					break;
-				}
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-			}
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	     encryption_context_key,
+	     (uint8_t *) "ConversionInfo",
+	     14,
+	     &( internal_plist->conversion_info_key ),
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML ConversionInfo key element.",
+		 "%s: unable to retrieve ConversionInfo key.",
 		 function );
 
 		goto on_error;
 	}
-	internal_plist->xml_conversion_info_node = xml_node;
-
-	/* Find the CryptoUsers key
-	 */
-	xml_node = xml_dict_node->children;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
-		{
-			xml_content = xmlNodeGetContent(
-				       xml_node );
-
-			if( xml_content != NULL )
-			{
-				if( xmlStrcmp(
-				     xml_content,
-				     (const xmlChar *) "CryptoUsers" ) == 0 )
-				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-
-					break;
-				}
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-			}
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	     encryption_context_key,
+	     (uint8_t *) "CryptoUsers",
+	     11,
+	     &( internal_plist->crypto_users_key ),
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML CryptoUsers key element.",
+		 "%s: unable to retrieve CryptoUsers key.",
 		 function );
 
 		goto on_error;
 	}
-	internal_plist->xml_crypto_users_node = xml_node;
-
-	/* Find the WrappedVolumeKeys key
-	 */
-	xml_node = xml_dict_node->children;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
-		{
-			xml_content = xmlNodeGetContent(
-				       xml_node );
-
-			if( xml_content != NULL )
-			{
-				if( xmlStrcmp(
-				     xml_content,
-				     (const xmlChar *) "WrappedVolumeKeys" ) == 0 )
-				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-
-					break;
-				}
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-			}
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	     encryption_context_key,
+	     (uint8_t *) "WrappedVolumeKeys",
+	     17,
+	     &( internal_plist->wrapped_volume_keys_key ),
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML WrappedVolumeKeys key element.",
+		 "%s: unable to retrieve WrappedVolumeKeys key.",
 		 function );
 
 		goto on_error;
 	}
-	internal_plist->xml_wrapped_volume_keys_node = xml_node;
+	if( encryption_context_key != root_key )
+	{
+		if( libfvde_xml_plist_key_free(
+		     &encryption_context_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free encryption context key.",
+			 function );
 
+			goto on_error;
+		}
+	}
+	if( libfvde_xml_plist_key_free(
+	     &root_key,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free root key.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
+	if( internal_plist->wrapped_volume_keys_key != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &( internal_plist->wrapped_volume_keys_key ),
+		 NULL );
+	}
+	if( internal_plist->crypto_users_key != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &( internal_plist->crypto_users_key ),
+		 NULL );
+	}
+	if( internal_plist->conversion_info_key != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &( internal_plist->conversion_info_key ),
+		 NULL );
+	}
+	if( ( encryption_context_key != NULL )
+	 && ( encryption_context_key != root_key ) )
+	{
+		libfvde_xml_plist_key_free(
+		 &encryption_context_key,
+		 NULL );
+	}
+	if( root_key != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &root_key,
+		 NULL );
+	}
 	if( internal_plist->xml_plist != NULL )
 	{
 		libfvde_xml_plist_free(
@@ -1170,10 +1169,8 @@ int libfvde_encryption_context_plist_get_conversion_status(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	xmlChar *xml_content                                        = NULL;
-	xmlNode *xml_node                                           = NULL;
+	libfvde_xml_plist_key_t *xml_plist_key                      = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_conversion_status";
-	size_t xml_content_length                                   = 0;
 
 	if( plist == NULL )
 	{
@@ -1188,13 +1185,13 @@ int libfvde_encryption_context_plist_get_conversion_status(
 	}
 	internal_plist = (libfvde_internal_encryption_context_plist_t *) plist;
 
-	if( internal_plist->xml_conversion_info_node == NULL )
+	if( internal_plist->conversion_info_key == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid plist - missing XML ConversionInfo key node.",
+		 "%s: invalid plist - missing XML plist conversion info key.",
 		 function );
 
 		return( -1 );
@@ -1232,163 +1229,37 @@ int libfvde_encryption_context_plist_get_conversion_status(
 
 		return( -1 );
 	}
-	/* Find the next dict element
-	 */
-	xml_node = internal_plist->xml_conversion_info_node;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "dict" ) == 0 )
-		{
-			break;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	     internal_plist->conversion_info_key,
+	     (uint8_t *) "ConversionStatus",
+	     16,
+	     &xml_plist_key,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML dict element.",
+		 "%s: unable to retrieve ConversionStatus key.",
 		 function );
 
 		goto on_error;
 	}
-	/* Get the key element that contains ConversionStatus
-	 */
-	xml_node = xml_node->children;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
-		{
-			xml_content = xmlNodeGetContent(
-			               xml_node );
-
-			if( xmlStrcmp(
-			     xml_content,
-			     (const xmlChar *) "ConversionStatus" ) == 0 )
-			{
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-
-				break;
-			}
-			if( xml_content != NULL )
-			{
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-			}
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_value_string(
+	     xml_plist_key,
+	     conversion_status,
+	     conversion_status_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML key element.",
+		 "%s: unable to retrieve conversation status.",
 		 function );
 
 		goto on_error;
 	}
-	xml_node = xml_node->next;
-
-	/* Ignore text nodes
-	 */
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "text" ) != 0 )
-		{
-			break;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML string element.",
-		 function );
-
-		goto on_error;
-	}
-	if( xmlStrcmp(
-	     xml_node->name,
-	     (const xmlChar *) "string" ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML string element.",
-		 function );
-
-		goto on_error;
-	}
-	xml_content = xmlNodeGetContent(
-	               xml_node );
-
-	if( xml_content == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve content of XML string element.",
-		 function );
-
-		goto on_error;
-	}
-	xml_content_length = xmlStrlen(
-	                      xml_content );
-
-	*conversion_status_size = xml_content_length + 1;
-
-	*conversion_status = memory_allocate(
-	                      sizeof( uint8_t ) * *conversion_status_size );
-
-	if( *conversion_status == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create conversion status.",
-		 function );
-
-		goto on_error;
-	}
-	if( memory_copy(
-	     *conversion_status,
-	     xml_content,
-	     xml_content_length ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy plist data.",
-		 function );
-
-		goto on_error;
-	}
-	*conversion_status[ xml_content_length ] = 0;
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1401,18 +1272,27 @@ int libfvde_encryption_context_plist_get_conversion_status(
 		 0 );
 	}
 #endif
-	xmlFree(
-	 xml_content );
+	if( libfvde_xml_plist_key_free(
+	     &xml_plist_key,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free ConversionStatus key.",
+		 function );
 
-	xml_content = NULL;
-
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
-	if( xml_content != NULL )
+	if( xml_plist_key != NULL )
 	{
-		xmlFree(
-		 xml_content );
+		libfvde_xml_plist_key_free(
+		 &xml_plist_key,
+		 NULL );
 	}
 	if( *conversion_status != NULL )
 	{
@@ -1437,12 +1317,9 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	xmlChar *xml_content                                        = NULL;
-	xmlNode *xml_node                                           = NULL;
+	libfvde_xml_plist_key_t *xml_plist_array_entry              = NULL;
+	libfvde_xml_plist_key_t *xml_plist_key                      = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_passphrase_wrapped_kek";
-	size_t xml_content_index                                    = 0;
-	size_t xml_content_length                                   = 0;
-	int node_index                                              = 0;
 
 	if( plist == NULL )
 	{
@@ -1457,13 +1334,13 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 	}
 	internal_plist = (libfvde_internal_encryption_context_plist_t *) plist;
 
-	if( internal_plist->xml_crypto_users_node == NULL )
+	if( internal_plist->crypto_users_key == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid plist - missing XML CryptoUsers key node.",
+		 "%s: invalid plist - missing XML plist crypto users key.",
 		 function );
 
 		return( -1 );
@@ -1501,219 +1378,49 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		return( -1 );
 	}
-	/* Find the next array element
-	 */
-	xml_node = internal_plist->xml_crypto_users_node;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "array" ) == 0 )
-		{
-			break;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_array_entry_by_index(
+	     internal_plist->crypto_users_key,
+	     passphrase_wrapped_kek_index,
+	     &xml_plist_array_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML array element.",
-		 function );
+		 "%s: unable to retrieve crypto users array entry: %d.",
+		 function,
+		 passphrase_wrapped_kek_index );
 
 		goto on_error;
 	}
-	/* Find the dict element
-	 */
-	xml_node = xml_node->children;
-
-	node_index = 0;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "dict" ) == 0 )
-		{
-			if( node_index == passphrase_wrapped_kek_index )
-			{
-				break;
-			}
-			node_index++;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
-	{
-		return( 0 );
-	}
-	/* Get the key element that contains PassphraseWrappedKEKStruct
-	 */
-	xml_node = xml_node->children;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
-		{
-			xml_content = xmlNodeGetContent(
-			               xml_node );
-
-			if( xml_content != NULL )
-			{
-				if( xmlStrcmp(
-				     xml_content,
-				     (const xmlChar *) "PassphraseWrappedKEKStruct" ) == 0 )
-				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-
-					break;
-				}
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-			}
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	     xml_plist_array_entry,
+	     (uint8_t *) "PassphraseWrappedKEKStruct",
+	     26,
+	     &xml_plist_key,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML key element.",
+		 "%s: unable to retrieve PassphraseWrappedKEKStruct key.",
 		 function );
 
 		goto on_error;
 	}
-	xml_node = xml_node->next;
-
-	/* Ignore text nodes
-	 */
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "text" ) != 0 )
-		{
-			break;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML data element.",
-		 function );
-
-		goto on_error;
-	}
-	if( xmlStrcmp(
-	     xml_node->name,
-	     (const xmlChar *) "data" ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML data element.",
-		 function );
-
-		goto on_error;
-	}
-	xml_content = xmlNodeGetContent(
-	               xml_node );
-
-	if( xml_content == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve content of XML data element.",
-		 function );
-
-		goto on_error;
-	}
-	xml_content_length = xmlStrlen(
-	                      xml_content );
-
-	/* The base64 conversion function doesn't like an empty first line
-	 */
-	if( xml_content[ 0 ] == '\n' )
-	{
-		xml_content_index  += 1;
-		xml_content_length -= 1;
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: base64 encoded data:\n",
-		 function );
-		libcnotify_print_data(
-		 (uint8_t *) &( xml_content[ xml_content_index ] ),
-		 xml_content_length,
-		 0 );
-	}
-#endif
-	if( libuna_base64_stream_size_to_byte_stream(
-	     &( xml_content[ xml_content_index ] ),
-	     xml_content_length,
+	if( libfvde_xml_plist_key_get_value_data(
+	     xml_plist_key,
+	     passphrase_wrapped_kek,
 	     passphrase_wrapped_kek_size,
-	     LIBUNA_BASE64_VARIANT_ALPHABET_NORMAL | LIBUNA_BASE64_VARIANT_CHARACTER_LIMIT_NONE | LIBUNA_BASE64_VARIANT_PADDING_REQUIRED,
-	     LIBUNA_BASE64_FLAG_STRIP_WHITESPACE,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to determine size of base64 encoded data.",
-		 function );
-
-		goto on_error;
-	}
-	*passphrase_wrapped_kek = (uint8_t *) memory_allocate(
-	                                       sizeof( uint8_t ) * *passphrase_wrapped_kek_size );
-
-	if( *passphrase_wrapped_kek == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create passphrase wrapped KEK.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_base64_stream_copy_to_byte_stream(
-	     &( xml_content[ xml_content_index ] ),
-	     xml_content_length,
-	     *passphrase_wrapped_kek,
-	     *passphrase_wrapped_kek_size,
-	     LIBUNA_BASE64_VARIANT_ALPHABET_NORMAL | LIBUNA_BASE64_VARIANT_CHARACTER_LIMIT_NONE | LIBUNA_BASE64_VARIANT_PADDING_REQUIRED,
-	     LIBUNA_BASE64_FLAG_STRIP_WHITESPACE,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy base64 encoded data to byte stream.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve passphrase wrapped kek.",
 		 function );
 
 		goto on_error;
@@ -1730,16 +1437,47 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 		 0 );
 	}
 #endif
-	xmlFree(
-	 xml_content );
+	if( libfvde_xml_plist_key_free(
+	     &xml_plist_key,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free PassphraseWrappedKEKStruct key.",
+		 function );
 
+		goto on_error;
+	}
+	if( libfvde_xml_plist_key_free(
+	     &xml_plist_array_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free crypto users array entry: %d.",
+		 function,
+		 passphrase_wrapped_kek_index );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
-	if( xml_content != NULL )
+	if( xml_plist_key != NULL )
 	{
-		xmlFree(
-		 xml_content );
+		libfvde_xml_plist_key_free(
+		 &xml_plist_key,
+		 NULL );
+	}
+	if( xml_plist_array_entry != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &xml_plist_array_entry,
+		 NULL );
 	}
 	if( *passphrase_wrapped_kek != NULL )
 	{
@@ -1763,12 +1501,9 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	xmlChar *xml_content                                        = NULL;
-	xmlNode *xml_node                                           = NULL;
+	libfvde_xml_plist_key_t *xml_plist_array_entry              = NULL;
+	libfvde_xml_plist_key_t *xml_plist_key                      = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_kek_wrapped_volume_key";
-	size_t xml_content_index                                    = 0;
-	size_t xml_content_length                                   = 0;
-	uint8_t node_index                                          = 0;
 
 	if( plist == NULL )
 	{
@@ -1783,13 +1518,13 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 	}
 	internal_plist = (libfvde_internal_encryption_context_plist_t *) plist;
 
-	if( internal_plist->xml_wrapped_volume_keys_node == NULL )
+	if( internal_plist->wrapped_volume_keys_key == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid plist - missing XML WrappedVolumeKeys key node.",
+		 "%s: invalid plist - missing XML plist wrapped volume keys key.",
 		 function );
 
 		return( -1 );
@@ -1827,226 +1562,61 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		return( -1 );
 	}
-	/* Find the next array element
-	 */
-	xml_node = internal_plist->xml_wrapped_volume_keys_node;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "array" ) == 0 )
-		{
-			break;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_is_array(
+	     internal_plist->wrapped_volume_keys_key,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML array element.",
+		 "%s: unable to determine if wrapped volume keys key contains an array.",
 		 function );
 
 		goto on_error;
 	}
-	/* Find the second dict element
-	 */
-	xml_node = xml_node->children;
-
-	node_index = 0;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		    (const xmlChar *) "dict" ) == 0 )
-		{
-			if( node_index == 1 )
-			{
-				break;
-			}
-			node_index++;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_array_entry_by_index(
+	     internal_plist->wrapped_volume_keys_key,
+	     1,
+	     &xml_plist_array_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML dict element.",
+		 "%s: unable to retrieve crypto users array entry: 1.",
 		 function );
 
 		goto on_error;
 	}
-	/* Get the key element that contains KEKWrappedVolumeKeyStruct
-	 */
-	xml_node = xml_node->children;
-
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
-		{
-			xml_content = xmlNodeGetContent(
-			               xml_node );
-
-			if( xmlStrcmp(
-			     xml_content,
-			     (const xmlChar *) "KEKWrappedVolumeKeyStruct" ) == 0 )
-			{
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-
-				break;
-			}
-			if( xml_content != NULL )
-			{
-				xmlFree(
-				 xml_content );
-
-				xml_content = NULL;
-			}
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
+	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	     xml_plist_array_entry,
+	     (uint8_t *) "KEKWrappedVolumeKeyStruct",
+	     25,
+	     &xml_plist_key,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML key element.",
+		 "%s: unable to retrieve KEKWrappedVolumeKeyStruct key.",
 		 function );
 
 		goto on_error;
 	}
-	xml_node = xml_node->next;
-
-	/* Ignore text nodes
-	 */
-	while( xml_node != NULL )
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "text" ) != 0 )
-		{
-			break;
-		}
-		xml_node = xml_node->next;
-	}
-	if( xml_node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML data element.",
-		 function );
-
-		goto on_error;
-	}
-	if( xmlStrcmp(
-	     xml_node->name,
-	     (const xmlChar *) "data" ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve XML data element.",
-		 function );
-
-		goto on_error;
-	}
-	xml_content = xmlNodeGetContent(
-	               xml_node );
-
-	if( xml_content == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve content of XML data element.",
-		 function );
-
-		goto on_error;
-	}
-	xml_content_length = xmlStrlen(
-	                      xml_content );
-
-	/* The base64 conversion function doesn't like an empty first line
-	 */
-	if( xml_content[ 0 ] == '\n' )
-	{
-		xml_content_index  += 1;
-		xml_content_length -= 1;
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: base64 encoded data:\n",
-		 function );
-		libcnotify_print_data(
-		 (uint8_t *) &( xml_content[ xml_content_index ] ),
-		 xml_content_length,
-		 0 );
-	}
-#endif
-	if( libuna_base64_stream_size_to_byte_stream(
-	     &( xml_content[ xml_content_index ] ),
-	     xml_content_length,
+	if( libfvde_xml_plist_key_get_value_data(
+	     xml_plist_key,
+	     kek_wrapped_volume_key,
 	     kek_wrapped_volume_key_size,
-	     LIBUNA_BASE64_VARIANT_ALPHABET_NORMAL | LIBUNA_BASE64_VARIANT_CHARACTER_LIMIT_NONE | LIBUNA_BASE64_VARIANT_PADDING_REQUIRED,
-	     LIBUNA_BASE64_FLAG_STRIP_WHITESPACE,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to determine size of base64 encoded data.",
-		 function );
-
-		goto on_error;
-	}
-	*kek_wrapped_volume_key = (uint8_t *) memory_allocate(
-	                                       sizeof( uint8_t ) * *kek_wrapped_volume_key_size );
-
-	if( *kek_wrapped_volume_key == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create KEK wrapped volume key.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_base64_stream_copy_to_byte_stream(
-	     &( xml_content[ xml_content_index ] ),
-	     xml_content_length,
-	     *kek_wrapped_volume_key,
-	     *kek_wrapped_volume_key_size,
-	     LIBUNA_BASE64_VARIANT_ALPHABET_NORMAL | LIBUNA_BASE64_VARIANT_CHARACTER_LIMIT_NONE | LIBUNA_BASE64_VARIANT_PADDING_REQUIRED,
-	     LIBUNA_BASE64_FLAG_STRIP_WHITESPACE,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy base64 encoded data to byte stream.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve kek wrapped volume key.",
 		 function );
 
 		goto on_error;
@@ -2063,18 +1633,46 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 		 0 );
 	}
 #endif
-	xmlFree(
-	 xml_content );
+	if( libfvde_xml_plist_key_free(
+	     &xml_plist_key,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free KEKWrappedVolumeKeyStruct key.",
+		 function );
 
-	xml_content = NULL;
+		goto on_error;
+	}
+	if( libfvde_xml_plist_key_free(
+	     &xml_plist_array_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free crypto users array entry: 1.",
+		 function );
 
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
-	if( xml_content != NULL )
+	if( xml_plist_key != NULL )
 	{
-		xmlFree(
-		 xml_content );
+		libfvde_xml_plist_key_free(
+		 &xml_plist_key,
+		 NULL );
+	}
+	if( xml_plist_array_entry != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &xml_plist_array_entry,
+		 NULL );
 	}
 	if( *kek_wrapped_volume_key != NULL )
 	{

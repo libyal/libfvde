@@ -128,6 +128,7 @@ int libfvde_xml_plist_free(
 	}
 	if( *plist != NULL )
 	{
+		/* The plist_xml_node, root_xml_node and dict_xml_node are referenced and freed elsewhere */
 		if( ( *plist )->xml_document != NULL )
 		{
 			xmlFreeDoc(
@@ -302,28 +303,43 @@ int libfvde_xml_plist_get_root_key(
 
 		return( -1 );
 	}
+	if( plist->root_xml_node == NULL )
+	{
+		return( 0 );
+	}
 	if( plist->dict_xml_node == NULL )
 	{
-		/* Find the main dict XML node
-		 */
-		if( plist->root_xml_node != NULL )
+		if( xmlStrcmp(
+		     plist->root_xml_node->name,
+		     (const xmlChar *) "dict" ) == 0 )
 		{
+			plist->dict_xml_node = plist->root_xml_node;
+		}
+		/* Ignore the plist XML node
+		 * <plist version="1.0">
+		 */
+		else if( xmlStrcmp(
+		          plist->root_xml_node->name,
+		          (const xmlChar *) "plist" ) == 0 )
+		{
+			/* TODO: determine plist version
+			 */
+			plist->plist_xml_node = xml_node;
+
 			xml_node = plist->root_xml_node->children;
 
-			/* Skip the plist XML node
-			 * <plist version="1.0">
+			/* Ignore text nodes
 			 */
-			if( ( xml_node != NULL )
-			 && ( xmlStrcmp(
-			       xml_node->name,
-			       (const xmlChar *) "plist" ) == 0 ) )
+			while( xml_node != NULL )
 			{
-				/* TODO: determine version
-				 */
+				if( xmlStrcmp(
+				     xml_node->name,
+				     (const xmlChar *) "text" ) != 0 )
+				{
+					break;
+				}
 				xml_node = xml_node->next;
 			}
-			/* TODO: check for comment in between plist and dict XML nodes?
-			 */
 			if( ( xml_node != NULL )
 			 && ( xmlStrcmp(
 			       xml_node->name,
@@ -340,7 +356,7 @@ int libfvde_xml_plist_get_root_key(
 	if( libfvde_xml_plist_key_initialize(
 	     key,
 	     plist->dict_xml_node,
-	     1,
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(

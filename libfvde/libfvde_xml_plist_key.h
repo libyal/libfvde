@@ -54,15 +54,42 @@ struct libfvde_xml_plist_key
 int libfvde_xml_plist_key_initialize(
      libfvde_xml_plist_key_t **key,
      xmlNode *xml_node,
-     uint8_t is_root,
+     uint8_t has_name,
      libcerror_error_t **error );
 
 int libfvde_xml_plist_key_free(
      libfvde_xml_plist_key_t **key,
      libcerror_error_t **error );
 
+int libfvde_xml_plist_key_is_array(
+     libfvde_xml_plist_key_t *key,
+     libcerror_error_t **error );
+
 int libfvde_xml_plist_key_is_dict(
      libfvde_xml_plist_key_t *key,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_key_get_value_data(
+     libfvde_xml_plist_key_t *key,
+     uint8_t **data,
+     size_t *data_size,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_key_get_value_integer(
+     libfvde_xml_plist_key_t *key,
+     uint64_t *value_64bit,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_key_get_value_string(
+     libfvde_xml_plist_key_t *key,
+     uint8_t **string,
+     size_t *string_size,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_key_get_array_entry_by_index(
+     libfvde_xml_plist_key_t *key,
+     int array_entry_index,
+     libfvde_xml_plist_key_t **array_entry,
      libcerror_error_t **error );
 
 int libfvde_xml_plist_key_get_sub_key_by_utf8_name(

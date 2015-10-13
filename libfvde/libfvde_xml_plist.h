@@ -43,6 +43,10 @@ struct libfvde_xml_plist
 	 */
         xmlDoc *xml_document;
 
+	/* The plist XML node
+	 */
+	xmlNode *plist_xml_node;
+
 	/* The root XML node
 	 */
 	xmlNode *root_xml_node;

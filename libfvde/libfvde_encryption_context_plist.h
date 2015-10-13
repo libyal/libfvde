@@ -34,6 +34,7 @@
 #include "libfvde_libcerror.h"
 #include "libfvde_types.h"
 #include "libfvde_xml_plist.h"
+#include "libfvde_xml_plist_key.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -59,17 +60,17 @@ struct libfvde_internal_encryption_context_plist
 	 */
 	libfvde_xml_plist_t *xml_plist;
 
-	/* The XML ConversionInfo key node
+        /* The XML plist conversion info key
 	 */
-	xmlNode *xml_conversion_info_node;
+	libfvde_xml_plist_key_t *conversion_info_key;
 
-	/* The XML CryptoUsers key node
+        /* The XML plist crypto users key
 	 */
-	xmlNode *xml_crypto_users_node;
+	libfvde_xml_plist_key_t *crypto_users_key;
 
-	/* The XML WrappedVolumeKeys key node
+        /* The XML plist wrapped volume keys key
 	 */
-	xmlNode *xml_wrapped_volume_keys_node;
+	libfvde_xml_plist_key_t *wrapped_volume_keys_key;
 };
 
 LIBFVDE_EXTERN \

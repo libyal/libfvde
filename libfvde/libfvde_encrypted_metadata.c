@@ -25,9 +25,6 @@
 #include <memory.h>
 #include <types.h>
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-
 #include "libfvde_checksum.h"
 #include "libfvde_definitions.h"
 #include "libfvde_encrypted_metadata.h"
@@ -43,6 +40,8 @@
 #include "libfvde_libfvalue.h"
 #include "libfvde_metadata_block.h"
 #include "libfvde_password.h"
+#include "libfvde_xml_plist.h"
+#include "libfvde_xml_plist_key.h"
 
 #include "fvde_metadata.h"
 
@@ -669,20 +668,18 @@ int libfvde_encrypted_metadata_read_type_0x001a(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	xmlChar *xml_content                               = NULL;
-	xmlDoc *xml_document                               = NULL;
-	xmlNode *logical_volume_family_identifier_xml_node = NULL;
-	xmlNode *logical_volume_size_xml_node              = NULL;
-	xmlNode *xml_node                                  = NULL;
-	xmlNode *xml_root_node                             = NULL;
-	const uint8_t *xml_plist_data                      = NULL;
-	static char *function                              = "libfvde_encrypted_metadata_read_type_0x001a";
-	size_t xml_content_length                          = 0;
-	size_t xml_length                                  = 0;
-	uint32_t compressed_xml_plist_data_size            = 0;
-	uint32_t stored_xml_plist_data_offset              = 0;
-	uint32_t stored_xml_plist_data_size                = 0;
-	uint32_t uncompressed_xml_plist_data_size          = 0;
+	libfvde_xml_plist_t *xml_plist            = NULL;
+	libfvde_xml_plist_key_t *root_key         = NULL;
+	libfvde_xml_plist_key_t *xml_plist_key    = NULL;
+	const uint8_t *xml_plist_data             = NULL;
+	uint8_t *string                           = NULL;
+	static char *function                     = "libfvde_encrypted_metadata_read_type_0x001a";
+	size_t string_size                        = 0;
+	size_t xml_length                         = 0;
+	uint32_t compressed_xml_plist_data_size   = 0;
+	uint32_t stored_xml_plist_data_offset     = 0;
+	uint32_t stored_xml_plist_data_size       = 0;
+	uint32_t uncompressed_xml_plist_data_size = 0;
 
 	if( encrypted_metadata == NULL )
 	{
@@ -817,7 +814,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		xml_length = libcstring_narrow_string_length(
 			      (char *) xml_plist_data );
 
-		if( xml_length > (size_t) INT_MAX )
+		if( xml_length > (size_t) ( INT_MAX - 1 ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -828,149 +825,77 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		xml_document = xmlReadMemory(
-				(char *) xml_plist_data,
-				(int) xml_length,
-				"noname.xml",
-				NULL,
-				0 );
-
-		if( xml_document == NULL )
+		if( libfvde_xml_plist_initialize(
+		     &xml_plist,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create XML document.",
+			 "%s: unable to create XML plist.",
 			 function );
 
 			goto on_error;
 		}
-		xml_root_node = xmlDocGetRootElement(
-		                 xml_document );
-
-		if( xml_root_node == NULL )
+		if( libfvde_xml_plist_copy_from_byte_stream(
+		     xml_plist,
+		     xml_plist_data,
+		     xml_length + 1,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML root node.",
+			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+			 "%s: unable to copy XML plist from byte stream.",
 			 function );
 
 			goto on_error;
 		}
 		/* Find the main dict element
 		 */
-		xml_node = xml_root_node->children;
-
-		if( xmlStrcmp(
-		     xml_root_node->name,
-		     (const xmlChar *) "dict" ) != 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_OPEN_FAILED,
-			 "%s: unable to retrieve XML dict root element.",
-			 function );
-
-			goto on_error;
-		}
-		xml_node = xml_root_node->children;
-
-		while( xml_node != NULL )
-		{
-			if( xmlStrcmp(
-			     xml_node->name,
-			     (const xmlChar *) "key" ) == 0 )
-			{
-				xml_content = xmlNodeGetContent(
-					       xml_node );
-
-				if( xmlStrcmp(
-				     xml_content,
-				     (const xmlChar *) "com.apple.corestorage.lv.familyUUID" ) == 0 )
-				{
-					logical_volume_family_identifier_xml_node = xml_node;
-				}
-				else if( xmlStrcmp(
-				          xml_content,
-				          (const xmlChar *) "com.apple.corestorage.lv.size" ) == 0 )
-				{
-					logical_volume_size_xml_node = xml_node;
-				}
-				if( xml_content != NULL )
-				{
-					xmlFree(
-					 xml_content );
-
-					xml_content = NULL;
-				}
-			}
-			xml_node = xml_node->next;
-		}
-		/* Key element that contains com.apple.corestorage.lv.familyUUID
-		 */
-		if( logical_volume_family_identifier_xml_node == NULL )
+		if( libfvde_xml_plist_get_root_key(
+		     xml_plist,
+		     &root_key,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML key element: com.apple.corestorage.lv.familyUUID.",
+			 "%s: unable to retrieve root key.",
 			 function );
 
 			goto on_error;
 		}
-		xml_node = logical_volume_family_identifier_xml_node->next;
-
-		/* Ignore text nodes
-		 */
-		while( xml_node != NULL )
-		{
-			if( xmlStrcmp(
-			     xml_node->name,
-			     (const xmlChar *) "text" ) != 0 )
-			{
-				break;
-			}
-			xml_node = xml_node->next;
-		}
-		if( xml_node == NULL )
+		if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+		     root_key,
+		     (uint8_t *) "com.apple.corestorage.lv.familyUUID",
+		     35,
+		     &xml_plist_key,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML string element.",
+			 "%s: unable to retrieve com.apple.corestorage.lv.familyUUID key.",
 			 function );
 
 			goto on_error;
 		}
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "string" ) != 0 )
+		if( libfvde_xml_plist_key_get_value_string(
+		     xml_plist_key,
+		     &string,
+		     &string_size,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML string element.",
-			 function );
-
-			goto on_error;
-		}
-		xml_content = xmlNodeGetContent(
-			       xml_node );
-
-		if( xml_content == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve content of XML string element.",
+			 "%s: unable to retrieve logical volume family identifier.",
 			 function );
 
 			goto on_error;
@@ -981,15 +906,13 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			libcnotify_printf(
 			 "%s: logical volume family identifier\t: %s\n",
 			 function,
-			 xml_content );
+			 string );
 		}
 #endif
-		xml_content_length = libcstring_narrow_string_length(
-				      (char *) xml_content );
-
+/* TODO move to libfvde_xml_plist_key_get_value_uuid */
 		if( libfvde_encrypted_metadata_uuid_string_copy_to_byte_stream(
-		     (char *) xml_content,
-		     xml_content_length,
+		     (char *) string,
+		     string_size - 1,
 		     encrypted_metadata->logical_volume_family_identifier,
 		     16,
 		     error ) != 1 )
@@ -1003,72 +926,50 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		xmlFree(
-		 xml_content );
+		memory_free(
+		 string );
 
-		xml_content = NULL;
+		string = NULL;
 
-		/* Key element that contains com.apple.corestorage.lv.size
-		 */
-		if( logical_volume_size_xml_node == NULL )
+		if( libfvde_xml_plist_key_free(
+		     &xml_plist_key,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML key element: com.apple.corestorage.lv.size.",
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML plist com.apple.corestorage.lv.familyUUID key.",
 			 function );
 
 			goto on_error;
 		}
-		xml_node = logical_volume_size_xml_node->next;
-
-		/* Ignore text nodes
-		 */
-		while( xml_node != NULL )
-		{
-			if( xmlStrcmp(
-			     xml_node->name,
-			     (const xmlChar *) "text" ) != 0 )
-			{
-				break;
-			}
-			xml_node = xml_node->next;
-		}
-		if( xml_node == NULL )
+		if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+		     root_key,
+		     (uint8_t *) "com.apple.corestorage.lv.size",
+		     29,
+		     &xml_plist_key,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML integer element.",
+			 "%s: unable to retrieve com.apple.corestorage.lv.size key.",
 			 function );
 
 			goto on_error;
 		}
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "integer" ) != 0 )
+		if( libfvde_xml_plist_key_get_value_integer(
+		     xml_plist_key,
+		     (uint64_t *) &( encrypted_metadata->logical_volume_size ),
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve XML integer element.",
-			 function );
-
-			goto on_error;
-		}
-		xml_content = xmlNodeGetContent(
-			       xml_node );
-
-		if( xml_content == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve content of XML integer element.",
+			 "%s: unable to retrieve logical volume size.",
 			 function );
 
 			goto on_error;
@@ -1077,40 +978,37 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: logical volume size\t\t: %s\n",
+			 "%s: logical volume size\t\t: %" PRIu64 "\n",
 			 function,
-			 xml_content );
+			 encrypted_metadata->logical_volume_size );
 		}
 #endif
-		xml_content_length = libcstring_narrow_string_length(
-				      (char *) xml_content );
-
-		if( libfvalue_utf8_string_copy_to_integer(
-		     xml_content,
-		     xml_content_length,
-		     (uint64_t *) &( encrypted_metadata->logical_volume_size ),
-		     64,
-		     LIBFVALUE_INTEGER_FORMAT_TYPE_HEXADECIMAL | LIBFVALUE_INTEGER_FORMAT_FLAG_UNSIGNED,
+		if( libfvde_xml_plist_key_free(
+		     &xml_plist_key,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy logical volume size string to integer.",
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML plist com.apple.corestorage.lv.size key.",
 			 function );
 
 			goto on_error;
 		}
-		xmlFree(
-		 xml_content );
+		if( libfvde_xml_plist_free(
+		     &xml_plist,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML plist.",
+			 function );
 
-		xml_content = NULL;
-
-		xmlFreeDoc(
-		 xml_document );
-
-		xml_document = NULL;
+			goto on_error;
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1122,15 +1020,22 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	return( 1 );
 
 on_error:
-	if( xml_content != NULL )
+	if( string != NULL )
 	{
-		xmlFree(
-		 xml_content );
+		memory_free(
+		 string );
 	}
-	if( xml_document != NULL )
+	if( xml_plist_key != NULL )
 	{
-		xmlFreeDoc(
-		 xml_document );
+		libfvde_xml_plist_key_free(
+		 &xml_plist_key,
+		 NULL );
+	}
+	if( xml_plist != NULL )
+	{
+		libfvde_xml_plist_free(
+		 &xml_plist,
+		 NULL );
 	}
 	return( -1 );
 }
@@ -1706,6 +1611,7 @@ int libfvde_encrypted_metadata_read(
 
 		calculated_block_number += 1;
 	}
+/* TODO only use when needed
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1721,6 +1627,7 @@ int libfvde_encrypted_metadata_read(
 		}
 	}
 #endif
+*/
 	if( libfvde_metadata_block_free(
 	     &metadata_block,
 	     error ) != 1 )

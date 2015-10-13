@@ -1,4 +1,6 @@
 TODO
+* complete libfvde_xml_plist
+  - rename XML plist key to element
 * add support for block chains 0x0019, 0x0024
 * add support from compressed XML plist 0x0019
 * print metadata block offset for debugging
@@ -18,7 +20,6 @@ TODO
   first 0x001d or 0x0505 block? or compare values?
 
 * API add volume identifier functions
-* complete libfvde_xml_plist
 
 * add handling of FVDE volumes with corrupt metadata, e.g. file header
 
@@ -50,6 +51,15 @@ Future considerations:
 * how does tie into CS volume management
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
+
+20151013
+* worked on XML plist
+
+20151012
+* worked on XML plist
+
+20151011
+* worked on format support
 
 20150926
 * added ps1 scripts
