@@ -364,7 +364,8 @@ Including the metadata block header
 | 156 | 4 | | Volume groups descriptor offset
 | 160 | 4 | | XML offset
 | 164 | 4 | | XML size
-| 168 | 4 | | [yellow-background]*XML size copy*
+| 168 | 4 | | [yellow-background]*XML size copy* +
+[yellow-background]*Could this be used for compression similar as for metadata block type 0x0019?*
 | 172 | 4 | | [yellow-background]*Unknown*
 | 176 | 8 | | Physical volume number of blocks +
 [yellow-background]*Or block number of physical volume backup volume header*
@@ -517,6 +518,8 @@ Consist of an array containing strings of UUIDs
 
 [yellow-background]*Same as XML plist data in block 0x0012*
 
+[yellow-background]*Is sequence number 3 the correct one for the LV size?*
+
 == Encrypted metadata (section)
 The encrypted metadata is encrypted with:
 
@@ -606,7 +609,7 @@ The XML plist data consists of a single dict containing the following keys.
 Consists of a 32-bits integer
 | com.apple.corestorage.lvg.uuid | The logical volume group identifier +
 Consists of a string containing an UUID
-| com.apple.corestorage.lvg. name | Name of the logical volume group +
+| com.apple.corestorage.lvg.name | Name of the logical volume group +
 Contains a string
 | com.apple.corestorage.pv.uuid | The physical volume identifier +
 Consists of a string containing an UUID or "internal error"

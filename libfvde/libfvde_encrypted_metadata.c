@@ -761,7 +761,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		 stored_xml_plist_data_offset );
 
 		libcnotify_printf(
-		 "%s: stored XML plist data size\t: %" PRIu32 "\n",
+		 "%s: stored XML plist data size\t\t: %" PRIu32 "\n",
 		 function,
 		 stored_xml_plist_data_size );
 	}
