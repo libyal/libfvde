@@ -1162,6 +1162,103 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 	return( 1 );
 }
 
+/* Reads the encrypted metadata block type 0x0021
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0021(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     libfvde_io_handle_t *io_handle,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error )
+{
+	static char *function      = "libfvde_encrypted_metadata_read_type_0x0021";
+	uint32_t number_of_blocks  = 0;
+	uint16_t number_of_entries = 0;
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid block data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size < 22 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: block data size value too small.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_to_uint16_little_endian(
+	 &( block_data[ 16 ] ),
+	 number_of_entries );
+
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 18 ] ),
+	 number_of_blocks );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: number of entries\t\t\t: %" PRIu16 "\n",
+		 function,
+		 number_of_entries );
+
+		libcnotify_printf(
+		 "%s: logical volume number of blocks\t: %" PRIu32 "\n",
+		 function,
+		 number_of_blocks );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	return( 1 );
+}
+
 /* Reads the encrypted metadata block type 0x0505
  * Returns 1 if successful or -1 on error
  */
@@ -1580,6 +1677,15 @@ int libfvde_encrypted_metadata_read(
 
 					case 0x001d:
 						result = libfvde_encrypted_metadata_read_type_0x001d(
+							  encrypted_metadata,
+							  io_handle,
+							  metadata_block->data,
+							  metadata_block->data_size,
+							  error );
+						break;
+
+					case 0x0021:
+						result = libfvde_encrypted_metadata_read_type_0x0021(
 							  encrypted_metadata,
 							  io_handle,
 							  metadata_block->data,

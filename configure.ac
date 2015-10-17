@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20151013],
+ [20151017],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -134,6 +134,9 @@ AX_COMMON_CHECK_ENABLE_VERBOSE_OUTPUT
 dnl Check if libfvde should be build with debug output
 AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
 
+dnl Check if libfvde python bindings (pyfvde) should be build
+AX_PYTHON_CHECK_ENABLE
+
 dnl Headers included in various places
 AC_CHECK_HEADERS([stdarg.h varargs.h])
 
@@ -227,6 +230,7 @@ AC_CONFIG_FILES([libcaes/Makefile])
 AC_CONFIG_FILES([libfvde/Makefile])
 AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([fvdetools/Makefile])
+AC_CONFIG_FILES([pyfvde/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 AC_CONFIG_FILES([manuals/Makefile])
@@ -282,6 +286,7 @@ Features:
    Multi-threading support:                   $ac_cv_libcthreads_multi_threading
    Wide character type support:               $ac_cv_enable_wide_character_type
    fvdetools are build as static executables: $ac_cv_enable_static_executables
+   Python (pyfvde) support:                   $ac_cv_enable_python
    Verbose output:                            $ac_cv_enable_verbose_output
    Debug output:                              $ac_cv_enable_debug_output
 ]);

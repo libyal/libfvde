@@ -2,8 +2,9 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
 	@LIBCSTRING_CPPFLAGS@ \
-	@LIBCDATA_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
+	@LIBCTHREADS_CPPFLAGS@ \
+	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
 	@LIBCNOTIFY_CPPFLAGS@ \
 	@LIBCSPLIT_CPPFLAGS@ \
@@ -15,6 +16,8 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
 	@LIBFVALUE_CPPFLAGS@ \
+	@ZLIB_CPPFLAGS@ \
+	@LIBCRYPTO_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@LIBCAES_CPPFLAGS@ \
 	@LIBXML2_CPPFLAGS@
@@ -43,6 +46,7 @@ libfvde_la_SOURCES = \
 	libfvde_libclocale.h \
 	libfvde_libcnotify.h \
 	libfvde_libcstring.h \
+	libfvde_libcthreads.h \
 	libfvde_libfcache.h \
 	libfvde_libfdata.h \
 	libfvde_libfguid.h \
@@ -64,6 +68,7 @@ libfvde_la_SOURCES = \
 libfvde_la_LIBADD = \
 	@LIBCSTRING_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
+	@LIBCTHREADS_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -76,11 +81,13 @@ libfvde_la_LIBADD = \
 	@LIBFDATA_LIBADD@ \
 	@LIBFGUID_LIBADD@ \
 	@LIBFVALUE_LIBADD@ \
+	@ZLIB_LIBADD@ \
 	@LIBHMAC_LIBADD@ \
 	@LIBCAES_LIBADD@ \
-	@LIBXML2_LIBADD@ \
 	@LIBCRYPTO_LIBADD@ \
-	@LIBDL_LIBADD@
+	@LIBXML2_LIBADD@ \
+	@LIBDL_LIBADD@ \
+	@PTHREAD_LIBADD@
 
 libfvde_la_LDFLAGS = -no-undefined -version-info 1:0:0
 

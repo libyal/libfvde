@@ -261,6 +261,14 @@ int libfvde_volume_close(
      libfvde_volume_t *volume,
      libfvde_error_t **error );
 
+/* Determines if the volume is locked
+ * Returns 1 if locked, 0 if not or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_is_locked(
+     libfvde_volume_t *volume,
+     libfvde_error_t **error );
+
 /* Reads data at the current offset into a buffer
  * Returns the number of bytes read or -1 on error
  */

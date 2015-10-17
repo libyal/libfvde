@@ -23,6 +23,7 @@ SUBDIRS = \
 	libfvde \
 	libcsystem \
 	fvdetools \
+	pyfvde \
 	po \
 	manuals \
 	tests \
@@ -48,6 +49,9 @@ GETTEXT_FILES = \
 PKGCONFIG_FILES = \
 	libfvde.pc.in
 
+SETUP_PY_FILES = \
+	setup.py
+
 SPEC_FILES = \
 	libfvde.spec \
 	libfvde.spec.in
@@ -56,6 +60,7 @@ EXTRA_DIST = \
 	$(DPKG_FILES) \
 	$(GETTEXT_FILES) \
 	$(PKGCONFIG_FILES) \
+	$(SETUP_PY_FILES) \
 	$(SPEC_FILES)
 
 MAINTAINERCLEANFILES = \
@@ -124,6 +129,7 @@ splint:
 	(cd $(srcdir)/libfvde && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/fvdetools && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/pyfvde && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/tests && $(MAKE) splint $(AM_MAKEFLAGS))
 

@@ -33,6 +33,7 @@
 #include "libfvde_keyring.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
+#include "libfvde_libcthreads.h"
 #include "libfvde_libfcache.h"
 #include "libfvde_libfdata.h"
 #include "libfvde_libuna.h"
@@ -114,6 +115,16 @@ struct libfvde_internal_volume
 	/* Value to indicate if the file IO handle was opened inside the library
 	 */
 	uint8_t file_io_handle_opened_in_library;
+
+	/* Value to indicate if the volume is locked
+	 */
+	uint8_t is_locked;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	/* The read/write lock
+	 */
+	libcthreads_read_write_lock_t *read_write_lock;
+#endif
 };
 
 LIBFVDE_EXTERN \
@@ -172,6 +183,18 @@ int libfvde_volume_open_read_keys_from_encrypted_metadata(
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
+int libfvde_volume_is_locked(
+     libfvde_volume_t *volume,
+     libcerror_error_t **error );
+
+ssize_t libfvde_internal_volume_read_buffer_from_file_io_handle(
+         libfvde_internal_volume_t *internal_volume,
+         libbfio_handle_t *file_io_handle,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
 ssize_t libfvde_volume_read_buffer(
          libfvde_volume_t *volume,
          void *buffer,
@@ -204,6 +227,12 @@ ssize_t libfvde_volume_write_buffer_at_offset(
          libcerror_error_t **error );
 
 #endif /* TODO_WRITE_SUPPORT */
+
+off64_t libfvde_internal_volume_seek_offset(
+         libfvde_internal_volume_t *internal_volume,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
 off64_t libfvde_volume_seek_offset(

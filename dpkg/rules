@@ -12,7 +12,7 @@ export DH_OPTIONS
 
 .PHONY: override_dh_auto_configure
 override_dh_auto_configure:
-	dh_auto_configure -- CFLAGS="-g"
+	dh_auto_configure -- --enable-python CFLAGS="-g"
 
 .PHONY: override_dh_auto_test
 override_dh_auto_test:
@@ -32,7 +32,9 @@ override_dh_install:
 	# Create the libfvde-tools package.
 	dh_install "debian/tmp/usr/bin/*" -p libfvde-tools
 	dh_install "debian/tmp/usr/share/man/man1/*" -p libfvde-tools
-	# The libfvde-dbg package is created by dh_strip.
+	# Create the libfvde-python package.
+	dh_install -X"*_d.so" "debian/tmp/usr/lib/python*/*" -p libfvde-python
+	# The libfvde-dbg and libfvde-python-dbg packages are created by dh_strip.
 	dh_install
 
 .PHONY: override_dh_installmenu
@@ -81,6 +83,7 @@ override_dh_pysupport:
 override_dh_strip:
 ifeq (,$(filter nostrip,$(DEB_BUILD_OPTIONS)))
 	dh_strip -plibfvde --dbg-package=libfvde-dbg
+	dh_strip -plibfvde-python --dbg-package=libfvde-python-dbg
 endif
 
 .PHONY: override_dh_shlibdeps

@@ -1,8 +1,11 @@
 TODO
+* pyfvde
+  - pyfvde_volume_get_size replace by pyfvde_volume_get_logical_volume_size ?
 * complete libfvde_xml_plist
   - rename XML plist key to element
   - improve error reporting regardin not being able to read the plist
     versus not being able to read specific elements.
+* read 0x0012 and 0x001d/0x0505 pairs and compare sequence numbers
 * add support for block chains 0x0019, 0x0024
 * add support from compressed XML plist 0x0019
 * print metadata block offset for debugging
@@ -11,15 +14,13 @@ TODO
 * Make sure to detect PassphraseWrappedKEKStruct in different locations within
   the XML
 * add password keep
-* remove deprecated function
+* remove deprecated functions
   - libfvde_volume_read_random
 * double check 0x0505 findings with debug logs
 * git version
   - make sure dependent local libs are in git
   - fix synclibs.sh for libfvalue Makefile.am
 * merge reading metadata and encrypted metadata ?
-* logical volume size: get from com.apple.corestorage.lv.size instead of
-  first 0x001d or 0x0505 block? or compare values?
 
 * API add volume identifier functions
 
@@ -53,6 +54,12 @@ Future considerations:
 * how does tie into CS volume management
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
+
+20151017
+* worked on Python bindings
+
+20151013
+* worked on format support
 
 20151013
 * worked on XML plist

@@ -37,10 +37,10 @@ Work in progress:
 * removable media volume - decrypted
 * extend CoreStorage volume support
 * partial encrypted volumes
+* Python bindings
 
 Planned:
 * Windows support
-* Python bindings
 * Dokan support
 
 For more information see:
