@@ -22,6 +22,8 @@ MSVSCPP_FILES = \
 	libfvde/libfvde.vcproj \
 	libhmac/libhmac.vcproj \
 	libuna/libuna.vcproj \
+	pyfvde/pyfvde.vcproj \
+	zlib/zlib.vcproj \
 	libfvde.sln
 
 SCRIPT_FILES = \

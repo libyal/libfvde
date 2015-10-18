@@ -86,6 +86,12 @@ int libfvde_xml_plist_key_get_value_string(
      size_t *string_size,
      libcerror_error_t **error );
 
+int libfvde_xml_plist_key_value_uuid_string_copy_to_byte_stream(
+     libfvde_xml_plist_key_t *key,
+     uint8_t *byte_stream,
+     size_t byte_stream_size,
+     libcerror_error_t **error );
+
 int libfvde_xml_plist_key_get_array_entry_by_index(
      libfvde_xml_plist_key_t *key,
      int array_entry_index,

@@ -985,6 +985,9 @@ int libfvde_io_handle_read_logical_volume_header(
 {
 	libfvde_sector_data_t *sector_data = NULL;
 	static char *function              = "libfvde_io_handle_read_logical_volume_header";
+	uint32_t block_size                = 0;
+	uint32_t number_of_blocks          = 0;
+	uint16_t volume_signature          = 0;
 
 	if( io_handle == NULL )
 	{
@@ -1037,6 +1040,39 @@ int libfvde_io_handle_read_logical_volume_header(
 		 function );
 
 		goto on_error;
+	}
+	byte_stream_copy_to_uint16_big_endian(
+	 sector_data->data,
+	 volume_signature );
+
+	if( ( volume_signature == 0x482b )
+	 || ( volume_signature == 0x4858 ) )
+	{
+		byte_stream_copy_to_uint32_big_endian(
+		 &( ( sector_data->data )[ 40 ] ),
+		 block_size );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 &( ( sector_data->data )[ 44 ] ),
+		 number_of_blocks );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: block size\t\t: %" PRIu32 "\n",
+			 function,
+			 block_size );
+
+			libcnotify_printf(
+			 "%s: number of blocks\t\t: %" PRIu32 "\n",
+			 function,
+			 number_of_blocks );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 	}
 	if( libfvde_sector_data_free(
 	     &sector_data,

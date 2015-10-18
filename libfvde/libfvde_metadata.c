@@ -32,6 +32,8 @@
 #include "libfvde_libcnotify.h"
 #include "libfvde_metadata.h"
 #include "libfvde_metadata_block.h"
+#include "libfvde_xml_plist.h"
+#include "libfvde_xml_plist_key.h"
 
 #include "fvde_metadata.h"
 
@@ -148,13 +150,19 @@ int libfvde_metadata_read_type_0x0011(
      size_t block_data_size,
      libcerror_error_t **error )
 {
+	libfvde_xml_plist_t *xml_plist           = NULL;
+	libfvde_xml_plist_key_t *root_key        = NULL;
+	libfvde_xml_plist_key_t *xml_plist_key   = NULL;
 	const uint8_t *xml_plist_data            = NULL;
 	static char *function                    = "libfvde_metadata_read_type_0x0011";
+	size_t xml_length                        = 0;
 	uint32_t metadata_size                   = 0;
 	uint32_t volume_groups_descriptor_offset = 0;
 	uint32_t xml_offset                      = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
+	uint8_t *string                          = NULL;
+	size_t string_size                       = 0;
 	uint64_t value_64bit                     = 0;
 	uint32_t value_32bit                     = 0;
 #endif
@@ -364,7 +372,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: value mismatch for metadata size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( ( volume_groups_descriptor_offset < 248 )
 	 || ( volume_groups_descriptor_offset > io_handle->metadata_size ) )
@@ -376,7 +384,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: invalid volume groups descriptor offset value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -463,7 +471,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: invalid XML offset value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	/* The offset is relative to the start of the metadata block */
 	xml_plist_data = &( block_data[ xml_offset - 64 ] );
@@ -483,6 +491,148 @@ int libfvde_metadata_read_type_0x0011(
 			 (char *) xml_plist_data );
 		}
 #endif
+/* TODO for now determine the XML string length */
+/* TODO refactor this to a separate function */
+		xml_length = libcstring_narrow_string_length(
+			      (char *) xml_plist_data );
+
+		if( xml_length > (size_t) ( INT_MAX - 1 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid XML length value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_xml_plist_initialize(
+		     &xml_plist,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create XML plist.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_xml_plist_copy_from_byte_stream(
+		     xml_plist,
+		     xml_plist_data,
+		     xml_length + 1,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+			 "%s: unable to copy XML plist from byte stream.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_xml_plist_get_root_key(
+		     xml_plist,
+		     &root_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve root key.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+		     root_key,
+		     (uint8_t *) "com.apple.corestorage.lvg.uuid",
+		     30,
+		     &xml_plist_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve com.apple.corestorage.lvg.uuid key.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			if( libfvde_xml_plist_key_get_value_string(
+			     xml_plist_key,
+			     &string,
+			     &string_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve logical volume group identifier.",
+				 function );
+
+				goto on_error;
+			}
+			libcnotify_printf(
+			 "%s: logical volume group identifier\t\t: %s\n",
+			 function,
+			 string );
+
+			memory_free(
+			 string );
+
+			string = NULL;
+		}
+#endif
+		if( libfvde_xml_plist_key_free(
+		     &xml_plist_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML plist com.apple.corestorage.lvg.uuid key.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_xml_plist_key_free(
+		     &root_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML root key.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_xml_plist_free(
+		     &xml_plist,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML plist.",
+			 function );
+
+			goto on_error;
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -497,6 +647,34 @@ int libfvde_metadata_read_type_0x0011(
 	metadata->secondary_encrypted_metadata_offset *= io_handle->block_size;
 
 	return( 1 );
+
+on_error:
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( string != NULL )
+	{
+		memory_free(
+		 string );
+	}
+#endif
+	if( xml_plist_key != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &xml_plist_key,
+		 NULL );
+	}
+	if( root_key != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &root_key,
+		 NULL );
+	}
+	if( xml_plist != NULL )
+	{
+		libfvde_xml_plist_free(
+		 &xml_plist,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Reads the metadata

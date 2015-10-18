@@ -95,13 +95,6 @@ struct libfvde_encrypted_metadata
 	uint8_t logical_volume_size_value_is_set;
 };
 
-int libfvde_encrypted_metadata_uuid_string_copy_to_byte_stream(
-     const char *string,
-     size_t string_length,
-     uint8_t *byte_stream,
-     size_t byte_stream_size,
-     libcerror_error_t **error );
-
 int libfvde_encrypted_metadata_initialize(
      libfvde_encrypted_metadata_t **encrypted_metadata,
      libcerror_error_t **error );
@@ -128,6 +121,12 @@ int libfvde_encrypted_metadata_read_type_0x0013(
      size_t block_data_size,
      libcerror_error_t **error );
 
+int libfvde_encrypted_metadata_read_type_0x0016(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
 int libfvde_encrypted_metadata_read_type_0x0019(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
@@ -142,14 +141,30 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 int libfvde_encrypted_metadata_read_type_0x001d(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     libfvde_io_handle_t *io_handle,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read_type_0x0021(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     libfvde_io_handle_t *io_handle,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_read_type_0x0022(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_read_type_0x0305(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_read_type_0x0405(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error );

@@ -1,6 +1,9 @@
 TODO
+* libfvde
+  - finish is locked
 * pyfvde
   - pyfvde_volume_get_size replace by pyfvde_volume_get_logical_volume_size ?
+  - add functionality to set encrypted context plist
 * complete libfvde_xml_plist
   - rename XML plist key to element
   - improve error reporting regardin not being able to read the plist
@@ -10,6 +13,7 @@ TODO
 * add support from compressed XML plist 0x0019
 * print metadata block offset for debugging
 * check for partial encrypted volumes
+* debug print block type description for 0x0405 metadata
 
 * Make sure to detect PassphraseWrappedKEKStruct in different locations within
   the XML
@@ -54,6 +58,9 @@ Future considerations:
 * how does tie into CS volume management
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
+
+20151018
+* worked on format support
 
 20151017
 * worked on Python bindings

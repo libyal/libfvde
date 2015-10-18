@@ -52,92 +52,6 @@ const uint32_t additional_offset_encrypted_volume_start = 80;
 const uint8_t libfvde_encrypted_metadata_wrapped_kek_initialization_vector[ 8 ] = \
 	{ 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6 };
 
-/* Copies the UUID string to a byte stream
- * Returns 1 if successful or -1 on error
- */
-int libfvde_encrypted_metadata_uuid_string_copy_to_byte_stream(
-     const char *string,
-     size_t string_length,
-     uint8_t *byte_stream,
-     size_t byte_stream_size,
-     libcerror_error_t **error )
-{
-	libfguid_identifier_t *guid = NULL;
-	static char *function       = "libfvde_encrypted_metadata_uuid_string_copy_to_byte_stream";
-	int result                  = 0;
-
-	if( libfguid_identifier_initialize(
-	     &guid,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create GUID.",
-		 function );
-
-		goto on_error;
-	}
-	result = libfguid_identifier_copy_from_utf8_string(
-		  guid,
-		  (uint8_t *) string,
-		  string_length,
-		  LIBFGUID_STRING_FORMAT_FLAG_USE_MIXED_CASE,
-		  error );
-
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy GUID from string.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfguid_identifier_copy_to_byte_stream(
-	     guid,
-	     byte_stream,
-	     byte_stream_size,
-	     LIBFGUID_ENDIAN_BIG,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy GUID to byte stream.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfguid_identifier_free(
-	     &guid,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free GUID.",
-		 function );
-
-		goto on_error;
-	}
-	return( 1 );
-
-on_error:
-	if( guid != NULL )
-	{
-		libfguid_identifier_free(
-		 &guid,
-		 NULL );
-	}
-	return( -1 );
-}
-
 /* Creates encrypted metadata
  * Make sure the value encrypted_metadata is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
@@ -313,7 +227,7 @@ int libfvde_encrypted_metadata_read_type_0x0012(
 
 		return( -1 );
 	}
-	if( block_data_size < 48 )
+	if( block_data_size < 54 )
 	{
 		libcerror_error_set(
 		 error,
@@ -523,6 +437,125 @@ on_error:
 #endif
 }
 
+/* Reads the encrypted metadata block type 0x0016
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0016(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error )
+{
+	static char *function      = "libfvde_encrypted_metadata_read_type_0x0016";
+	size_t block_data_offset   = 0;
+	uint32_t entry_index       = 0;
+	uint32_t number_of_entries = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint64_t value_64bit       = 0;
+	uint32_t value_32bit       = 0;
+#endif
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid block data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size < 56 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: block data size value too small.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 0 ] ),
+	 number_of_entries );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: number of entries\t\t: %" PRIu32 "\n",
+		 function,
+		 number_of_entries );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	block_data_offset = 4;
+
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d unknown1\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %02d unknown2\t\t: %" PRIu32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
+		}
+#endif
+		block_data_offset += 12;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	return( 1 );
+}
+
 /* Reads the encrypted metadata block type 0x0019
  * Returns 1 if successful or -1 on error
  */
@@ -537,6 +570,10 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 	uint32_t xml_plist_data_offset = 0;
 	uint32_t xml_plist_data_size   = 0;
 	int result                     = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint64_t value_64bit           = 0;
+#endif
 
 	if( encrypted_metadata == NULL )
 	{
@@ -590,11 +627,43 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 	 &( block_data[ 52 ] ),
 	 xml_plist_data_size );
 
-/* TODO bounds check */
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 0 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown1\t\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 0 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown2\t\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 16 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown3\t\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 24 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown4\t\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
+
+/* TODO add more values */
+
 		libcnotify_printf(
 		 "%s: XML plist data offset\t: 0x%08" PRIx32 "\n",
 		 function,
@@ -606,6 +675,29 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 		 xml_plist_data_size );
 	}
 #endif
+	if( ( xml_plist_data_offset < 64 )
+	 || ( xml_plist_data_offset >= block_data_size ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid XML plist data offset value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( xml_plist_data_size > ( block_data_size - xml_plist_data_offset ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid XML plist data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	xml_plist_data = &( block_data[ xml_plist_data_offset - 64 ] );
 
 	if( ( xml_plist_data[ 0 ] == (uint8_t) '<' )
@@ -620,14 +712,14 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 			libcnotify_printf(
 			 "%s: XML:\n%s\n",
 			 function,
-			 (char *) &( block_data[ xml_plist_data_offset - 64 ] ) );
+			 (char *) xml_plist_data );
 		}
 #endif
 		if( encrypted_metadata->encryption_context_plist_file_is_set == 0 )
 		{
 			result = libfvde_encryption_context_plist_set_data(
 				  encrypted_metadata->encryption_context_plist,
-				  &( block_data[ xml_plist_data_offset - 64 ] ),
+				  xml_plist_data,
 				  xml_plist_data_size,
 				  error );
 
@@ -672,15 +764,19 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	libfvde_xml_plist_key_t *root_key         = NULL;
 	libfvde_xml_plist_key_t *xml_plist_key    = NULL;
 	const uint8_t *xml_plist_data             = NULL;
-	uint8_t *string                           = NULL;
 	static char *function                     = "libfvde_encrypted_metadata_read_type_0x001a";
-	size_t string_size                        = 0;
 	size_t xml_length                         = 0;
 	uint64_t logical_volume_size              = 0;
 	uint32_t compressed_xml_plist_data_size   = 0;
 	uint32_t stored_xml_plist_data_offset     = 0;
 	uint32_t stored_xml_plist_data_size       = 0;
 	uint32_t uncompressed_xml_plist_data_size = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint8_t *string                           = NULL;
+	size_t string_size                        = 0;
+	uint64_t value_64bit                      = 0;
+#endif
 
 	if( encrypted_metadata == NULL )
 	{
@@ -745,6 +841,24 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 0 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown1\t\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 8 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown2\t\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
+
+/* TODO add more values */
+
 		libcnotify_printf(
 		 "%s: compressed XML plist data size\t: %" PRIu32 "\n",
 		 function,
@@ -854,8 +968,6 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		/* Find the main dict element
-		 */
 		if( libfvde_xml_plist_get_root_key(
 		     xml_plist,
 		     &root_key,
@@ -886,34 +998,37 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_get_value_string(
-		     xml_plist_key,
-		     &string,
-		     &string_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve logical volume family identifier.",
-			 function );
-
-			goto on_error;
-		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
+			if( libfvde_xml_plist_key_get_value_string(
+			     xml_plist_key,
+			     &string,
+			     &string_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve logical volume family identifier.",
+				 function );
+
+				goto on_error;
+			}
 			libcnotify_printf(
 			 "%s: logical volume family identifier\t: %s\n",
 			 function,
 			 string );
+
+			memory_free(
+			 string );
+
+			string = NULL;
 		}
 #endif
-/* TODO move to libfvde_xml_plist_key_get_value_uuid */
-		if( libfvde_encrypted_metadata_uuid_string_copy_to_byte_stream(
-		     (char *) string,
-		     string_size - 1,
+		if( libfvde_xml_plist_key_value_uuid_string_copy_to_byte_stream(
+		     xml_plist_key,
 		     encrypted_metadata->logical_volume_family_identifier,
 		     16,
 		     error ) != 1 )
@@ -927,11 +1042,6 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		memory_free(
-		 string );
-
-		string = NULL;
-
 		if( libfvde_xml_plist_key_free(
 		     &xml_plist_key,
 		     error ) != 1 )
@@ -997,6 +1107,19 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
+		if( libfvde_xml_plist_key_free(
+		     &root_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML root key.",
+			 function );
+
+			goto on_error;
+		}
 		if( libfvde_xml_plist_free(
 		     &xml_plist,
 		     error ) != 1 )
@@ -1027,15 +1150,23 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	return( 1 );
 
 on_error:
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( string != NULL )
 	{
 		memory_free(
 		 string );
 	}
+#endif
 	if( xml_plist_key != NULL )
 	{
 		libfvde_xml_plist_key_free(
 		 &xml_plist_key,
+		 NULL );
+	}
+	if( root_key != NULL )
+	{
+		libfvde_xml_plist_key_free(
+		 &root_key,
 		 NULL );
 	}
 	if( xml_plist != NULL )
@@ -1052,15 +1183,18 @@ on_error:
  */
 int libfvde_encrypted_metadata_read_type_0x001d(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     libfvde_io_handle_t *io_handle,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error )
 {
 	static char *function      = "libfvde_encrypted_metadata_read_type_0x001d";
-	uint64_t first_block       = 0;
-	uint64_t number_of_blocks  = 0;
+	size_t block_data_offset   = 0;
+	uint64_t entry_index       = 0;
 	uint64_t number_of_entries = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint32_t value_32bit       = 0;
+#endif
 
 	if( encrypted_metadata == NULL )
 	{
@@ -1069,17 +1203,6 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid encrypted metadata.",
-		 function );
-
-		return( -1 );
-	}
-	if( io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid IO handle.",
 		 function );
 
 		return( -1 );
@@ -1121,14 +1244,6 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 	 &( block_data[ 16 ] ),
 	 number_of_entries );
 
-	byte_stream_copy_to_uint64_little_endian(
-	 &( block_data[ 24 ] ),
-	 number_of_blocks );
-
-	byte_stream_copy_to_uint64_little_endian(
-	 &( block_data[ 32 ] ),
-	 first_block );
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1141,20 +1256,65 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 		 0 );
 
 		libcnotify_printf(
-		 "%s: number of entries\t\t\t: %" PRIu64 "\n",
+		 "%s: number of entries\t\t: %" PRIu64 "\n",
 		 function,
 		 number_of_entries );
 
 		libcnotify_printf(
-		 "%s: logical volume number of blocks\t: %" PRIu64 "\n",
-		 function,
-		 number_of_blocks );
+		 "\n" );
+	}
+#endif
+	block_data_offset = 24;
 
-		libcnotify_printf(
-		 "%s: logical volume block number\t: %" PRIu64 "\n",
-		 function,
-		 first_block );
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %02d number of blocks\t: %" PRIu32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
 
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 4 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %02d unknown1\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
+
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %02d block number\t: %" PRIu32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
+
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 12 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %02d unknown2\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
+		}
+#endif
+		block_data_offset += 16;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
 		libcnotify_printf(
 		 "\n" );
 	}
@@ -1167,7 +1327,6 @@ int libfvde_encrypted_metadata_read_type_0x001d(
  */
 int libfvde_encrypted_metadata_read_type_0x0021(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     libfvde_io_handle_t *io_handle,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error )
@@ -1183,17 +1342,6 @@ int libfvde_encrypted_metadata_read_type_0x0021(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid encrypted metadata.",
-		 function );
-
-		return( -1 );
-	}
-	if( io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid IO handle.",
 		 function );
 
 		return( -1 );
@@ -1220,7 +1368,7 @@ int libfvde_encrypted_metadata_read_type_0x0021(
 
 		return( -1 );
 	}
-	if( block_data_size < 22 )
+	if( block_data_size < 6 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1232,11 +1380,11 @@ int libfvde_encrypted_metadata_read_type_0x0021(
 		return( -1 );
 	}
 	byte_stream_copy_to_uint16_little_endian(
-	 &( block_data[ 16 ] ),
+	 &( block_data[ 0 ] ),
 	 number_of_entries );
 
 	byte_stream_copy_to_uint32_little_endian(
-	 &( block_data[ 18 ] ),
+	 &( block_data[ 2 ] ),
 	 number_of_blocks );
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -1256,6 +1404,420 @@ int libfvde_encrypted_metadata_read_type_0x0021(
 		 "\n" );
 	}
 #endif
+	return( 1 );
+}
+
+/* Reads the encrypted metadata block type 0x0022
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0022(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error )
+{
+	static char *function      = "libfvde_encrypted_metadata_read_type_0x0022";
+	size_t block_data_offset   = 0;
+	uint64_t entry_index       = 0;
+	uint64_t number_of_entries = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint64_t value_64bit       = 0;
+#endif
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid block data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size < 48 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: block data size value too small.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_to_uint64_little_endian(
+	 &( block_data[ 8 ] ),
+	 number_of_entries );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 0 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown1\t\t\t: 0x%08" PRIx64 "\n",
+		 function,
+		 value_64bit );
+
+		libcnotify_printf(
+		 "%s: number of entries\t\t: %" PRIu64 "\n",
+		 function,
+		 number_of_entries );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	block_data_offset = 16;
+
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d number of blocks\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d unknown2\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 16 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d unknown3\t\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 24 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d block number\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+		}
+#endif
+		block_data_offset += 32;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	return( 1 );
+}
+
+/* Reads the encrypted metadata block type 0x0305
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0305(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error )
+{
+	static char *function      = "libfvde_encrypted_metadata_read_type_0x0305";
+	uint32_t first_block       = 0;
+	uint32_t number_of_blocks  = 0;
+	uint32_t number_of_entries = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint32_t value_32bit       = 0;
+#endif
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid block data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size < 44 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: block data size value too small.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 0 ] ),
+	 number_of_entries );
+
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 24 ] ),
+	 number_of_blocks );
+
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 40 ] ),
+	 first_block );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: number of entries\t\t\t: %" PRIu32 "\n",
+		 function,
+		 number_of_entries );
+
+		libcnotify_printf(
+		 "%s: unknown1:\n",
+		 function );
+		libcnotify_print_data(
+		 &( block_data[ 4 ] ),
+		 20,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: logical volume number of blocks\t: %" PRIu32 "\n",
+		 function,
+		 number_of_blocks );
+
+		byte_stream_copy_to_uint32_little_endian(
+		 &( block_data[ 28 ] ),
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: unknown2\t\t\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		libcnotify_printf(
+		 "%s: unknown3:\n",
+		 function );
+		libcnotify_print_data(
+		 &( block_data[ 32 ] ),
+		 8,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: logical volume block number\t: %" PRIu32 "\n",
+		 function,
+		 first_block );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	return( 1 );
+}
+
+/* Reads the encrypted metadata block type 0x0405
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0405(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error )
+{
+	static char *function      = "libfvde_encrypted_metadata_read_type_0x0405";
+	size_t block_data_offset   = 0;
+	uint32_t entry_index       = 0;
+	uint32_t number_of_entries = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint64_t value_64bit       = 0;
+	uint32_t value_32bit       = 0;
+#endif
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid block data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size < 56 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: block data size value too small.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 0 ] ),
+	 number_of_entries );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: number of entries\t\t: %" PRIu32 "\n",
+		 function,
+		 number_of_entries );
+
+		byte_stream_copy_to_uint32_little_endian(
+		 &( block_data[ 4 ] ),
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: unknown1\t\t\t: 0x%08" PRIx32 "\n",
+		 function,
+		 value_32bit );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	block_data_offset = 8;
+
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d block number\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d number of blocks\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 16 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d block type\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 24 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %02d copy number\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			libcnotify_printf(
+			 "%s: entry: %02d unknown5:\n",
+			 function,
+			 entry_index );
+			libcnotify_print_data(
+			 &( block_data[ block_data_offset + 32 ] ),
+			 16,
+			 0 );
+		}
+#endif
+		block_data_offset += 48;
+	}
 	return( 1 );
 }
 
@@ -1306,7 +1868,7 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 
 		return( -1 );
 	}
-	if( block_data_size < 20 )
+	if( block_data_size < 24 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1659,6 +2221,14 @@ int libfvde_encrypted_metadata_read(
 							  error );
 						break;
 
+					case 0x0016:
+						result = libfvde_encrypted_metadata_read_type_0x0016(
+							  encrypted_metadata,
+							  metadata_block->data,
+							  metadata_block->data_size,
+							  error );
+						break;
+
 					case 0x0019:
 						result = libfvde_encrypted_metadata_read_type_0x0019(
 							  encrypted_metadata,
@@ -1678,7 +2248,6 @@ int libfvde_encrypted_metadata_read(
 					case 0x001d:
 						result = libfvde_encrypted_metadata_read_type_0x001d(
 							  encrypted_metadata,
-							  io_handle,
 							  metadata_block->data,
 							  metadata_block->data_size,
 							  error );
@@ -1687,7 +2256,30 @@ int libfvde_encrypted_metadata_read(
 					case 0x0021:
 						result = libfvde_encrypted_metadata_read_type_0x0021(
 							  encrypted_metadata,
-							  io_handle,
+							  metadata_block->data,
+							  metadata_block->data_size,
+							  error );
+						break;
+
+					case 0x0022:
+						result = libfvde_encrypted_metadata_read_type_0x0022(
+							  encrypted_metadata,
+							  metadata_block->data,
+							  metadata_block->data_size,
+							  error );
+						break;
+
+					case 0x0305:
+						result = libfvde_encrypted_metadata_read_type_0x0305(
+							  encrypted_metadata,
+							  metadata_block->data,
+							  metadata_block->data_size,
+							  error );
+						break;
+
+					case 0x0405:
+						result = libfvde_encrypted_metadata_read_type_0x0405(
+							  encrypted_metadata,
 							  metadata_block->data,
 							  metadata_block->data_size,
 							  error );

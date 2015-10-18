@@ -28,6 +28,7 @@
 
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
+#include "libfvde_libfguid.h"
 #include "libfvde_libfvalue.h"
 #include "libfvde_libuna.h"
 #include "libfvde_xml_plist_key.h"
@@ -740,6 +741,131 @@ on_error:
 	}
 	*string_size = 0;
 
+	return( -1 );
+}
+
+/* Copies an UUID string value to a byte stream
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_xml_plist_key_value_uuid_string_copy_to_byte_stream(
+     libfvde_xml_plist_key_t *key,
+     uint8_t *byte_stream,
+     size_t byte_stream_size,
+     libcerror_error_t **error )
+{
+	libfguid_identifier_t *guid = NULL;
+	uint8_t *string             = NULL;
+	static char *function       = "libfvde_xml_plist_key_value_uuid_string_copy_to_byte_stream";
+	size_t string_size          = 0;
+	int result                  = 0;
+
+	if( libfvde_xml_plist_key_get_value_string(
+	     key,
+	     &string,
+	     &string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume family identifier.",
+		 function );
+
+		goto on_error;
+	}
+	if( string_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid string size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfguid_identifier_initialize(
+	     &guid,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create GUID.",
+		 function );
+
+		goto on_error;
+	}
+	result = libfguid_identifier_copy_from_utf8_string(
+		  guid,
+		  (uint8_t *) string,
+		  string_size - 1,
+		  LIBFGUID_STRING_FORMAT_FLAG_USE_MIXED_CASE,
+		  error );
+
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to copy GUID from string.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 string );
+
+	string = NULL;
+
+	if( libfguid_identifier_copy_to_byte_stream(
+	     guid,
+	     byte_stream,
+	     byte_stream_size,
+	     LIBFGUID_ENDIAN_BIG,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to copy GUID to byte stream.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfguid_identifier_free(
+	     &guid,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free GUID.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( string != NULL )
+	{
+		memory_free(
+		 string );
+	}
+#endif
+	if( guid != NULL )
+	{
+		libfguid_identifier_free(
+		 &guid,
+		 NULL );
+	}
 	return( -1 );
 }
 
