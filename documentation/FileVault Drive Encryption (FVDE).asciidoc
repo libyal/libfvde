@@ -1,6 +1,9 @@
 = FileVault Drive Encryption (FVDE)
 Analysis of FVDE
 
+:toc:
+:toclevels: 4
+
 :numbered!:
 [abstract]
 == Summary
