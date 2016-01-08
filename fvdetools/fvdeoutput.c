@@ -1,7 +1,7 @@
 /*
  * Common output functions for the fvdetools
  *
- * Copyright (C) 2011-2015, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -48,7 +48,7 @@ void fvdeoutput_copyright_fprint(
 	 */
 	fprintf(
 	 stream,
-	 _( "Copyright (C) 2011-2015, %s.\n" ),
+	 _( "Copyright (C) 2011-2016, %s.\n" ),
 	 _( "Omar Choudary, Joachim Metz" ) );
 
 	fprintf(

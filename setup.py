@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 #
 # Script to build and install Python-bindings.
-# Version: 20151005
+# Version: 20151228
 
+from __future__ import print_function
 import glob
 import platform
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -30,6 +32,25 @@ class custom_bdist_rpm(bdist):
 class custom_build_ext(build_ext):
   """Custom handler for the build_ext command."""
 
+  def _RunCommand(self, command):
+    """Runs the command."""
+    arguments = shlex.split(command)
+    process = subprocess.Popen(
+        arguments, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    if not process:
+      raise RuntimeError("Running: {0:s} failed.".format(command))
+
+    output, error = process.communicate()
+    if process.returncode != 0:
+      error = "\n".join(error.split(b"\n")[-5:])
+      if sys.version_info[0] >= 3:
+        error = error.decode("ascii", errors="replace")
+      raise RuntimeError(
+          "Running: {0:s} failed with error:\n{1:s}.".format(
+              command, error))
+
+    return output
+
   def build_extensions(self):
     # TODO: move build customization here?
     build_ext.build_extensions(self)
@@ -42,12 +63,35 @@ class custom_build_ext(build_ext):
       ]
 
     else:
-      # Using "sh" here to make sure that configure works on mingw32
-      # with the standard python.org binaries.
-      command = "sh configure --with-openssl=no"
-      exit_code = subprocess.call(command, shell=True)
-      if exit_code != 0:
-        raise RuntimeError("Running: {0:s} failed.".format(command))
+      # We need to run "configure" to make sure config.h is generated
+      # properly. We invoke "configure" with "sh" here to make sure
+      # that it works on mingw32 with the standard python.org binaries.
+      command = "sh configure --help"
+      output = self._RunCommand(command)
+
+      # We want to build as much as possible self contained Python binding.
+      configure_arguments = []
+      for line in output.split(b"\n"):
+        line = line.strip()
+        line, _, _ = line.rpartition(b"[=DIR]")
+        if line.startswith(b"--with-lib") and not line.endswith(b"-prefix"):
+          if sys.version_info[0] >= 3:
+            line = line.decode("ascii")
+          configure_arguments.append("{0:s}=no".format(line))
+        elif line == b"--with-openssl":
+          configure_arguments.append("--with-openssl=no")
+
+      command = "sh configure {0:s}".format(" ".join(configure_arguments))
+      output = self._RunCommand(command)
+
+      print_line = False
+      for line in output.split(b"\n"):
+        line = line.rstrip()
+        if line == b"configure:":
+          print_line = True
+
+        if print_line:
+          print(line)
 
       self.define = [
           ("HAVE_CONFIG_H", ""),
@@ -140,14 +184,20 @@ class ProjectInformation(object):
     for line in file_object.readlines():
       line = line.strip()
       if found_library_name:
-        self.library_version = line[1:-2]
+        library_version = line[1:-2]
+        if sys.version_info[0] >= 3:
+          library_version = library_version.decode("ascii")
+        self.library_version = library_version
         break
 
       elif found_ac_init:
-        self.library_name = line[1:-2]
+        library_name = line[1:-2]
+        if sys.version_info[0] >= 3:
+          library_name = library_name.decode("ascii")
+        self.library_name = library_name
         found_library_name = True
 
-      elif line.startswith("AC_INIT"):
+      elif line.startswith(b"AC_INIT"):
         found_ac_init = True
 
     file_object.close()
@@ -169,7 +219,9 @@ class ProjectInformation(object):
     for line in file_object.readlines():
       line = line.strip()
       if found_subdirs:
-        library_name, _, _ = line.partition(" ")
+        library_name, _, _ = line.partition(b" ")
+        if sys.version_info[0] >= 3:
+          library_name = library_name.decode("ascii")
 
         self.include_directories.append(library_name)
 
@@ -179,7 +231,7 @@ class ProjectInformation(object):
         if library_name == self.library_name:
           break
 
-      elif line.startswith("SUBDIRS"):
+      elif line.startswith(b"SUBDIRS"):
         found_subdirs = True
 
     file_object.close()
@@ -216,6 +268,7 @@ SOURCES = []
 # TODO: replace by detection of MSC
 DEFINE_MACROS = []
 if platform.system() == "Windows":
+  DEFINE_MACROS.append(("WINVER", "0x0501"))
   # TODO: determine how to handle third party DLLs.
   for library_name in project_information.library_names:
     if library_name != project_information.library_name:
