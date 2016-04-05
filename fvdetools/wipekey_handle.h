@@ -52,7 +52,7 @@ struct wipekey_handle
 	 */
 	libbfio_handle_t *input_file_io_handle;
 
-	/* The nofication output stream
+	/* The notification output stream
 	 */
 	FILE *notify_stream;
 

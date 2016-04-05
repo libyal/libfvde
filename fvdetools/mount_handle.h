@@ -52,7 +52,7 @@ struct mount_handle
 	 */
 	libfvde_volume_t *input_volume;
 
-	/* The nofication output stream
+	/* The notification output stream
 	 */
 	FILE *notify_stream;
 

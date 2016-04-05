@@ -47,11 +47,11 @@ Python bindings for libfvde
 make %{?_smp_mflags}
 
 %install
-rm -rf ${RPM_BUILD_ROOT}
-make DESTDIR=${RPM_BUILD_ROOT} install
+rm -rf %{buildroot}
+%make_install
 
 %clean
-rm -rf ${RPM_BUILD_ROOT}
+rm -rf %{buildroot}
 
 %post -p /sbin/ldconfig
 

@@ -1,13 +1,13 @@
 include_HEADERS = \
-        libfvde.h
+	libfvde.h
 
 pkginclude_HEADERS = \
-        libfvde/codepage.h \
-        libfvde/definitions.h \
-        libfvde/error.h \
-        libfvde/extern.h \
-        libfvde/features.h \
-        libfvde/types.h
+	libfvde/codepage.h \
+	libfvde/definitions.h \
+	libfvde/error.h \
+	libfvde/extern.h \
+	libfvde/features.h \
+	libfvde/types.h
 
 EXTRA_DIST = \
 	libfvde.h.in \
