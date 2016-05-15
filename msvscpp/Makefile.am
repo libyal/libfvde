@@ -1,5 +1,6 @@
 MSVSCPP_FILES = \
 	dokan/dokan.vcproj \
+	fvde_test_get_version/fvde_test_get_version.vcproj \
 	fvdeinfo/fvdeinfo.vcproj \
 	fvdemount/fvdemount.vcproj \
 	fvdewipekey/fvdewipekey.vcproj \

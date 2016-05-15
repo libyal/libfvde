@@ -1,7 +1,7 @@
 /*
  * The internal type definitions
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -42,7 +42,7 @@ typedef struct libfvde_volume {}			libfvde_volume_t;
 typedef intptr_t libfvde_encryption_context_plist_t;
 typedef intptr_t libfvde_volume_t;
 
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI ) */
 
 #endif /* defined( HAVE_LOCAL_LIBFVDE ) */
 
@@ -51,5 +51,5 @@ typedef intptr_t libfvde_volume_t;
  */
 typedef unsigned long int libfvde_aligned_t;
 
-#endif
+#endif /* !defined( _LIBFVDE_INTERNAL_TYPES_H ) */
 

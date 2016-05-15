@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20160108],
+ [20160515],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -114,6 +114,7 @@ AX_LIBFUSE_CHECK_ENABLE
 
 dnl Check for zlib compression support
 AX_ZLIB_CHECK_ENABLE
+AX_ZLIB_CHECK_ADLER32
 
 dnl Check for libxml2 XML parsing support
 AX_LIBXML2_CHECK_ENABLE
@@ -135,7 +136,14 @@ dnl Check if libfvde should be build with debug output
 AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
 
 dnl Check if libfvde python bindings (pyfvde) should be build
+AX_PYTHON_CHECK_PYPREFIX
 AX_PYTHON_CHECK_ENABLE
+AX_PYTHON2_CHECK_ENABLE
+AX_PYTHON3_CHECK_ENABLE
+
+AM_CONDITIONAL(
+ HAVE_PYTHON_TESTS,
+ [test "x${ac_cv_enable_python}" != xno || test "x${ac_cv_enable_python2}" != xno || test "x${ac_cv_enable_python3}" != xno])
 
 dnl Headers included in various places
 AC_CHECK_HEADERS([stdarg.h varargs.h])
@@ -231,6 +239,8 @@ AC_CONFIG_FILES([libfvde/Makefile])
 AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([fvdetools/Makefile])
 AC_CONFIG_FILES([pyfvde/Makefile])
+AC_CONFIG_FILES([pyfvde-python2/Makefile])
+AC_CONFIG_FILES([pyfvde-python3/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 AC_CONFIG_FILES([manuals/Makefile])
@@ -287,6 +297,8 @@ Features:
    Wide character type support:               $ac_cv_enable_wide_character_type
    fvdetools are build as static executables: $ac_cv_enable_static_executables
    Python (pyfvde) support:                   $ac_cv_enable_python
+   Python version 2 (pyfvde) support:         $ac_cv_enable_python2
+   Python version 3 (pyfvde) support:         $ac_cv_enable_python3
    Verbose output:                            $ac_cv_enable_verbose_output
    Debug output:                              $ac_cv_enable_debug_output
 ]);

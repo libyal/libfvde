@@ -28,7 +28,7 @@
 #include "pyfvde_libcerror.h"
 #include "pyfvde_python.h"
 
-#define PYFVDE_ERROR_STRING_SIZE		2048
+#define PYFVDE_ERROR_STRING_SIZE	2048
 
 #if defined( __cplusplus )
 extern "C" {
@@ -56,5 +56,5 @@ void pyfvde_error_raise(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYFVDE_ERROR_H ) */
 

@@ -1,8 +1,7 @@
 /*
- * The internal libcerror header
+ * The internal libfvde header
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
- *                          Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2016, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -20,32 +19,19 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_LIBCERROR_H )
-#define _LIBFVDE_LIBCERROR_H
+#if !defined( _FVDE_TEST_LIBFVDE_H )
+#define _FVDE_TEST_LIBFVDE_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBCERROR for local use of libcerror
+/* If Cygwin libtool DLL support is enabled and do not want to create static
+ * executables set LIBFVDE_DLL_IMPORT before including libfvde.h
  */
-#if defined( HAVE_LOCAL_LIBCERROR )
-
-#include <libcerror_definitions.h>
-#include <libcerror_error.h>
-#include <libcerror_system.h>
-#include <libcerror_types.h>
-
-#else
-
-/* If libtool DLL support is enabled set LIBCERROR_DLL_IMPORT
- * before including libcerror.h
- */
-#if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBCERROR_DLL_IMPORT
+#if defined( _WIN32 ) && defined( DLL_EXPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
+#define LIBFVDE_DLL_IMPORT
 #endif
 
-#include <libcerror.h>
+#include <libfvde.h>
 
-#endif /* defined( HAVE_LOCAL_LIBCERROR ) */
-
-#endif /* !defined( _LIBFVDE_LIBCERROR_H ) */
+#endif /* !defined( _FVDE_TEST_LIBFVDE_H ) */
 

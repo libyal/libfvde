@@ -1,7 +1,7 @@
 /*
  * The libbfio header wrapper
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -49,7 +49,11 @@
 
 #include <libbfio.h>
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT ) && !defined( LIBBFIO_HAVE_MULTI_THREAD_SUPPORT )
+#error Multi-threading support requires libbfio with multi-threading support
 #endif
 
-#endif
+#endif /* defined( HAVE_LOCAL_LIBBFIO ) */
+
+#endif /* !defined( _LIBFVDE_LIBBFIO_H ) */
 

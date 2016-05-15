@@ -1,45 +1,61 @@
 #!/bin/sh
 # Script that runs the tests
 #
-# Version: 20151219
+# Version: 20160422
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 
-run_configure_make_tests()
+run_configure_make()
 {
-	CONFIGURE_OPTIONS=$1;
+	local CONFIGURE_OPTIONS=$1;
 
 	./configure ${CONFIGURE_OPTIONS};
+	RESULT=$?;
 
-	if test $? -ne ${EXIT_SUCCESS};
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
 	then
 		echo "Running: './configure' failed";
 
-		return ${EXIT_FAILURE};
+		return ${RESULT};
 	fi
 
 	make clean > /dev/null;
+	RESULT=$?;
 
-	if test $? -ne ${EXIT_SUCCESS};
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
 	then
 		echo "Running: 'make clean' failed";
 
-		return ${EXIT_FAILURE};
+		return ${RESULT};
 	fi
 
 	make > /dev/null;
+	RESULT=$?;
 
-	if test $? -ne ${EXIT_SUCCESS};
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
 	then
 		echo "Running: 'make' failed";
 
-		return ${EXIT_FAILURE};
+		return ${RESULT};
+	fi
+	return ${EXIT_SUCCESS};
+}
+
+run_configure_make_check()
+{
+	run_configure_make $1;
+	RESULT=$?;
+
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
+	then
+		return ${RESULT};
 	fi
 
 	make check;
+	RESULT=$?;
 
-	if test $? -ne ${EXIT_SUCCESS};
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
 	then
 		echo "Running: 'make check' failed";
 
@@ -48,7 +64,34 @@ run_configure_make_tests()
 			cat tests/test-suite.log;
 		fi
 
-		return ${EXIT_FAILURE};
+		return ${RESULT};
+	fi
+	return ${EXIT_SUCCESS};
+}
+
+run_configure_make_check_python()
+{
+	run_configure_make $1;
+	RESULT=$?;
+
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
+	then
+		return ${RESULT};
+	fi
+
+	make check SKIP_LIBRARY_TESTS=1 SKIP_TOOLS_TESTS=1;
+	RESULT=$?;
+
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
+	then
+		echo "Running: 'make check' failed";
+
+		if test -f tests/test-suite.log;
+		then
+			cat tests/test-suite.log;
+		fi
+
+		return ${RESULT};
 	fi
 	return ${EXIT_SUCCESS};
 }
@@ -57,16 +100,34 @@ run_setup_py_tests()
 {
 	PYTHON=$1;
 
-	${PYTHON} setup.py build
+	${PYTHON} setup.py build;
+	RESULT=$?;
 
-	if test $? -ne ${EXIT_SUCCESS};
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
 	then
 		echo "Running: 'setup.py build' failed";
 
-		return ${EXIT_FAILURE};
+		return ${RESULT};
 	fi
 	return ${EXIT_SUCCESS};
 }
+
+if ! run_configure_make_check;
+then
+	exit ${EXIT_FAILURE};
+fi
+
+./configure --help | grep -- '--with-zlib' > /dev/null;
+
+HAVE_WITH_ZLIB=$?;
+
+if test ${HAVE_WITH_ZLIB} -eq 0;
+then
+	if ! run_configure_make_check "--with-zlib=no";
+	then
+		exit ${EXIT_FAILURE};
+	fi
+fi
 
 ./configure --help | grep -- '--with-openssl' > /dev/null;
 
@@ -74,12 +135,12 @@ HAVE_WITH_OPENSSL=$?;
 
 if test ${HAVE_WITH_OPENSSL} -eq 0;
 then
-	if ! run_configure_make_tests "--with-openssl=no";
+	if ! run_configure_make_check "--with-openssl=no";
 	then
 		exit ${EXIT_FAILURE};
 	fi
 
-	if ! run_configure_make_tests "--enable-openssl-evp-cipher=no --enable-openssl-evp-md=no";
+	if ! run_configure_make_check "--enable-openssl-evp-cipher=no --enable-openssl-evp-md=no";
 	then
 		exit ${EXIT_FAILURE};
 	fi
@@ -89,13 +150,8 @@ fi
 
 HAVE_ENABLE_PYTHON=$?;
 
-if test ${HAVE_ENABLE_PYTHON} -ne 0;
+if test ${HAVE_ENABLE_PYTHON} -eq 0;
 then
-	if ! run_configure_make_tests;
-	then
-		exit ${EXIT_FAILURE};
-	fi
-else
 	# Test with Python 2.
 	PYTHON2=`which python2 2> /dev/null`;
 
@@ -104,11 +160,16 @@ else
 	then
 		export PYTHON_VERSION=2;
 
-		if ! run_configure_make_tests "--enable-python";
+		if ! run_configure_make_check_python "--enable-python";
 		then
 			exit ${EXIT_FAILURE};
 		fi
 		export PYTHON_VERSION=;
+
+		if ! run_configure_make "--enable-python2";
+		then
+			exit ${EXIT_FAILURE};
+		fi
 
 		if test -f "setup.py" && ! run_setup_py_tests ${PYTHON2};
 		then
@@ -124,11 +185,16 @@ else
 	then
 		export PYTHON_VERSION=3;
 
-		if ! run_configure_make_tests "--enable-python";
+		if ! run_configure_make_check_python "--enable-python";
 		then
 			exit ${EXIT_FAILURE};
 		fi
 		export PYTHON_VERSION=;
+
+		if ! run_configure_make "--enable-python3";
+		then
+			exit ${EXIT_FAILURE};
+		fi
 
 		if test -f "setup.py" && ! run_setup_py_tests ${PYTHON3};
 		then
@@ -139,7 +205,7 @@ else
 	# Test with the default Python version.
 	if test -z ${PYTHON2} && test -z ${PYTHON3};
 	then
-		if ! run_configure_make_tests "--enable-python";
+		if ! run_configure_make_check_python "--enable-python";
 		then
 			exit ${EXIT_FAILURE};
 		fi

@@ -1,8 +1,7 @@
 /*
  * The internal libcstring header
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
- *                          Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2016, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -20,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_LIBCSTRING_H )
-#define _LIBFVDE_LIBCSTRING_H
+#if !defined( _FVDE_TEST_LIBCSTRING_H )
+#define _FVDE_TEST_LIBCSTRING_H
 
 #include <common.h>
 
@@ -48,5 +47,5 @@
 
 #endif /* defined( HAVE_LOCAL_LIBCSTRING ) */
 
-#endif /* !defined( _LIBFVDE_LIBCSTRING_H ) */
+#endif /* !defined( _FVDE_TEST_LIBCSTRING_H ) */
 

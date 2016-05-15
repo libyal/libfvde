@@ -1,7 +1,7 @@
 /*
  * The internal libcthreads header
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -57,9 +57,9 @@
 
 #include <libcthreads.h>
 
-#endif
+#endif /* defined( HAVE_LOCAL_LIBCTHREADS ) */
 
 #endif /* defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT ) */
 
-#endif
+#endif /* !defined( _LIBFVDE_LIBCTHREADS_H ) */
 

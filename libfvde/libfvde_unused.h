@@ -1,7 +1,7 @@
 /*
  * The internal unused definition
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -41,5 +41,5 @@
 	/* parameter */
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_INTERNAL_UNUSED_H ) */
 

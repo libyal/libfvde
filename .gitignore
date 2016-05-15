@@ -1,16 +1,20 @@
 # Files to ignore by git
 #
-# Version: 20150725
+# Version: 20160507
 
 # Generic auto-generated build files
 *~
 *.a
+*.gcda
+*.gcno
+*.gcov
 *.la
 *.lai
 *.lib
 *.lineno
 *.lo
 *.log
+*.loT
 *.Plo
 *.Po
 *.o
@@ -35,12 +39,15 @@ stamp-h[1-9]
 /autom4te.cache/
 /build
 /compile
+/confdefs.h
+/config.cache
 /config.guess
 /config.log
 /config.rpath
 /config.status
 /config.sub
 /configure
+/conftest.c
 /depcomp
 /dist
 /install-sh
@@ -112,10 +119,11 @@ stamp-h[1-9]
 /include/libfvde/types.h
 /libfvde/libfvde.rc
 /libfvde/libfvde_definitions.h
+/pyfvde-python[23]/*.[ch]
 /fvdetools/fvdeinfo
 /fvdetools/fvdemount
 /fvdetools/fvdewipekey
-/pyfvde/setup.py
+/tests/fvde_test_get_version
 /tests/input
 /tests/tmp*
 

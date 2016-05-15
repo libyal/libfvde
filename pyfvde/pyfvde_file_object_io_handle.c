@@ -76,7 +76,7 @@ int pyfvde_file_object_io_handle_initialize(
 		return( -1 );
 	}
 	*file_object_io_handle = (pyfvde_file_object_io_handle_t *) PyMem_Malloc(
-	                                                            sizeof( pyfvde_file_object_io_handle_t ) );
+	                                                             sizeof( pyfvde_file_object_io_handle_t ) );
 
 	if( *file_object_io_handle == NULL )
 	{
@@ -130,7 +130,7 @@ int pyfvde_file_object_initialize(
      libcerror_error_t **error )
 {
 	pyfvde_file_object_io_handle_t *file_object_io_handle = NULL;
-	static char *function                                = "pyfvde_file_object_initialize";
+	static char *function                                 = "pyfvde_file_object_initialize";
 
 	if( handle == NULL )
 	{

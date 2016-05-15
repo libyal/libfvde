@@ -167,7 +167,7 @@ int libfvde_encryption_aes_key_unwrap(
 
 		goto on_error;
 	}
-	if( libcaes_crypt_set_key(
+	if( libcaes_context_set_key(
 	     aes_context,
 	     LIBCAES_CRYPT_MODE_DECRYPT,
 	     key,

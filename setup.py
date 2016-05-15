@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Script to build and install Python-bindings.
-# Version: 20151228
+# Version: 20160316
 
 from __future__ import print_function
 import glob
@@ -13,12 +13,11 @@ import subprocess
 import sys
 
 from distutils import sysconfig
-from distutils import util
 from distutils.ccompiler import new_compiler
 from distutils.command.build_ext import build_ext
 from distutils.command.bdist import bdist
 from distutils.command.sdist import sdist
-from distutils.core import Command, Extension, setup
+from distutils.core import Extension, setup
 
 
 class custom_bdist_rpm(bdist):
@@ -80,6 +79,8 @@ class custom_build_ext(build_ext):
           configure_arguments.append("{0:s}=no".format(line))
         elif line == b"--with-openssl":
           configure_arguments.append("--with-openssl=no")
+        elif line == b"--with-zlib":
+          configure_arguments.append("--with-zlib=no")
 
       command = "sh configure {0:s}".format(" ".join(configure_arguments))
       output = self._RunCommand(command)
@@ -91,6 +92,8 @@ class custom_build_ext(build_ext):
           print_line = True
 
         if print_line:
+          if sys.version_info[0] >= 3:
+            line = line.decode("ascii")
           print(line)
 
       self.define = [
@@ -110,7 +113,8 @@ class custom_sdist(sdist):
       sys.exit(1)
 
     if glob.glob("*.tar.gz"):
-      print("'setup.py sdist' remove existing *.tar.gz files from source directory.")
+      print("'setup.py sdist' remove existing *.tar.gz files from "
+            "source directory.")
       sys.exit(1)
 
     command = "make dist"
@@ -147,11 +151,6 @@ class ProjectInformation(object):
 
     self._ReadConfigureAc()
     self._ReadMakefileAm()
-
-  @property
-  def dll_filename(self):
-    """The DLL filename."""
-    return "{0:s}.dll".format(self.library_name)
 
   @property
   def module_name(self):

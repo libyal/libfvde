@@ -1,4 +1,4 @@
-.Dd October 17, 2015
+.Dd May 15, 2016
 .Dt libfvde 3
 .Os libfvde
 .Sh NAME
@@ -11,7 +11,7 @@
 .Pp
 Support functions
 .Ft const char *
-.Fn *libfvde_get_version "void"
+.Fn libfvde_get_version "void"
 .Ft int
 .Fn libfvde_get_access_flags_read "void"
 .Ft int
@@ -62,6 +62,8 @@ Volume functions
 .Fn libfvde_volume_open "libfvde_volume_t *volume, const char *filename, int access_flags, libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_close "libfvde_volume_t *volume, libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_is_locked "libfvde_volume_t *volume, libfvde_error_t **error"
 .Ft ssize_t
 .Fn libfvde_volume_read_buffer "libfvde_volume_t *volume, void *buffer, size_t buffer_size, libfvde_error_t **error"
 .Ft ssize_t
@@ -133,6 +135,7 @@ For the actual return values see "libfvde.h".
 None
 .Sh FILES
 None
+.Sh NOTES
 libfvde allows to be compiled with wide character support (wchar_t).
 
 To compile libfvde with wide character support use:
@@ -150,7 +153,7 @@ Please report bugs of any kind on the project issue tracker: https://github.com/
 .Sh AUTHOR
 These man pages are generated from "libfvde.h".
 .Sh COPYRIGHT
-Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>.
+Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>, Joachim Metz <joachim.metz@gmail.com>.
 
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
