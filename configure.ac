@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20160515],
+ [20160609],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -114,7 +114,7 @@ AX_LIBFUSE_CHECK_ENABLE
 
 dnl Check for zlib compression support
 AX_ZLIB_CHECK_ENABLE
-AX_ZLIB_CHECK_ADLER32
+AX_ZLIB_CHECK_UNCOMPRESS
 
 dnl Check for libxml2 XML parsing support
 AX_LIBXML2_CHECK_ENABLE
@@ -282,8 +282,7 @@ Building:
    libfdata support:                          $ac_cv_libfdata
    libfguid support:                          $ac_cv_libfguid
    libfvalue support:                         $ac_cv_libfvalue
-   ADLER32 checksum support:                  $ac_cv_adler32
-   DEFLATE compression support:               $ac_cv_zlib
+   DEFLATE compression support:               $ac_cv_uncompress
    libhmac support:                           $ac_cv_libhmac
    SHA256 support:                            $ac_cv_libhmac_sha256
    libcaes support:                           $ac_cv_libcaes
