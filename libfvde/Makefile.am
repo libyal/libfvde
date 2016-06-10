@@ -33,6 +33,7 @@ libfvde_la_SOURCES = \
 	libfvde_compression.c libfvde_compression.h \
 	libfvde_debug.c libfvde_debug.h \
 	libfvde_definitions.h \
+	libfvde_deflate.c libfvde_deflate.h \
 	libfvde_encryption.c libfvde_encryption.h \
 	libfvde_encrypted_metadata.c libfvde_encrypted_metadata.h \
 	libfvde_encryption_context_plist.c libfvde_encryption_context_plist.h \

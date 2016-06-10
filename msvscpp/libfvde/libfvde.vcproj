@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_deflate.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_encrypted_metadata.c"
 				>
 			</File>
@@ -283,6 +287,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_definitions.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_deflate.h"
 				>
 			</File>
 			<File
