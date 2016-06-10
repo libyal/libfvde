@@ -150,19 +150,12 @@ int libfvde_metadata_read_type_0x0011(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	libfvde_xml_plist_t *xml_plist           = NULL;
-	libfvde_xml_plist_key_t *root_key        = NULL;
-	libfvde_xml_plist_key_t *xml_plist_key   = NULL;
-	const uint8_t *xml_plist_data            = NULL;
 	static char *function                    = "libfvde_metadata_read_type_0x0011";
-	size_t xml_length                        = 0;
 	uint32_t metadata_size                   = 0;
 	uint32_t volume_groups_descriptor_offset = 0;
 	uint32_t xml_offset                      = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint8_t *string                          = NULL;
-	size_t string_size                       = 0;
 	uint64_t value_64bit                     = 0;
 	uint32_t value_32bit                     = 0;
 #endif
@@ -372,7 +365,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: value mismatch for metadata size.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( ( volume_groups_descriptor_offset < 248 )
 	 || ( volume_groups_descriptor_offset > io_handle->metadata_size ) )
@@ -384,7 +377,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: invalid volume groups descriptor offset value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -471,11 +464,72 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: invalid XML offset value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	/* The offset is relative to the start of the metadata block */
-	xml_plist_data = &( block_data[ xml_offset - 64 ] );
+	if( libfvde_metadata_read_core_storage_plist(
+	     metadata,
+	     &( block_data[ xml_offset - 64 ] ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read core storage plist.",
+		 function );
 
+		return( -1 );
+	}
+/* TODO add bounds check */
+	metadata->primary_encrypted_metadata_offset   *= io_handle->block_size;
+	metadata->secondary_encrypted_metadata_offset *= io_handle->block_size;
+
+	return( 1 );
+}
+
+/* Reads the core storage (XML) plist
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_metadata_read_core_storage_plist(
+     libfvde_metadata_t *metadata,
+     const uint8_t *xml_plist_data,
+     libcerror_error_t **error )
+{
+	libfvde_xml_plist_t *xml_plist              = NULL;
+	libfvde_xml_plist_key_t *xml_plist_root_key = NULL;
+	libfvde_xml_plist_key_t *xml_plist_key      = NULL;
+	static char *function                       = "libfvde_metadata_read_core_storage_plist";
+	size_t xml_length                           = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint8_t *string                             = NULL;
+	size_t string_size                          = 0;
+#endif
+
+	if( metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( xml_plist_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid XML plist data.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO return 0 if not a valid plist? */
 	if( ( xml_plist_data[ 0 ] == (uint8_t) '<' )
 	 && ( xml_plist_data[ 1 ] == (uint8_t) 'd' )
 	 && ( xml_plist_data[ 2 ] == (uint8_t) 'i' )
@@ -537,7 +591,7 @@ int libfvde_metadata_read_type_0x0011(
 		}
 		if( libfvde_xml_plist_get_root_key(
 		     xml_plist,
-		     &root_key,
+		     &xml_plist_root_key,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -550,7 +604,7 @@ int libfvde_metadata_read_type_0x0011(
 			goto on_error;
 		}
 		if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
-		     root_key,
+		     xml_plist_root_key,
 		     (uint8_t *) "com.apple.corestorage.lvg.uuid",
 		     30,
 		     &xml_plist_key,
@@ -608,7 +662,7 @@ int libfvde_metadata_read_type_0x0011(
 			goto on_error;
 		}
 		if( libfvde_xml_plist_key_free(
-		     &root_key,
+		     &xml_plist_root_key,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -641,11 +695,6 @@ int libfvde_metadata_read_type_0x0011(
 		 "\n" );
 	}
 #endif
-
-/* TODO add bounds check */
-	metadata->primary_encrypted_metadata_offset   *= io_handle->block_size;
-	metadata->secondary_encrypted_metadata_offset *= io_handle->block_size;
-
 	return( 1 );
 
 on_error:
@@ -662,10 +711,10 @@ on_error:
 		 &xml_plist_key,
 		 NULL );
 	}
-	if( root_key != NULL )
+	if( xml_plist_root_key != NULL )
 	{
 		libfvde_xml_plist_key_free(
-		 &root_key,
+		 &xml_plist_root_key,
 		 NULL );
 	}
 	if( xml_plist != NULL )
@@ -692,7 +741,6 @@ int libfvde_metadata_read(
 	static char *function                    = "libfvde_metadata_read";
 	size_t metadata_block_data_size          = 0;
 	ssize_t read_count                       = 0;
-	int result                               = 0;
 
 	if( metadata == NULL )
 	{
@@ -849,14 +897,12 @@ int libfvde_metadata_read(
 		 io_handle->serial_number );
 	}
 #endif
-	result = libfvde_metadata_read_type_0x0011(
-		  metadata,
-		  io_handle,
-		  metadata_block->data,
-		  metadata_block->data_size,
-		  error );
-
-	if( result == -1 )
+	if( libfvde_metadata_read_type_0x0011(
+	     metadata,
+	     io_handle,
+	     metadata_block->data,
+	     metadata_block->data_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
