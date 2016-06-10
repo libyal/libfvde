@@ -786,11 +786,9 @@ int libfvde_encrypted_metadata_read_type_0x0019(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	const uint8_t *xml_plist_data  = NULL;
 	static char *function          = "libfvde_encrypted_metadata_read_type_0x0019";
 	uint32_t xml_plist_data_offset = 0;
 	uint32_t xml_plist_data_size   = 0;
-	int result                     = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint64_t value_64bit           = 0;
@@ -894,6 +892,9 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 		 "%s: XML plist data size\t: %" PRIu32 "\n",
 		 function,
 		 xml_plist_data_size );
+
+		libcnotify_printf(
+		 "\n" );
 	}
 #endif
 	if( ( xml_plist_data_offset < 64 )
@@ -908,6 +909,8 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 
 		return( -1 );
 	}
+	xml_plist_data_offset -= 64;
+
 	if( xml_plist_data_size > ( block_data_size - xml_plist_data_offset ) )
 	{
 		libcerror_error_set(
@@ -919,56 +922,22 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 
 		return( -1 );
 	}
-	xml_plist_data = &( block_data[ xml_plist_data_offset - 64 ] );
-
-	if( ( xml_plist_data[ 0 ] == (uint8_t) '<' )
-	 && ( xml_plist_data[ 1 ] == (uint8_t) 'd' )
-	 && ( xml_plist_data[ 2 ] == (uint8_t) 'i' )
-	 && ( xml_plist_data[ 3 ] == (uint8_t) 'c' )
-	 && ( xml_plist_data[ 4 ] == (uint8_t) 't' ) )
+	if( libfvde_encrypted_metadata_read_encryption_context_plist(
+	     encrypted_metadata,
+	     &( block_data[ xml_plist_data_offset ] ),
+	     (size_t) xml_plist_data_size,
+	     error ) != 1 )
 	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: XML:\n%s\n",
-			 function,
-			 (char *) xml_plist_data );
-		}
-#endif
-		if( encrypted_metadata->encryption_context_plist_file_is_set == 0 )
-		{
-			result = libfvde_encryption_context_plist_set_data(
-				  encrypted_metadata->encryption_context_plist,
-				  xml_plist_data,
-				  xml_plist_data_size,
-				  error );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read encryption context plist.",
+		 function );
 
-			if( result == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set encryption context plist data.",
-				 function );
-
-				return( -1 );
-			}
-			else if( result != 0 )
-			{
-				encrypted_metadata->encryption_context_plist_file_is_set = 1;
-			}
-		}
+		return( -1 );
 	}
 /* TODO find com.apple.corestorage.lvf.encryption.context/WrappedVolumeKeys/?/BlockAlgorithm */
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "\n" );
-	}
-#endif
 	return( 1 );
 }
 
@@ -2296,6 +2265,83 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 		encrypted_metadata->logical_volume_number_of_blocks = number_of_blocks;
 
 		encrypted_metadata->logical_volume_block_values_are_set = 1;
+	}
+	return( 1 );
+}
+
+/* Reads encryption context (XML) plist
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_encryption_context_plist(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *xml_plist_data,
+     size_t xml_plist_data_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_encrypted_metadata_read_encryption_context_plist";
+	int result            = 0;
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( xml_plist_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid XML plist data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( xml_plist_data[ 0 ] == (uint8_t) '<' )
+	 && ( xml_plist_data[ 1 ] == (uint8_t) 'd' )
+	 && ( xml_plist_data[ 2 ] == (uint8_t) 'i' )
+	 && ( xml_plist_data[ 3 ] == (uint8_t) 'c' )
+	 && ( xml_plist_data[ 4 ] == (uint8_t) 't' ) )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: XML:\n%s\n",
+			 function,
+			 (char *) xml_plist_data );
+		}
+#endif
+		if( encrypted_metadata->encryption_context_plist_file_is_set == 0 )
+		{
+			result = libfvde_encryption_context_plist_set_data(
+				  encrypted_metadata->encryption_context_plist,
+				  xml_plist_data,
+				  xml_plist_data_size,
+				  error );
+
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to set encryption context plist data.",
+				 function );
+
+				return( -1 );
+			}
+			else if( result != 0 )
+			{
+				encrypted_metadata->encryption_context_plist_file_is_set = 1;
+			}
+		}
 	}
 	return( 1 );
 }

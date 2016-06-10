@@ -193,6 +193,12 @@ int libfvde_encrypted_metadata_read_type_0x0505(
      size_t block_data_size,
      libcerror_error_t **error );
 
+int libfvde_encrypted_metadata_read_encryption_context_plist(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *xml_plist_data,
+     size_t xml_plist_data_size,
+     libcerror_error_t **error );
+
 int libfvde_encrypted_metadata_read(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      libfvde_io_handle_t *io_handle,
@@ -212,5 +218,5 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_ENCRYPTED_METADATA_H ) */
 
