@@ -1,10 +1,10 @@
-libfvde is a library to access FileVault Drive Encryption (FVDE) (or FileVault2) encrypted volumes.
+**libfvde** is a library to access [FileVault](https://en.wikipedia.org/wiki/FileVault) Drive Encryption (FVDE) (or FileVault2) encrypted volumes.
 
 The FVDE format is used by Mac OS X, as of Lion, to encrypt data on a storage media volume.
 
 Project information:
 * Status: experimental
-* Licence: LGPLv3+
+* License: LGPLv3+
 
 Supported FileVault2 implementations:
 * Mac OS X Lion (10.7)
@@ -22,14 +22,12 @@ Supported protection methods:
 * VMK key data (as of 20121114 version)
 
 Also see:
-* VileFault; for accessing FileVault encrypted disk images (or user directories): https://code.google.com/p/vilefault/
-* Infiltrate the Vault: Security Analysis and Decryption of Lion Full Disk Encryption: http://eprint.iacr.org/2012/374.pdf
-* Security Analysis and Decryption of FileVault 2: http://www.cl.cam.ac.uk/~osc22/docs/slides_fv2_ifip_2013.pdf
+* [VileFault](https://code.google.com/archive/p/vilefault/) for accessing FileVault encrypted disk images (or user directories)
+* [Infiltrate the Vault: Security Analysis and Decryption of Lion Full Disk Encryption](https://eprint.iacr.org/2012/374.pdf)
+* [Security Analysis and Decryption of FileVault 2](https://www.cl.cam.ac.uk/~osc22/docs/slides_fv2_ifip_2013.pdf)
 
-If you find this project useful please cite the following paper in your publications:
-Omar Choudary, Felix Grobert and Joachim Metz. "Security Analysis and Decryption of Filevault 2",
-in Advances in Digital Forensics IX, IFIP Advances in Information and Communication Technology 410,
-2013, pp 349-363.
+If you find this project useful, please cite the following paper in your publications:
+* Omar Choudary, Felix Grobert and Joachim Metz. "Security Analysis and Decryption of Filevault 2", in Advances in Digital Forensics IX, IFIP Advances in Information and Communication Technology 410, 2013, pp 349-363.
 
 Work in progress:
 * DEFLATE compressed XML plist
