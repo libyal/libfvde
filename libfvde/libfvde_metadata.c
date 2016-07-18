@@ -156,8 +156,6 @@ int libfvde_metadata_read_type_0x0011(
 	uint32_t xml_offset                      = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint8_t *string                          = NULL;
-	size_t string_size                       = 0;
 	uint64_t value_64bit                     = 0;
 	uint32_t value_32bit                     = 0;
 #endif
@@ -367,7 +365,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: value mismatch for metadata size.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( ( volume_groups_descriptor_offset < 248 )
 	 || ( volume_groups_descriptor_offset > io_handle->metadata_size ) )
@@ -379,7 +377,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: invalid volume groups descriptor offset value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -466,7 +464,7 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: invalid XML offset value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	/* The offset is relative to the start of the metadata block */
 	if( libfvde_metadata_read_core_storage_plist(
@@ -481,23 +479,13 @@ int libfvde_metadata_read_type_0x0011(
 		 "%s: unable to read metadata block type 0x0011.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 /* TODO add bounds check */
 	metadata->primary_encrypted_metadata_offset   *= io_handle->block_size;
 	metadata->secondary_encrypted_metadata_offset *= io_handle->block_size;
 
 	return( 1 );
-
-on_error:
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( string != NULL )
-	{
-		memory_free(
-		 string );
-	}
-#endif
-	return( -1 );
 }
 
 /* Reads the core storage (XML) plist
@@ -513,6 +501,11 @@ int libfvde_metadata_read_core_storage_plist(
 	libfvde_xml_plist_key_t *xml_plist_key      = NULL;
 	static char *function                       = "libfvde_metadata_read_core_storage_plist";
 	size_t xml_length                           = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint8_t *string                             = NULL;
+	size_t string_size                          = 0;
+#endif
 
 	if( metadata == NULL )
 	{
