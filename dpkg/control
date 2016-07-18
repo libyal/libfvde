@@ -39,8 +39,8 @@ Section: python
 Architecture: any
 Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Suggests: libfvde-python-dbg
-Description: Python bindings for libfvde
- Python bindings for libfvde.
+Description: Python 2 bindings for libfvde
+ Python 2 bindings for libfvde.
 
 Package: libfvde-python-dbg
 Section: debug
@@ -48,4 +48,19 @@ Architecture: any
 Depends: libfvde-python (= ${binary:Version}), ${misc:Depends}
 Description: Debugging symbols for libfvde-python
  Debugging symbols for libfvde-python.
+
+Package: libfvde-python3
+Section: python
+Architecture: any
+Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Suggests: libfvde-python3-dbg
+Description: Python 3 bindings for libfvde
+ Python 3 bindings for libfvde.
+
+Package: libfvde-python3-dbg
+Section: debug
+Architecture: any
+Depends: libfvde-python3 (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libfvde-python3
+ Debugging symbols for libfvde-python3.
 

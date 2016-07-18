@@ -169,6 +169,13 @@ PyMethodDef pyfvde_volume_object_methods[] = {
 	  "\n"
 	  "Sets the recovery password." },
 
+	{ "read_encrypted_root_plist",
+	  (PyCFunction) pyfvde_volume_read_encrypted_root_plist,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "read_encrypted_root_plist(filename) -> None\n"
+	  "\n"
+	  "Reads the EncryptedRoot.plist from a file." },
+
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
 };
@@ -1928,6 +1935,237 @@ PyObject *pyfvde_volume_set_recovery_password(
 		 error,
 		 PyExc_IOError,
 		 "%s: unable to set recovery password.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	Py_IncRef(
+	 Py_None );
+
+	return( Py_None );
+}
+
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+
+/* Reads the EncryptedRoot.plist from a file
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_volume_read_encrypted_root_plist(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	PyObject *string_object      = NULL;
+	libcerror_error_t *error     = NULL;
+	static char *function        = "pyfvde_volume_read_encrypted_root_plist";
+	static char *keyword_list[]  = { "filename", NULL };
+	const wchar_t *filename_wide = NULL;
+	const char *filename_narrow  = NULL;
+	int result                   = 0;
+
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid volume.",
+		 function );
+
+		return( NULL );
+	}
+	/* Note that PyArg_ParseTupleAndKeywords with "s" will force Unicode strings to be converted to narrow character string.
+	 * On Windows the narrow character strings contains an extended ASCII string with a codepage. Hence we get a conversion
+	 * exception. We cannot use "u" here either since that does not allow us to pass non Unicode string objects and
+	 * Python (at least 2.7) does not seems to automatically upcast them.
+	 */
+	if( PyArg_ParseTupleAndKeywords(
+	     arguments,
+	     keywords,
+	     "O",
+	     keyword_list,
+	     &string_object ) == 0 )
+	{
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_IsInstance(
+	          string_object,
+	          (PyObject *) &PyUnicode_Type );
+
+	if( result == -1 )
+	{
+		pyfvde_error_fetch_and_raise(
+	         PyExc_RuntimeError,
+		 "%s: unable to determine if string object is of type unicode.",
+		 function );
+
+		return( NULL );
+	}
+	else if( result != 0 )
+	{
+		PyErr_Clear();
+
+		filename_wide = (wchar_t *) PyUnicode_AsUnicode(
+		                             string_object );
+		Py_BEGIN_ALLOW_THREADS
+
+		result = libfvde_volume_read_encrypted_root_plist_wide(
+		          pyfvde_volume->volume,
+		          filename_wide,
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result == -1 )
+		{
+			pyfvde_error_raise(
+			 error,
+			 PyExc_IOError,
+			 "%s: unable to read EncryptedRoot.plist.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+
+			return( NULL );
+		}
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	PyErr_Clear();
+
+#if PY_MAJOR_VERSION >= 3
+	result = PyObject_IsInstance(
+		  string_object,
+		  (PyObject *) &PyBytes_Type );
+#else
+	result = PyObject_IsInstance(
+		  string_object,
+		  (PyObject *) &PyString_Type );
+#endif
+	if( result == -1 )
+	{
+		pyfvde_error_fetch_and_raise(
+	         PyExc_RuntimeError,
+		 "%s: unable to determine if string object is of type string.",
+		 function );
+
+		return( NULL );
+	}
+	else if( result != 0 )
+	{
+		PyErr_Clear();
+
+#if PY_MAJOR_VERSION >= 3
+		filename_narrow = PyBytes_AsString(
+				   string_object );
+#else
+		filename_narrow = PyString_AsString(
+				   string_object );
+#endif
+		Py_BEGIN_ALLOW_THREADS
+
+		result = libfvde_volume_read_encrypted_root_plist(
+		          pyfvde_volume->volume,
+		          filename_narrow,
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result == -1 )
+		{
+			pyfvde_error_raise(
+			 error,
+			 PyExc_IOError,
+			 "%s: unable to read EncryptedRoot.plist.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+
+			return( NULL );
+		}
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	PyErr_Format(
+	 PyExc_TypeError,
+	 "%s: unsupported string object type",
+	 function );
+
+	return( NULL );
+}
+
+#else
+
+/* Reads the EncryptedRoot.plist from a file
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_volume_read_encrypted_root_plist(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	libcerror_error_t *error    = NULL;
+	char *filename              = NULL;
+	static char *keyword_list[] = { "filename", NULL };
+	static char *function       = "pyfvde_volume_read_encrypted_root_plist";
+	int result                  = 0;
+
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid volume.",
+		 function );
+
+		return( NULL );
+	}
+	/* Note that PyArg_ParseTupleAndKeywords with "s" will force Unicode strings to be converted to narrow character string.
+	 * For systems that support UTF-8 this works for Unicode string objects as well.
+	 */
+	if( PyArg_ParseTupleAndKeywords(
+	     arguments,
+	     keywords,
+	     "s",
+	     keyword_list,
+	     &filename ) == 0 )
+	{
+		return( NULL );
+	}
+	if( filename == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid filename.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfvde_volume_read_encrypted_root_plist(
+	          pyfvde_volume->volume,
+	          filename,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to read EncryptedRoot.plist.",
 		 function );
 
 		libcerror_error_free(

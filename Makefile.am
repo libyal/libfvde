@@ -39,8 +39,10 @@ DPKG_FILES = \
 	dpkg/copyright \
 	dpkg/copyright.in \
 	dpkg/rules \
-	dpkg/libfvde-dev.docs \
 	dpkg/libfvde.docs \
+	dpkg/libfvde-dev.docs \
+	dpkg/libfvde-python.docs \
+	dpkg/libfvde-python3.docs \
 	dpkg/libfvde-tools.docs \
 	dpkg/source/format
 

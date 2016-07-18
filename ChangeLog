@@ -1,6 +1,4 @@
 TODO
-* libfvde
-  - finish is locked
 * pyfvde
   - pyfvde_volume_get_size replace by pyfvde_volume_get_logical_volume_size ?
   - add functionality to set encrypted context plist

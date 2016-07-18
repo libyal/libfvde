@@ -132,9 +132,14 @@ PyObject *pyfvde_volume_set_recovery_password(
            PyObject *arguments,
            PyObject *keywords );
 
+PyObject *pyfvde_volume_read_encrypted_root_plist(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments,
+           PyObject *keywords );
+
 #if defined( __cplusplus )
 }
 #endif
 
-#endif
+#endif /* !defined( _PYFVDE_VOLUME_H ) */
 

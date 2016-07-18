@@ -68,6 +68,7 @@ int libfvde_metadata_read_type_0x0011(
 
 int libfvde_metadata_read_core_storage_plist(
      libfvde_metadata_t *metadata,
+     const uint8_t *xml_plist_data,
      libcerror_error_t **error );
 
 int libfvde_metadata_read(

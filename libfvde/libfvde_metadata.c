@@ -150,7 +150,6 @@ int libfvde_metadata_read_type_0x0011(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	const uint8_t *xml_plist_data            = NULL;
 	static char *function                    = "libfvde_metadata_read_type_0x0011";
 	uint32_t metadata_size                   = 0;
 	uint32_t volume_groups_descriptor_offset = 0;
@@ -479,9 +478,8 @@ int libfvde_metadata_read_type_0x0011(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read metadata block type 0x%04" PRIx16 ".",
-		 function,
-		 metadata_block->type );
+		 "%s: unable to read metadata block type 0x0011.",
+		 function );
 
 		goto on_error;
 	}
@@ -507,7 +505,7 @@ on_error:
  */
 int libfvde_metadata_read_core_storage_plist(
      libfvde_metadata_t *metadata,
-     const uint8_t xml_plist_data,
+     const uint8_t *xml_plist_data,
      libcerror_error_t **error )
 {
 	libfvde_xml_plist_t *xml_plist              = NULL;
@@ -671,7 +669,7 @@ int libfvde_metadata_read_core_storage_plist(
 			goto on_error;
 		}
 		if( libfvde_xml_plist_key_free(
-		     &root_key,
+		     &xml_plist_root_key,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
