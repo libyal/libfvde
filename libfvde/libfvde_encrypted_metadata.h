@@ -212,5 +212,5 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_ENCRYPTED_METADATA_H ) */
 

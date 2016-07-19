@@ -58,7 +58,8 @@ November 2012 | Additional information regarding CoreStorage.
 Additional information about partially compressed volumes.
 | 0.0.9 | J.B. Metz | October 2015 | Additional information about DEFLATE compressed XML plist, with thanks toi A. Rubtsov.
 | 0.0.10 | J.B. Metz | October 2015 | Additional information about metadata.
-| 0.0.11 | J.B. Metz | June 2016 | Additional information about Core Storage XML plist..
+| 0.0.11 | J.B. Metz | June 2016 | Additional information about Core Storage XML plist.
+| 0.0.12 | J.B. Metz | July 2016 | Additional information about metadata.
 |===
 
 :numbered:
@@ -1862,7 +1863,7 @@ The array entry is 48 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 8 | | [yellow-background]*Unknown (block number)*
 | 8 | 8 | | [yellow-background]*Unknown (number of blocks)*
-| 16 | 8 | | [yellow-background]*Unknown (block type)* +
+| 16 | 8 | | [yellow-background]*Unknown (data type)* +
 0x0000000000000009 (9) => LV (encrypted and unencrypted) ? +
 0x000000000000000a (10) => LV (encrypted) ? +
 0xfffffffffffffffb (-5) => unencrypted metadata +

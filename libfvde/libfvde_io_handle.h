@@ -56,6 +56,10 @@ struct libfvde_io_handle
 	 */
 	uint32_t block_size;
 
+	/* The number of sectors per block
+	 */
+	uint32_t sectors_per_block;
+
 	/* The metadata size
 	 */
 	uint32_t metadata_size;

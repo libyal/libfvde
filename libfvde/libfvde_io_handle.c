@@ -855,6 +855,30 @@ int libfvde_io_handle_read_volume_header(
 
 		goto on_error;
 	}
+	if( io_handle->bytes_per_sector == 0 )
+       	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+                 "%s: invalid bytes per sector value out of bounds.",
+                 function );
+
+		goto on_error;
+	}
+	if( io_handle->block_size == 0 )
+       	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+                 "%s: invalid block size value out of bounds.",
+                 function );
+
+		goto on_error;
+	}
+	io_handle->sectors_per_block = io_handle->block_size / io_handle->bytes_per_sector;
+
 /* TODO add bounds check */
 	io_handle->first_metadata_offset  *= io_handle->block_size;
 	io_handle->second_metadata_offset *= io_handle->block_size;

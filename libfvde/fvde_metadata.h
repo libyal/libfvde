@@ -101,4 +101,4 @@ struct fvde_metadata_block_header
 }
 #endif
 
-#endif
+#endif /* !defined( _FVDE_METADATA_H ) */

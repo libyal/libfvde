@@ -57,6 +57,12 @@ Future considerations:
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
 
+20160719
+* worked on format support
+
+20160718
+* worked on Python bindings
+
 20151018
 * worked on format support
 

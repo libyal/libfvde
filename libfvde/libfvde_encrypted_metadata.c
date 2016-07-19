@@ -1066,7 +1066,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		 &( block_data[ 0 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t\t\t: %" PRIu64 "\n",
+		 "%s: unknown1\t\t\t\t: %" PRIu64 "\n",
 		 function,
 		 value_64bit );
 
@@ -1074,7 +1074,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		 &( block_data[ 8 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown2\t\t\t\t\t: %" PRIu64 "\n",
+		 "%s: unknown2\t\t\t\t: %" PRIu64 "\n",
 		 function,
 		 value_64bit );
 
@@ -2050,6 +2050,9 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 {
 	static char *function      = "libfvde_encrypted_metadata_read_type_0x0405";
 	size_t block_data_offset   = 0;
+	uint64_t data_type         = 0;
+	uint64_t block_number      = 0;
+	uint64_t number_of_blocks  = 0;
 	uint32_t entry_index       = 0;
 	uint32_t number_of_entries = 0;
 
@@ -2132,35 +2135,38 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 	     entry_index < number_of_entries;
 	     entry_index++ )
 	{
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset ] ),
+		 block_number );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset + 8 ] ),
+		 number_of_blocks );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset + 16 ] ),
+		 data_type );
+
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset ] ),
-			 value_64bit );
 			libcnotify_printf(
 			 "%s: entry: %02d block number\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
-			 value_64bit );
+			 block_number );
 
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 8 ] ),
-			 value_64bit );
 			libcnotify_printf(
 			 "%s: entry: %02d number of blocks\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
-			 value_64bit );
+			 number_of_blocks );
 
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 16 ] ),
-			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %02d block type\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %02d data type\t: 0x%08" PRIx64 "\n",
 			 function,
 			 entry_index,
-			 value_64bit );
+			 data_type );
 
 			byte_stream_copy_to_uint64_little_endian(
 			 &( block_data[ block_data_offset + 24 ] ),
@@ -2194,6 +2200,16 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 		}
 #endif
 		block_data_offset += 48;
+
+		if( ( encrypted_metadata->logical_volume_block_values_are_set == 0 )
+		 && ( ( data_type == 0x09 )
+		  ||  ( data_type == 0x0a ) ) )
+		{
+			encrypted_metadata->logical_volume_first_block      = block_number;
+			encrypted_metadata->logical_volume_number_of_blocks = number_of_blocks;
+
+			encrypted_metadata->logical_volume_block_values_are_set = 1;
+		}
 	}
 	return( 1 );
 }
@@ -2794,7 +2810,7 @@ int libfvde_encrypted_metadata_read(
 	{
 		encrypted_metadata->logical_volume_number_of_blocks *= io_handle->block_size;
 
-		if( encrypted_metadata->logical_volume_size == encrypted_metadata->logical_volume_number_of_blocks )
+		if( encrypted_metadata->logical_volume_number_of_blocks == encrypted_metadata->logical_volume_size )
 		{
 			encrypted_metadata->logical_volume_offset  = encrypted_metadata->logical_volume_first_block;
 			encrypted_metadata->logical_volume_offset *= io_handle->block_size;
