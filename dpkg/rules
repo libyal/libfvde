@@ -90,9 +90,9 @@ ifeq (,$(filter nostrip,$(DEB_BUILD_OPTIONS)))
 	dh_strip -plibfvde-python3 --dbg-package=libfvde-python3-dbg
 endif
 
-.PHONY: override_dh_shlifvdeps
-override_dh_shlifvdeps:
-	dh_shlifvdeps -Llibfvde -l${CURDIR}/debian/tmp/usr/lib
+.PHONY: override_dh_shlibdeps
+override_dh_shlibdeps:
+	dh_shlibdeps -Llibfvde -l${CURDIR}/debian/tmp/usr/lib
 
 .PHONY: override_dh_makeshlibs
 override_dh_makeshlibs:

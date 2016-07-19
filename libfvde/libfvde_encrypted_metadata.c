@@ -908,17 +908,6 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 
 		return( -1 );
 	}
-	if( xml_plist_data_size > ( block_data_size - xml_plist_data_offset ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid XML plist data size value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
 	xml_plist_data = &( block_data[ xml_plist_data_offset - 64 ] );
 
 	if( ( xml_plist_data[ 0 ] == (uint8_t) '<' )
@@ -927,6 +916,17 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 	 && ( xml_plist_data[ 3 ] == (uint8_t) 'c' )
 	 && ( xml_plist_data[ 4 ] == (uint8_t) 't' ) )
 	{
+		if( xml_plist_data_size > ( block_data_size - xml_plist_data_offset ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid XML plist data size value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
