@@ -47,6 +47,10 @@ struct libfvde_data_area_descriptor
 	/* The data type
 	 */
 	uint64_t data_type;
+
+	/* The mapped offset
+	 */
+	off64_t mapped_offset;
 };
 
 int libfvde_data_area_descriptor_initialize(

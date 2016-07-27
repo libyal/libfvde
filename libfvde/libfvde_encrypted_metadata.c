@@ -2095,7 +2095,6 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 	libfvde_data_area_descriptor_t *data_area_descriptor = NULL;
 	static char *function                                = "libfvde_encrypted_metadata_read_type_0x0404";
 	size_t block_data_offset                             = 0;
-	uint64_t data_offset                                 = 0;
 	uint64_t logical_volume_first_block                  = 0;
 	uint64_t logical_volume_number_of_blocks             = 0;
 	uint32_t entry_index                                 = 0;
@@ -2233,7 +2232,7 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 
 		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ block_data_offset + 40 ] ),
-		 data_offset );
+		 data_area_descriptor->mapped_offset );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -2275,10 +2274,10 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 			 value_64bit );
 
 			libcnotify_printf(
-			 "%s: entry: %03d data offset\t: %" PRIu64 "\n",
+			 "%s: entry: %03d logical block number\t: %" PRIi64 "\n",
 			 function,
 			 entry_index,
-			 data_offset );
+			 data_area_descriptor->mapped_offset );
 
 			libcnotify_printf(
 			 "\n" );
@@ -2289,7 +2288,7 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 		if( ( data_area_descriptor->data_type == 0x09 )
 		 || ( data_area_descriptor->data_type == 0x0a ) )
 		{
-			if( data_offset == 0 )
+			if( data_area_descriptor->mapped_offset == 0 )
 			{
 				logical_volume_first_block = (uint64_t) data_area_descriptor->offset;
 /* TODO cheat for now */
@@ -2299,8 +2298,9 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 			logical_volume_number_of_blocks += (uint64_t) data_area_descriptor->size;
 */
 		}
-		data_area_descriptor->offset *= io_handle->block_size;
-		data_area_descriptor->size   *= io_handle->block_size;
+		data_area_descriptor->offset        *= io_handle->block_size;
+		data_area_descriptor->size          *= io_handle->block_size;
+		data_area_descriptor->mapped_offset *= io_handle->block_size;
 
 		if( libcdata_array_append_entry(
 		     encrypted_metadata->data_area_descriptors,

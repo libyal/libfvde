@@ -1913,8 +1913,8 @@ See section: <<data_area_type,Data area type>>
 | 24 | 8 | | [yellow-background]*Unknown (copy number?)* +
 [yellow-background]*Where 0 is the original?*
 | 32 | 8 | | [yellow-background]*Unknown (empty values)*
-| 40 | 8 | | data offset +
-Contains the block number within the logical volume the data area maps to.
+| 40 | 8 | | logical block number +
+Contains the block number within the logical volume the data area is mapped to.
 |===
 
 === Metadata block data type 0x0405
