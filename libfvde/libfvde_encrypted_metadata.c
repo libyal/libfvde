@@ -1959,6 +1959,83 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 	return( 1 );
 }
 
+/* Reads the encrypted metadata block type 0x0304
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0304(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error )
+{
+	static char *function      = "libfvde_encrypted_metadata_read_type_0x0304";
+	uint32_t number_of_entries = 0;
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid block data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data_size < 44 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: block data size value too small.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 0 ] ),
+	 number_of_entries );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: number of entries\t\t\t: %" PRIu32 "\n",
+		 function,
+		 number_of_entries );
+
+/* TODO: add more debug information */
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	return( 1 );
+}
+
 /* Reads the encrypted metadata block type 0x0305
  * Returns 1 if successful or -1 on error
  */
@@ -2291,12 +2368,8 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 			if( data_area_descriptor->mapped_offset == 0 )
 			{
 				logical_volume_first_block = (uint64_t) data_area_descriptor->offset;
-/* TODO cheat for now */
-				logical_volume_number_of_blocks = (uint64_t) data_area_descriptor->size;
 			}
-/* TODO
 			logical_volume_number_of_blocks += (uint64_t) data_area_descriptor->size;
-*/
 		}
 		data_area_descriptor->offset        *= io_handle->block_size;
 		data_area_descriptor->size          *= io_handle->block_size;
@@ -3077,6 +3150,14 @@ int libfvde_encrypted_metadata_read(
 
 					case 0x0022:
 						result = libfvde_encrypted_metadata_read_type_0x0022(
+							  encrypted_metadata,
+							  metadata_block->data,
+							  metadata_block->data_size,
+							  error );
+						break;
+
+					case 0x0304:
+						result = libfvde_encrypted_metadata_read_type_0x0304(
 							  encrypted_metadata,
 							  metadata_block->data,
 							  metadata_block->data_size,
