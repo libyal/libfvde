@@ -30,6 +30,7 @@
 #include "libfvde_io_handle.h"
 #include "libfvde_keyring.h"
 #include "libfvde_libbfio.h"
+#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
 
 #if defined( __cplusplus )
@@ -93,6 +94,10 @@ struct libfvde_encrypted_metadata
 	/* Value to indicate the logical volume size value is set
 	 */
 	uint8_t logical_volume_size_value_is_set;
+
+	/* The data area descriptors
+	 */
+	libcdata_array_t *data_area_descriptors;
 };
 
 int libfvde_encrypted_metadata_initialize(

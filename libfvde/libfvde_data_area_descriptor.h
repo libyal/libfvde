@@ -1,5 +1,5 @@
 /*
- * Sector data functions
+ * Data area descriptor functions
  *
  * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
@@ -20,59 +20,46 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_SECTOR_DATA_H )
-#define _LIBFVDE_SECTOR_DATA_H
+#if !defined( _LIBFVDE_DATA_AREA_DESCRIPTOR_H )
+#define _LIBFVDE_DATA_AREA_DESCRIPTOR_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libfvde_encryption.h"
-#include "libfvde_io_handle.h"
-#include "libfvde_libcaes.h"
-#include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libfvde_sector_data libfvde_sector_data_t;
+typedef struct libfvde_data_area_descriptor libfvde_data_area_descriptor_t;
 
-struct libfvde_sector_data
+struct libfvde_data_area_descriptor
 {
-	/* The encrypted data
+	/* The offset
 	 */
-	uint8_t *encrypted_data;
+	uint64_t offset;
 
-	/* The data
+	/* The size
 	 */
-	uint8_t *data;
+	uint64_t size;
 
-	/* The data size
+	/* The data type
 	 */
-	size_t data_size;
+	uint64_t data_type;
 };
 
-int libfvde_sector_data_initialize(
-     libfvde_sector_data_t **sector_data,
-     size_t data_size,
+int libfvde_data_area_descriptor_initialize(
+     libfvde_data_area_descriptor_t **data_area_descriptor,
      libcerror_error_t **error );
 
-int libfvde_sector_data_free(
-     libfvde_sector_data_t **sector_data,
-     libcerror_error_t **error );
-
-int libfvde_sector_data_read(
-     libfvde_sector_data_t *sector_data,
-     libfvde_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     off64_t file_offset,
-     libcaes_tweaked_context_t *xts_context,
+int libfvde_data_area_descriptor_free(
+     libfvde_data_area_descriptor_t **data_area_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFVDE_SECTOR_DATA_H ) */
+#endif /* !defined( _LIBFVDE_DATA_AREA_DESCRIPTOR_H ) */
 

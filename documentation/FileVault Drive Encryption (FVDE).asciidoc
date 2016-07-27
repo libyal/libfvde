@@ -342,6 +342,9 @@ The block number relative from the start of the metadata or encrypted metadata
 [yellow-background]*The (block) serial number does not always match the value in the volume header.*
 
 === Metadata block data type 0x0011
+Metadata block data type 0x0011 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -571,6 +574,7 @@ unknown7                               : 0x00000000
 ....
 
 === Metadata block data type 0x0012
+
 ....
 Non-system volume only ?
 00000000: 00 00 00 00 00 00 00 00  00 0a 00 00 00 00 00 00   ........ ........
@@ -629,6 +633,9 @@ Consits of an array containing strings of UUIDs
 [yellow-background]*Same as XML plist data in block 0x0011*
 
 === Metadata block data type 0x0013
+Metadata block data type 0x0013 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -820,6 +827,9 @@ relative block numbers?
 ....
 
 === Metadata block data type 0x0016
+Metadata block data type 0x0016 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -905,6 +915,9 @@ Non-system only ?
 ....
 
 === Metadata block data type 0x0017
+Metadata block data type 0x0017 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1038,6 +1051,9 @@ Non-system only ?
 ....
 
 === Metadata block data type 0x0018
+Metadata block data type 0x0018 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1417,6 +1433,8 @@ Metadata block data type 0x001a contains information about the logical volume.
 The block data also contains the lv.familyUUID which is needed to compute the 
 tweak key to decrypt encrypted volumes.
 
+The metadata block data is variable in size and consists of:
+
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
@@ -1488,6 +1506,9 @@ Contains an UUID
 There is no specific ordering to the keys.
 
 === Metadata block data type 0x001c
+Metadata block data type 0x001c contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1589,6 +1610,10 @@ Seen in combination with block 0x0505 where this contained values that did not m
 ....
 
 === Metadata block data type 0x0021
+Metadata block data type 0x0021 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
+
 [yellow-background]*Present when volume group contains a volume?*
 
 [cols="1,1,1,5",options="header"]
@@ -1660,6 +1685,8 @@ a single metadata block e.g. the XML plist data in metadata block 0x0019. Where
 the individual metadata blocks are a chain of data segments. Also see: 
 <<metadata_block_0x0019,Metadata block data type 0x0019>>.
 
+The metadata block data is variable in size and consists of:
+
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
@@ -1711,6 +1738,9 @@ Including the 16 bytes of the next block number and the data size
 ....
 
 === Metadata block data type 0x0105
+Metadata block data type 0x0105 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1771,6 +1801,10 @@ Bitmap ? This block type is only used in combination with encrypted volumes.
 ....
 
 === Metadata block data type 0x0305
+Metadata block data type 0x0305 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
+
 [yellow-background]*Present when volume group contains a volume?*
 
 [cols="1,1,1,5",options="header"]
@@ -1845,36 +1879,46 @@ Volume size in bytes
 ....
 
 === Metadata block data type 0x0405
+Metadata block data type 0x0405 contains information about data and metadata
+areas of the physical volume.
 
-[yellow-background]*Contains the block extents of the metadata areas?*
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | [yellow-background]*Number of entries*
+| 0 | 4 | | Number of data area descriptor
 | 4 | 4 | | [yellow-background]*Unknown (Empty values)*
-| 8 | ... | | [yellow-background]*Array of entries*
+| 8 | ... | | Array of data area descriptors
 |===
 
-The array entry is 48 bytes of size and consists of:
+The data area descriptor is 48 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | | [yellow-background]*Unknown (block number)*
-| 8 | 8 | | [yellow-background]*Unknown (number of blocks)*
-| 16 | 8 | | [yellow-background]*Unknown (data type)* +
-0x0000000000000009 (9) => LV (encrypted and unencrypted) ? +
-0x000000000000000a (10) => LV (encrypted) ? +
-0xfffffffffffffffb (-5) => unencrypted metadata +
-0xfffffffffffffffc (-4) => volume header +
-0xfffffffffffffffd (-3) => encrypted metadata
+| 0 | 8 | | block number
+| 8 | 8 | | number of blocks
+| 16 | 8 | | data type +
+See section: <<data_area_type,Data area type>>
 | 24 | 8 | | [yellow-background]*Unknown (copy number?)* +
 [yellow-background]*Where 0 is the original?*
 | 32 | 8 | | [yellow-background]*Unknown (empty values)*
 | 40 | 8 | | [yellow-background]*Unknown* +
 0x0000000000000000 (0) => [yellow-background]*Unknown* +
-0xfffffffffffffffe (-2) => [yellow-background]*Unknown*
+0xfffffffffffffffe (-2) => [yellow-background]*Unknown (Continuation?)*
+|===
+
+==== [[data_area_type]]Data area type
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x0000000000000009 (9) | | [yellow-background]*Unknown (LV (encrypted and unencrypted) ?*
+| 0x000000000000000a (10) | | [yellow-background]*Unknown (LV (encrypted) ?*
+| 0xfffffffffffffffb (-5) | | Unencrypted metadata
+| 0xfffffffffffffffc (-4) | | Volume header
+| 0xfffffffffffffffd (-3) | | Encrypted metadata
 |===
 
 ==== Notes

@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_data_area_descriptor.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_debug.c"
 				>
 			</File>
@@ -279,6 +283,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_compression.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_data_area_descriptor.h"
 				>
 			</File>
 			<File

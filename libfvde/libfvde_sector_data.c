@@ -87,7 +87,7 @@ int libfvde_sector_data_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create IO handle.",
+		 "%s: unable to sector data.",
 		 function );
 
 		goto on_error;
@@ -101,7 +101,7 @@ int libfvde_sector_data_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear IO handle.",
+		 "%s: unable to clear sector data.",
 		 function );
 
 		memory_free(
@@ -223,7 +223,7 @@ int libfvde_sector_data_read(
      libfvde_sector_data_t *sector_data,
      libfvde_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     off64_t sector_data_offset,
+     off64_t file_offset,
      libcaes_tweaked_context_t *xts_context,
      libcerror_error_t **error )
 {
@@ -284,13 +284,13 @@ int libfvde_sector_data_read(
 		libcnotify_printf(
 		 "%s: reading sector data at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
 		 function,
-		 sector_data_offset,
-		 sector_data_offset );
+		 file_offset,
+		 file_offset );
 	}
 #endif
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,
-	     sector_data_offset,
+	     file_offset,
 	     SEEK_SET,
 	     error ) == -1 )
 	{
@@ -300,7 +300,7 @@ int libfvde_sector_data_read(
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
 		 "%s: unable to seek sector data offset: %" PRIi64 ".",
 		 function,
-		 sector_data_offset );
+		 file_offset );
 
 		return( -1 );
 	}
@@ -335,7 +335,7 @@ int libfvde_sector_data_read(
 			 0 );
 		}
 #endif
-		block_offset = sector_data_offset - io_handle->logical_volume_offset;
+		block_offset = file_offset - io_handle->logical_volume_offset;
 
 		block_number = (uint64_t) ( block_offset / io_handle->bytes_per_sector );
 
