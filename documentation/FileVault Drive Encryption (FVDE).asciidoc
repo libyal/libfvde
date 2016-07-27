@@ -1981,6 +1981,10 @@ See section: <<data_area_type,Data area type>>
 Contains the block number within the logical volume the data area is mapped to.
 |===
 
+....
+Do multiple successive 0x0404 block form a single sequence of extents?
+....
+
 === Metadata block data type 0x0405
 Metadata block data type 0x0405 contains information about data and metadata
 areas of the physical volume.
