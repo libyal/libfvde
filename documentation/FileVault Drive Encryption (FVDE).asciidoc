@@ -1882,6 +1882,9 @@ Volume size in bytes
 ...
 ....
 
+=== Metadata block data type 0x0404
+[yellow-background]*TODO: add information*
+
 === Metadata block data type 0x0405
 Metadata block data type 0x0405 contains information about data and metadata
 areas of the physical volume.

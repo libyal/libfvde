@@ -572,7 +572,7 @@ int libfvde_encrypted_metadata_read_type_0x0016(
 			 &( block_data[ block_data_offset ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %02d unknown1\t\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %03d unknown1\t: 0x%08" PRIx64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -581,7 +581,7 @@ int libfvde_encrypted_metadata_read_type_0x0016(
 			 &( block_data[ block_data_offset + 8 ] ),
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %02d unknown2\t\t: %" PRIu32 "\n",
+			 "%s: entry: %03d unknown2\t: %" PRIu32 "\n",
 			 function,
 			 entry_index,
 			 value_32bit );
@@ -1685,7 +1685,7 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 			 &( block_data[ block_data_offset ] ),
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %02d number of blocks\t: %" PRIu32 "\n",
+			 "%s: entry: %03d number of blocks\t: %" PRIu32 "\n",
 			 function,
 			 entry_index,
 			 value_32bit );
@@ -1694,7 +1694,7 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 			 &( block_data[ block_data_offset + 4 ] ),
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %02d unknown1\t\t: 0x%08" PRIx32 "\n",
+			 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 entry_index,
 			 value_32bit );
@@ -1703,7 +1703,7 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 			 &( block_data[ block_data_offset + 8 ] ),
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %02d block number\t: %" PRIu32 "\n",
+			 "%s: entry: %03d block number\t\t: %" PRIu32 "\n",
 			 function,
 			 entry_index,
 			 value_32bit );
@@ -1712,7 +1712,7 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 			 &( block_data[ block_data_offset + 12 ] ),
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %02d unknown2\t\t: 0x%08" PRIx32 "\n",
+			 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 entry_index,
 			 value_32bit );
@@ -2719,7 +2719,8 @@ int libfvde_encrypted_metadata_read(
 			if( metadata_block->is_lvf_wiped == 0 )
 			{
 #if defined( HAVE_DEBUG_OUTPUT )
-				if( metadata_block->serial_number != io_handle->serial_number )
+				if( ( libcnotify_verbose != 0 )
+				 && ( metadata_block->serial_number != io_handle->serial_number ) )
 				{
 					libcnotify_printf(
 					 "%s: mismatch in serial number ( 0x%08" PRIx32 " != 0x%08" PRIx32 " ).\n",

@@ -888,7 +888,8 @@ int libfvde_metadata_read(
 		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( metadata_block->serial_number != io_handle->serial_number )
+	if( ( libcnotify_verbose != 0 )
+	 && ( metadata_block->serial_number != io_handle->serial_number ) )
 	{
 		libcnotify_printf(
 		 "%s: mismatch in serial number ( 0x%08" PRIx32 " != 0x%08" PRIx32 " ).\n",
