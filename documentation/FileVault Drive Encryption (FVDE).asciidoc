@@ -1804,6 +1804,9 @@ Bitmap ? This block type is only used in combination with encrypted volumes.
 00001fb0: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........ 
 ....
 
+=== Metadata block data type 0x0304
+[yellow-background]*TODO: add information*
+
 === Metadata block data type 0x0305
 Metadata block data type 0x0305 contains information about [yellow-background]*TODO: describe*
 
@@ -1883,7 +1886,36 @@ Volume size in bytes
 ....
 
 === Metadata block data type 0x0404
-[yellow-background]*TODO: add information*
+Metadata block data type 0x0404 contains information about data and metadata
+areas of the physical volume.
+
+The metadata block data is variable in size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Number of data area descriptor
+| 4 | 4 | | [yellow-background]*Unknown (Empty values)*
+| 8 | ... | | Array of data area descriptors +
+See section: <<data_area_descriptor,Data area descriptor>>
+|===
+
+==== [[data_area_descriptor]]Data area descriptor
+The data area descriptor is 48 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | block number
+| 8 | 8 | | number of blocks
+| 16 | 8 | | data type +
+See section: <<data_area_type,Data area type>>
+| 24 | 8 | | [yellow-background]*Unknown (copy number?)* +
+[yellow-background]*Where 0 is the original?*
+| 32 | 8 | | [yellow-background]*Unknown (empty values)*
+| 40 | 8 | | data offset +
+Contains the block number within the logical volume the data area maps to.
+|===
 
 === Metadata block data type 0x0405
 Metadata block data type 0x0405 contains information about data and metadata

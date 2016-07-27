@@ -89,7 +89,7 @@ struct libfvde_encrypted_metadata
 
 	/* Value to indicate the logical volume block values are set
 	 * Logical volume block values are defined in metadata block 0x0505
-	 * Or derived from the data area descriptors defined in metadata block 0x0405
+	 * or derived from the data area descriptors defined in metadata block 0x040 or 0x0405
 	 */
 	uint8_t logical_volume_block_values_are_set;
 
@@ -184,6 +184,13 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 
 int libfvde_encrypted_metadata_read_type_0x0305(
      libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_read_type_0x0404(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     libfvde_io_handle_t *io_handle,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error );
