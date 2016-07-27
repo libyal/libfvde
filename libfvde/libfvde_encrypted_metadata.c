@@ -559,6 +559,7 @@ int libfvde_encrypted_metadata_read_type_0x0016(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	block_data_offset = 4;
 
 	for( entry_index = 0;
@@ -677,6 +678,7 @@ int libfvde_encrypted_metadata_read_type_0x0017(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	block_data_offset = 8;
 
 	for( entry_index = 0;
@@ -1528,6 +1530,7 @@ int libfvde_encrypted_metadata_read_type_0x001c(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	block_data_offset = 16;
 
 	for( entry_index = 0;
@@ -1672,6 +1675,7 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	block_data_offset = 24;
 
 	for( entry_index = 0;
@@ -1812,6 +1816,7 @@ int libfvde_encrypted_metadata_read_type_0x0021(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	return( 1 );
 }
 
@@ -1901,6 +1906,7 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	block_data_offset = 16;
 
 	for( entry_index = 0;
@@ -1969,7 +1975,14 @@ int libfvde_encrypted_metadata_read_type_0x0304(
      libcerror_error_t **error )
 {
 	static char *function      = "libfvde_encrypted_metadata_read_type_0x0304";
+	size_t block_data_offset   = 0;
+	uint32_t entry_index       = 0;
 	uint32_t number_of_entries = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint64_t value_64bit       = 0;
+	uint32_t value_32bit       = 0;
+#endif
 
 	if( encrypted_metadata == NULL )
 	{
@@ -2027,12 +2040,79 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 		 function,
 		 number_of_entries );
 
-/* TODO: add more debug information */
+		byte_stream_copy_to_uint32_little_endian(
+		 &( block_data[ 4 ] ),
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: unknown1\t\t\t\t: 0x%08" PRIx32 "\n",
+		 function,
+		 value_32bit );
 
 		libcnotify_printf(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
+	block_data_offset = 8;
+
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 16 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown3\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 24 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown4\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 32 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown5\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
+		block_data_offset += 40;
+	}
 	return( 1 );
 }
 
@@ -2262,6 +2342,7 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	block_data_offset = 8;
 
 	if( libcdata_array_empty(
@@ -2523,6 +2604,7 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	block_data_offset = 8;
 
 	if( libcdata_array_empty(
@@ -2775,6 +2857,7 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 		 "\n" );
 	}
 #endif
+/* TODO: check bounds of number_of_entries */
 	if( encrypted_metadata->logical_volume_block_values_are_set == 0 )
 	{
 		encrypted_metadata->logical_volume_first_block      = first_block;
