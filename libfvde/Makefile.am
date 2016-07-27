@@ -45,6 +45,7 @@ libfvde_la_SOURCES = \
 	libfvde_legacy.c libfvde_legacy.h \
 	libfvde_libbfio.h \
 	libfvde_libcaes.h \
+	libfvde_libcdata.h \
 	libfvde_libcerror.h \
 	libfvde_libclocale.h \
 	libfvde_libcnotify.h \

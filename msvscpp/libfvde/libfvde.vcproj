@@ -342,6 +342,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_libcdata.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_libcerror.h"
 				>
 			</File>

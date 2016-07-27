@@ -1889,9 +1889,11 @@ The metadata block data is variable in size and consists of:
 | Offset | Size | Value | Description
 | 0 | 4 | | Number of data area descriptor
 | 4 | 4 | | [yellow-background]*Unknown (Empty values)*
-| 8 | ... | | Array of data area descriptors
+| 8 | ... | | Array of data area descriptors +
+See section: <<data_area_descriptor,Data area descriptor>>
 |===
 
+==== [[data_area_descriptor]]Data area descriptor
 The data area descriptor is 48 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
