@@ -1071,6 +1071,20 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
+	if( libfvde_xml_plist_key_get_array_number_of_entries(
+	     internal_plist->crypto_users_key,
+	     &( internal_plist->number_of_crypto_users_entries ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of CryptoUsers entries.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
 	     encryption_context_key,
 	     (uint8_t *) "WrappedVolumeKeys",
@@ -1345,6 +1359,17 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		return( -1 );
 	}
+	if( passphrase_wrapped_kek_index < 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid passphrase wrapped KEK index value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	if( passphrase_wrapped_kek == NULL )
 	{
 		libcerror_error_set(
@@ -1377,6 +1402,10 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 		 function );
 
 		return( -1 );
+	}
+	if( passphrase_wrapped_kek_index >= internal_plist->number_of_crypto_users_entries )
+	{
+		return( 0 );
 	}
 	if( libfvde_xml_plist_key_get_array_entry_by_index(
 	     internal_plist->crypto_users_key,

@@ -66,6 +66,10 @@ struct libfvde_internal_encryption_context_plist
 	 */
 	libfvde_xml_plist_key_t *crypto_users_key;
 
+	/* The number of crypto users array entries
+	 */
+	int number_of_crypto_users_entries;
+
         /* The XML plist wrapped volume keys key
 	 */
 	libfvde_xml_plist_key_t *wrapped_volume_keys_key;
@@ -140,5 +144,5 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_LVF_ENCRYPTION_CONTEXT_PLIST_H ) */
 

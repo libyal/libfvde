@@ -92,6 +92,11 @@ int libfvde_xml_plist_key_value_uuid_string_copy_to_byte_stream(
      size_t byte_stream_size,
      libcerror_error_t **error );
 
+int libfvde_xml_plist_key_get_array_number_of_entries(
+     libfvde_xml_plist_key_t *key,
+     int *number_of_entries,
+     libcerror_error_t **error );
+
 int libfvde_xml_plist_key_get_array_entry_by_index(
      libfvde_xml_plist_key_t *key,
      int array_entry_index,
@@ -109,5 +114,5 @@ int libfvde_xml_plist_key_get_sub_key_by_utf8_name(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_XML_PLIST_KEY_H ) */
 

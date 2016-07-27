@@ -869,6 +869,83 @@ on_error:
 	return( -1 );
 }
 
+/* Retrieves the number of array entries
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_xml_plist_key_get_array_number_of_entries(
+     libfvde_xml_plist_key_t *key,
+     int *number_of_entries,
+     libcerror_error_t **error )
+{
+	xmlNode *xml_node     = NULL;
+	static char *function = "libfvde_xml_plist_key_get_array_number_of_entries";
+	int number_of_nodes   = 0;
+
+	if( key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid key.",
+		 function );
+
+		return( -1 );
+	}
+	if( key->value_xml_node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid key - missing value XML node.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_entries == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid number of entries.",
+		 function );
+
+		return( -1 );
+	}
+	if( xmlStrcmp(
+	     key->value_xml_node->name,
+	     (const xmlChar *) "array" ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid key - invalid value XML node - unsupported type.",
+		 function );
+
+		return( -1 );
+	}
+	xml_node = key->value_xml_node->children;
+
+	while( xml_node != NULL )
+	{
+		/* Ignore text nodes
+		 */
+		if( xmlStrcmp(
+		     xml_node->name,
+		     (const xmlChar *) "text" ) != 0 )
+		{
+			number_of_nodes++;
+		}
+		xml_node = xml_node->next;
+	}
+	*number_of_entries = number_of_nodes;
+
+	return( 1 );
+}
+
 /* Retrieves a specific array entry
  * Returns 1 if successful or -1 on error
  */
