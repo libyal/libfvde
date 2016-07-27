@@ -76,6 +76,9 @@ Future considerations:
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
 
+20160727
+* worked on format support
+
 20160720
 * worked on format support
 
