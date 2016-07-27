@@ -211,7 +211,7 @@ int libfvde_encrypted_metadata_free(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free the data area descriptors array.",
+				 "%s: unable to free data area descriptors array.",
 				 function );
 
 				result = -1;
@@ -2188,6 +2188,20 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 #endif
 	block_data_offset = 8;
 
+	if( libcdata_array_empty(
+	     encrypted_metadata->data_area_descriptors,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty data area descriptors array.",
+		 function );
+
+		goto on_error;
+	}
 	for( entry_index = 0;
 	     entry_index < number_of_entries;
 	     entry_index++ )
@@ -2278,10 +2292,13 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 			if( unknown2 == 0 )
 			{
 				logical_volume_first_block = (uint64_t) data_area_descriptor->offset;
+/* TODO cheat for now */
+				logical_volume_number_of_blocks = (uint64_t) data_area_descriptor->size;
 			}
+/* TODO
 			logical_volume_number_of_blocks += (uint64_t) data_area_descriptor->size;
+*/
 		}
-
 		data_area_descriptor->offset *= io_handle->block_size;
 		data_area_descriptor->size   *= io_handle->block_size;
 
@@ -2302,12 +2319,20 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 		}
 		data_area_descriptor = NULL;
 	}
+	/* Use the last 0x0405 metadata block
+	 */
 	if( logical_volume_number_of_blocks > 0 )
 	{
 		encrypted_metadata->logical_volume_first_block      = logical_volume_first_block;
 		encrypted_metadata->logical_volume_number_of_blocks = logical_volume_number_of_blocks;
 
 		encrypted_metadata->logical_volume_block_values_are_set = 1;
+
+		/* Overwrite com.apple.corestorage.lv.size from metadata block 0x001a because it seems unreliable
+		 */
+		encrypted_metadata->logical_volume_size = encrypted_metadata->logical_volume_number_of_blocks * io_handle->block_size;
+
+		encrypted_metadata->logical_volume_size_value_is_set = 1;
 	}
 	return( 1 );
 

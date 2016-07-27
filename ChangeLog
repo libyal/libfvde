@@ -1,4 +1,7 @@
 TODO
+* format support
+  - 2x 0x001a block with same serial, where second one contains size of 2x extents
+  - and first 1x extent, another image only the size of 1x extent.
 * volume offset detection
   - fallback check if volume data is before encrypted metadata?
 * pyfvde

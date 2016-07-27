@@ -1505,6 +1505,10 @@ Contains an UUID
 [NOTE]
 There is no specific ordering to the keys.
 
+[NOTE]
+When a 0x0405 metadata block is present the value of 
+com.apple.corestorage.lv.size seems to be unreliable.
+
 === Metadata block data type 0x001c
 Metadata block data type 0x001c contains information about [yellow-background]*TODO: describe*
 
