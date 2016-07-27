@@ -2080,14 +2080,23 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 			 entry_index,
 			 value_64bit );
 
-			byte_stream_copy_to_uint64_little_endian(
+			byte_stream_copy_to_uint32_little_endian(
 			 &( block_data[ block_data_offset + 16 ] ),
-			 value_64bit );
+			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown3\t\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %03d unknown3a\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 entry_index,
-			 value_64bit );
+			 value_32bit );
+
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 20 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown3b\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
 
 			byte_stream_copy_to_uint64_little_endian(
 			 &( block_data[ block_data_offset + 24 ] ),
