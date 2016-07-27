@@ -2169,7 +2169,7 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of entries\t\t: %" PRIu32 "\n",
+		 "%s: number of entries\t\t\t: %" PRIu32 "\n",
 		 function,
 		 number_of_entries );
 
@@ -2177,7 +2177,7 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 		 &( block_data[ 4 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown1\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -2434,7 +2434,7 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of entries\t\t: %" PRIu32 "\n",
+		 "%s: number of entries\t\t\t: %" PRIu32 "\n",
 		 function,
 		 number_of_entries );
 
@@ -2442,7 +2442,7 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 		 &( block_data[ 4 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown1\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
