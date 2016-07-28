@@ -13,6 +13,7 @@ AM_CPPFLAGS = \
 	@LIBBFIO_CPPFLAGS@ \
 	@LIBUNA_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
+	@LIBFGUID_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@LIBCAES_CPPFLAGS@ \
 	@LIBCSYSTEM_CPPFLAGS@ \
@@ -38,10 +39,12 @@ fvdeinfo_SOURCES = \
 	fvdetools_libcstring.h \
 	fvdetools_libcsystem.h \
 	fvdetools_libfvde.h \
+	fvdetools_libfguid.h \
 	fvdetools_libuna.h \
 	info_handle.c info_handle.h
 
 fvdeinfo_LDADD = \
+	@LIBFGUID_LIBADD@ \
 	@LIBCSYSTEM_LIBADD@ \
 	@LIBBFIO_LIBADD@ \
 	@LIBCPATH_LIBADD@ \

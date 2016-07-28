@@ -36,11 +36,15 @@
  */
 #if defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI )
 typedef struct libfvde_encryption_context_plist {}	libfvde_encryption_context_plist_t;
+typedef struct libfvde_logical_volume {}		libfvde_logical_volume_t;
 typedef struct libfvde_volume {}			libfvde_volume_t;
+typedef struct libfvde_volume_group {}			libfvde_volume_group_t;
 
 #else
 typedef intptr_t libfvde_encryption_context_plist_t;
+typedef intptr_t libfvde_logical_volume_t;
 typedef intptr_t libfvde_volume_t;
+typedef intptr_t libfvde_volume_group_t;
 
 #endif /* defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI ) */
 

@@ -252,6 +252,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_volume_group.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_xml_plist.c"
 				>
 			</File>
@@ -423,6 +427,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_volume_group.h"
 				>
 			</File>
 			<File

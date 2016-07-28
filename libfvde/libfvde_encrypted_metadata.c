@@ -2465,6 +2465,7 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 		data_area_descriptor->size          *= io_handle->block_size;
 		data_area_descriptor->mapped_offset *= io_handle->block_size;
 
+#ifdef TODO
 		if( libcdata_array_append_entry(
 		     encrypted_metadata->data_area_descriptors,
 		     &data_area_descriptor_index,
@@ -2480,8 +2481,24 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 
 			goto on_error;
 		}
+#else
+		if( libfvde_data_area_descriptor_free(
+		     &data_area_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free data area descriptor.",
+			 function );
+
+			goto on_error;
+		}
+#endif
 		data_area_descriptor = NULL;
 	}
+#ifdef TODO
 	/* Use the last 0x0404 metadata block
 	 */
 	if( logical_volume_number_of_blocks > 0 )
@@ -2497,6 +2514,7 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 
 		encrypted_metadata->logical_volume_size_value_is_set = 1;
 	}
+#endif /* TODO */
 	return( 1 );
 
 on_error:

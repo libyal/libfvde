@@ -203,11 +203,13 @@ typedef int64_t off64_t;
 /* The following type definitions hide internal data structures
  */
 typedef intptr_t libfvde_encryption_context_plist_t;
+typedef intptr_t libfvde_logical_volume_t;
 typedef intptr_t libfvde_volume_t;
+typedef intptr_t libfvde_volume_group_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_TYPES_H ) */
 

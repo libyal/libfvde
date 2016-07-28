@@ -30,18 +30,21 @@
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libcstring.h"
 #include "fvdetools_libcsystem.h"
+#include "fvdetools_libfguid.h"
 #include "fvdetools_libfvde.h"
 #include "fvdetools_libuna.h"
 #include "info_handle.h"
 
 #if !defined( LIBFVDE_HAVE_BFIO )
+
 extern \
 int libfvde_volume_open_file_io_handle(
      libfvde_volume_t *volume,
      libbfio_handle_t *file_io_handle,
      int access_flags,
      libfvde_error_t **error );
-#endif
+
+#endif /* !defined( LIBFVDE_HAVE_BFIO ) */
 
 #define INFO_HANDLE_NOTIFY_STREAM		stdout
 
@@ -699,9 +702,16 @@ int info_handle_volume_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error )
 {
-	static char *function      = "info_handle_volume_fprint";
-	size64_t volume_size       = 0;
-	uint32_t encryption_method = 0;
+#ifdef TODO
+	uint8_t guid_buffer[ 16 ];
+
+	libcstring_system_character_t guid_string[ 48 ];
+#endif
+
+	libfguid_identifier_t *guid = NULL;
+	static char *function       = "info_handle_volume_fprint";
+	size64_t volume_size        = 0;
+	uint32_t encryption_method  = 0;
 
 	if( info_handle == NULL )
 	{
@@ -713,6 +723,19 @@ int info_handle_volume_fprint(
 		 function );
 
 		return( -1 );
+	}
+	if( libfguid_identifier_initialize(
+	     &guid,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create GUID.",
+		 function );
+
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
@@ -734,7 +757,7 @@ int info_handle_volume_fprint(
 		 "%s: unable to retrieve physical volume size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
@@ -753,7 +776,7 @@ int info_handle_volume_fprint(
 		 "%s: unable to retrieve encryption method of physical volume.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
@@ -775,6 +798,75 @@ int info_handle_volume_fprint(
 	 info_handle->notify_stream,
 	 "\n" );
 
+#ifdef TODO
+	fprintf(
+	 info_handle->notify_stream,
+	 "\nLogical volume group:\n" );
+
+	if( libbde_volume_get_volume_identifier(
+	     info_handle->input_volume,
+	     guid_buffer,
+	     16,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve volume identifier.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfguid_identifier_copy_from_byte_stream(
+	     guid,
+	     guid_buffer,
+	     16,
+	     LIBFGUID_ENDIAN_LITTLE,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy byte stream to GUID.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfguid_identifier_copy_to_utf16_string(
+		  guid,
+		  (uint16_t *) guid_string,
+		  48,
+		  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
+		  error );
+#else
+	result = libfguid_identifier_copy_to_utf8_string(
+		  guid,
+		  (uint8_t *) guid_string,
+		  48,
+		  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
+		  error );
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy GUID to string.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tVolume group identifier\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+	 guid_string );
+
+#endif /* TODO */
+
 	fprintf(
 	 info_handle->notify_stream,
 	 "\nLogical volume:\n" );
@@ -791,7 +883,7 @@ int info_handle_volume_fprint(
 		 "%s: unable to retrieve logical volume size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
@@ -805,5 +897,14 @@ int info_handle_volume_fprint(
 	 "\n" );
 
 	return( 1 );
+
+on_error:
+	if( guid != NULL )
+	{
+		libfguid_identifier_free(
+		 &guid,
+		 NULL );
+	}
+	return( -1 );
 }
 

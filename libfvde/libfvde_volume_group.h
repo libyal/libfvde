@@ -1,7 +1,7 @@
 /*
- * XML plist functions
+ * Volume group functions
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -20,64 +20,62 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_XML_PLIST_H )
-#define _LIBFVDE_XML_PLIST_H
+#if !defined( _LIBFVDE_INTERNAL_VOLUME_GROUP_H )
+#define _LIBFVDE_INTERNAL_VOLUME_GROUP_H
 
 #include <common.h>
 #include <types.h>
 
-#include <libxml/tree.h>
-
+#include "libfvde_extern.h"
+#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
-#include "libfvde_xml_plist_key.h"
+#include "libfvde_types.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libfvde_xml_plist libfvde_xml_plist_t;
+typedef struct libfvde_internal_volume_group libfvde_internal_volume_group_t;
 
-struct libfvde_xml_plist
+struct libfvde_internal_volume_group
 {
-        /* The XML document
+	/* The name
 	 */
-        xmlDoc *xml_document;
+	char *name;
 
-	/* The plist XML node
+	/* The name size
 	 */
-	xmlNode *plist_xml_node;
+	size_t name_size;
 
-	/* The root XML node
+	/* The identfier
 	 */
-	xmlNode *root_xml_node;
+	char identifier[ 39 ];
 
-	/* The (main) dict XML node
+	/* The physical volumes array
 	 */
-	xmlNode *dict_xml_node;
+	libcdata_array_t *physical_volumes_array;
+
+	/* The logical volumes array
+	 */
+	libcdata_array_t *logical_volumes_array;
 };
 
-int libfvde_xml_plist_initialize(
-     libfvde_xml_plist_t **plist,
+int libfvde_volume_group_initialize(
+     libfvde_volume_group_t **volume_group,
      libcerror_error_t **error );
 
-int libfvde_xml_plist_free(
-     libfvde_xml_plist_t **plist,
+LIBFVDE_EXTERN \
+int libfvde_volume_group_free(
+     libfvde_volume_group_t **volume_group,
      libcerror_error_t **error );
 
-int libfvde_xml_plist_copy_from_byte_stream(
-     libfvde_xml_plist_t *plist,
-     const uint8_t *byte_stream,
-     size_t byte_stream_size,
-     libcerror_error_t **error );
-
-int libfvde_xml_plist_get_root_key(
-     libfvde_xml_plist_t *plist,
-     libfvde_xml_plist_key_t **key,
+int libfvde_internal_volume_group_free(
+     libfvde_internal_volume_group_t **internal_volume_group,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFVDE_XML_PLIST_H ) */
+#endif /* !defined( _LIBFVDE_INTERNAL_VOLUME_GROUP_H ) */
 

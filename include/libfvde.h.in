@@ -492,6 +492,18 @@ int libfvde_volume_get_encryption_method(
      libfvde_error_t **error );
 
 /* -------------------------------------------------------------------------
+ * Volume group functions
+ * ------------------------------------------------------------------------- */
+
+/* Frees a volume group
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_free(
+     libfvde_volume_group_t **volume_group,
+     libfvde_error_t **error );
+
+/* -------------------------------------------------------------------------
  * LVF encryption context and EncryptedRoot.plist file functions
  * ------------------------------------------------------------------------- */
 
@@ -558,4 +570,5 @@ int libfvde_encryption_context_plist_decrypt(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_H ) */
+

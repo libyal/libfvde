@@ -66,6 +66,7 @@ libfvde_la_SOURCES = \
 	libfvde_types.h \
 	libfvde_unused.h \
 	libfvde_volume.c libfvde_volume.h \
+	libfvde_volume_group.c libfvde_volume_group.h \
 	libfvde_xml_plist.c libfvde_xml_plist.h \
 	libfvde_xml_plist_key.c libfvde_xml_plist_key.h
 
