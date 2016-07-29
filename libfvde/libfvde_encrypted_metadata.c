@@ -1667,7 +1667,7 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 		 0 );
 
 		libcnotify_printf(
-		 "%s: number of entries\t\t: %" PRIu64 "\n",
+		 "%s: number of entries\t\t\t: %" PRIu64 "\n",
 		 function,
 		 number_of_entries );
 
