@@ -1660,8 +1660,8 @@ The metadata block data is 48 bytes in size and consists of:
 | 0 | 8 | | [yellow-background]*Unknown (Next 0x0022 block?)* +
 [yellow-background]*0 if not set?* +
 [yellow-background]*corresponds to unknown3 (value before block number) in the metadata block header*
-| 8 | 8 | | [yellow-background]*Number of entries*
-| 16 | ... | | [yellow-background]*Array of entries*
+| 8 | 8 | | Number of entries
+| 16 | ... | | Array of entries
 |===
 
 The array entry is 32 bytes of size and consists of:
@@ -1702,10 +1702,36 @@ Including the 16 bytes of the next block number and the data size
 |===
 
 === Metadata block data type 0x0025
+Metadata block data type 0x0025 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | [yellow-background]*Unknown (Next 0x0025 block?)* +
+[yellow-background]*0 if not set?*
+| 8 | 8 | | Number of entries
+| 16 | ... | | Array of entries
+|===
+
+The array entry is 24 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | [yellow-background]*Unknown*
+| 8 | 8 | | [yellow-background]*Unknown*
+| 16 | 8 | | [yellow-background]*Unknown*
+|===
+
 ....
 00000000: 00 00 00 00 00 00 00 00  15 00 00 00 00 00 00 00   ........ ........ 
+
 00000010: 2f 00 00 00 00 00 00 00  ab 07 00 00 00 00 00 00   /....... ........ 
-00000020: 33 25 00 00 00 00 00 00  29 00 00 00 00 00 00 00   3%...... )....... 
+00000020: 33 25 00 00 00 00 00 00                            3%...... )....... 
+
+00000020:                          29 00 00 00 00 00 00 00   3%...... )....... 
 00000030: a5 07 00 00 00 00 00 00  33 25 00 00 00 00 00 00   ........ 3%...... 
 00000040: 2b 00 00 00 00 00 00 00  a7 07 00 00 00 00 00 00   +....... ........ 
 00000050: 33 25 00 00 00 00 00 00  0b 00 00 00 00 00 00 00   3%...... ........ 
