@@ -473,7 +473,7 @@ int libfvde_xml_plist_get_root_key(
 				}
 				else if( result != 0 )
 				{
-					plist->dict_tag = plist->root_tag;
+					plist->dict_tag = element_tag;
 				}
 				else
 				{

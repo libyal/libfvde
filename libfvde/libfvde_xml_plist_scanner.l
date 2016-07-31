@@ -37,6 +37,7 @@
 
 int xml_plist_scanner_suppress_error   = 1;
 size_t xml_plist_scanner_buffer_offset = 0;
+size_t xml_plist_scanner_index         = 0;
 
 #define YY_USER_ACTION	xml_plist_scanner_buffer_offset += (size_t) xml_plist_scanner_leng;
 
@@ -54,23 +55,33 @@ end_of_line             [\r\n|\n|\r]
 name			[A-Za-z\x80-\xff_][A-Za-z\x80-\xff_0-9.-]*
 escaped_value		&#([0-9]+|x[0-9a-fA-F]+);
 
-xml_tag_content		[^><]+
+xml_tag_content		[^<]+
 xml_attribute_value	\"([^"&]|{escaped_value})*\"|\'([^'&]|{escaped_value})*\'
 
 white_space             [\a\b\c\e\f\t\v ]+
 
+%s XML_CONTENT
 %s XML_TAG
 
 %%
 
-<INITIAL>"<"{name} {
+{white_space}*"<"{name} {
         xml_plist_scanner_token_print(
          "XML_TAG_OPEN_START" );
 
 	BEGIN( XML_TAG );
 
-        xml_plist_scanner_lval.string_value.data   = &( xml_plist_scanner_text[ 1 ] );
-        xml_plist_scanner_lval.string_value.length = (size_t) xml_plist_scanner_leng - 1;
+	xml_plist_scanner_index = 0;
+
+	while( xml_plist_scanner_index < xml_plist_scanner_leng )
+	{
+		if( xml_plist_scanner_text[ xml_plist_scanner_index++ ] == '<' )
+		{
+			break;
+		}
+	}
+        xml_plist_scanner_lval.string_value.data   = &( xml_plist_scanner_text[ xml_plist_scanner_index ] );
+        xml_plist_scanner_lval.string_value.length = (size_t) xml_plist_scanner_leng - xml_plist_scanner_index;
 
 	return( XML_TAG_OPEN_START );
 }
@@ -102,7 +113,7 @@ white_space             [\a\b\c\e\f\t\v ]+
         return( XML_ATTRIBUTE_VALUE );
 }
 
-<XML_TAG>"/>" {
+<XML_TAG>"/>"{end_of_line}? {
         xml_plist_scanner_token_print(
          "XML_TAG_END_SINGLE" );
 
@@ -111,18 +122,20 @@ white_space             [\a\b\c\e\f\t\v ]+
         return( XML_TAG_END_SINGLE );
 }
 
-<XML_TAG>">" {
+<XML_TAG>">"{end_of_line}? {
         xml_plist_scanner_token_print(
          "XML_TAG_END" );
 
-	BEGIN( INITIAL );
+	BEGIN( XML_CONTENT );
 
         return( XML_TAG_END );
 }
 
-<INITIAL>{xml_tag_content} {
+<XML_CONTENT>{xml_tag_content} {
         xml_plist_scanner_token_print(
          "XML_TAG_CONTENT" );
+
+	BEGIN( INITIAL );
 
         xml_plist_scanner_lval.string_value.data   = xml_plist_scanner_text;
         xml_plist_scanner_lval.string_value.length = (size_t) xml_plist_scanner_leng;
@@ -130,31 +143,40 @@ white_space             [\a\b\c\e\f\t\v ]+
         return( XML_TAG_CONTENT );
 }
 
-<INITIAL>"</"{name}">" {
+"</"{name}">"{end_of_line}? {
         xml_plist_scanner_token_print(
          "XML_TAG_CLOSE" );
 
+	xml_plist_scanner_index = xml_plist_scanner_leng--;
+
+	while( xml_plist_scanner_index > 2 )
+	{
+		if( xml_plist_scanner_text[ --xml_plist_scanner_index ] == '>' )
+		{
+			break;
+		}
+	}
         xml_plist_scanner_lval.string_value.data   = &( xml_plist_scanner_text[ 2 ] );
-        xml_plist_scanner_lval.string_value.length = (size_t) xml_plist_scanner_leng - 3;
+        xml_plist_scanner_lval.string_value.length = (size_t) xml_plist_scanner_index - 2;
 
 	return( XML_TAG_CLOSE );
 }
 
-<INITIAL>"<?xml"[^>]*">" {
+<INITIAL>"<?xml"[^>]*">"{end_of_line}? {
         xml_plist_scanner_token_print(
          "XML_PROLOGUE" );
 
 	return( XML_PROLOGUE );
 }
 
-<INITIAL>"<!--"([^-]|"-"[^-])*"-->" {
+<INITIAL>"<!--"([^-]|"-"[^-])*"-->"{end_of_line}? {
         xml_plist_scanner_token_print(
          "XML_COMMENT" );
 
 	return( XML_COMMENT );
 }
 
-<INITIAL>"<!DOCTYPE"[^>]*">" {
+<INITIAL>"<!DOCTYPE"[^>]*">"{end_of_line}? {
         xml_plist_scanner_token_print(
          "XML_DOCTYPE" );
 

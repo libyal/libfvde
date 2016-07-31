@@ -174,38 +174,28 @@ int xml_plist_parser_parse_buffer(
  */
 
 xml_plist_main
-	: xml_tag_open xml_tags xml_tag_close
-	{
-		xml_plist_parser_rule_print(
-		 "xml_plist_main" );
-	}
+	: xml_prologue xml_doctype xml_tag_open xml_tags xml_tag_close
+	;
+
+xml_prologue
+	: /* empty */
+	| XML_PROLOGUE
+	;
+
+xml_doctype
+	: /* empty */
+	| XML_DOCTYPE
 	;
 
 xml_tags
 	: /* empty */
 	| xml_tag xml_tags
-	{
-		xml_plist_parser_rule_print(
-		 "xml_tags" );
-	}
 	;
 
 xml_tag
 	: xml_tag_open xml_tags xml_tag_close
-	{
-		xml_plist_parser_rule_print(
-		 "xml_tag" );
-	}
 	| xml_tag_open xml_tag_content xml_tag_close
-	{
-		xml_plist_parser_rule_print(
-		 "xml_tag" );
-	}
 	| xml_tag_single
-	{
-		xml_plist_parser_rule_print(
-		 "xml_tag" );
-	}
 	;
 
 xml_tag_open_start
@@ -269,10 +259,6 @@ xml_tag_open_start
 
 xml_tag_open
 	: xml_tag_open_start xml_attributes XML_TAG_END
-	{
-		xml_plist_parser_rule_print(
-		 "xml_tag_open" );
-	}
 	;
 
 xml_tag_single
@@ -383,10 +369,6 @@ xml_tag_content
 xml_attributes
 	: /* empty */
 	| xml_attribute xml_attributes
-	{
-		xml_plist_parser_rule_print(
-		 "xml_attributes" );
-	}
 	;
 
 xml_attribute
