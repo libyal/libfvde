@@ -12,6 +12,7 @@ configuration:
 install:
   - cmd: git clone https://github.com/libyal/libyal.git && move libyal ..\
   - cmd: git clone https://github.com/joachimmetz/dokan.git && move dokan ..\
+  - ps: .\synczlib.ps1
   - ps: .\syncwinflexbison.ps1
 
 before_build:
