@@ -93,9 +93,17 @@ struct xml_plist_parser_state
 	 */
 	libcerror_error_t **error;
 
+	/* The root tag
+	 */
+	libfvde_xml_plist_tag_t *root_tag;
+
 	/* The current tag
 	 */
 	libfvde_xml_plist_tag_t *current_tag;
+
+	/* The parent tag
+	 */
+	libfvde_xml_plist_tag_t *parent_tag;
 };
 
 typedef size_t yy_size_t;
@@ -188,37 +196,10 @@ xml_tag
 		xml_plist_parser_rule_print(
 		 "xml_tag" );
 	}
-	| xml_tag_open XML_TAG_CONTENT xml_tag_close
+	| xml_tag_open xml_tag_content xml_tag_close
 	{
 		xml_plist_parser_rule_print(
 		 "xml_tag" );
-
-		if( $2.data == NULL )
-		{
-			libcerror_error_set(
-			 ( (xml_plist_parser_state_t *) parser_state )->error,
-			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-			 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-			 "%s: invalid attribute value.",
-			 xml_plist_parser_function );
-
-			YYABORT;
-		}
-		if( libfvde_xml_plist_tag_set_value(
-		     ( (xml_plist_parser_state_t *) parser_state )->current_tag,
-		     (uint8_t *) $2.data,
-		     $2.length,
-		     ( (xml_plist_parser_state_t *) parser_state )->error ) != 1 )
-		{
-			libcerror_error_set(
-			 ( (xml_plist_parser_state_t *) parser_state )->error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set value.",
-			 xml_plist_parser_function );
-
-			YYABORT;
-		}
 	}
 	| xml_tag_single
 	{
@@ -261,6 +242,28 @@ xml_tag_open_start
 
 			YYABORT;
 		}
+		if( ( (xml_plist_parser_state_t *) parser_state )->root_tag == NULL )
+		{
+			( (xml_plist_parser_state_t *) parser_state )->root_tag = ( (xml_plist_parser_state_t *) parser_state )->current_tag;
+		}
+		else
+		{
+			if( libfvde_xml_plist_tag_append_element(
+			     ( (xml_plist_parser_state_t *) parser_state )->parent_tag,
+			     ( (xml_plist_parser_state_t *) parser_state )->current_tag,
+			     ( (xml_plist_parser_state_t *) parser_state )->error ) != 1 )
+			{
+				libcerror_error_set(
+				 ( (xml_plist_parser_state_t *) parser_state )->error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to append attribute.",
+				 xml_plist_parser_function );
+
+				YYABORT;
+			}
+		}
+		( (xml_plist_parser_state_t *) parser_state )->parent_tag = ( (xml_plist_parser_state_t *) parser_state )->current_tag;
 	}
 	;
 
@@ -277,6 +280,20 @@ xml_tag_single
 	{
 		xml_plist_parser_rule_print(
 		 "xml_tag_single" );
+
+		if( ( (xml_plist_parser_state_t *) parser_state )->current_tag == NULL )
+		{
+			libcerror_error_set(
+			 ( (xml_plist_parser_state_t *) parser_state )->error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+			 "%s: invalid current tag.",
+			 xml_plist_parser_function );
+
+			YYABORT;
+		}
+		( (xml_plist_parser_state_t *) parser_state )->parent_tag  = ( (xml_plist_parser_state_t *) parser_state )->current_tag->parent_tag;
+		( (xml_plist_parser_state_t *) parser_state )->current_tag = ( (xml_plist_parser_state_t *) parser_state )->parent_tag;
 	}
 	;
 
@@ -293,6 +310,69 @@ xml_tag_close
 			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 			 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 			 "%s: invalid tag name.",
+			 xml_plist_parser_function );
+
+			YYABORT;
+		}
+		if( ( (xml_plist_parser_state_t *) parser_state )->current_tag == NULL )
+		{
+			libcerror_error_set(
+			 ( (xml_plist_parser_state_t *) parser_state )->error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+			 "%s: invalid current tag.",
+			 xml_plist_parser_function );
+
+			YYABORT;
+		}
+		if( ( ( (xml_plist_parser_state_t *) parser_state )->current_tag->name_size != ( $1.length + 1 ) )
+		 || ( libcstring_narrow_string_compare(
+		       ( (xml_plist_parser_state_t *) parser_state )->current_tag->name,
+		       $1.data,
+		       $1.length ) != 0 ) )
+		{
+			libcerror_error_set(
+			 ( (xml_plist_parser_state_t *) parser_state )->error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+			 "%s: mismatch in tag name.",
+			 xml_plist_parser_function );
+
+			YYABORT;
+		}
+		( (xml_plist_parser_state_t *) parser_state )->parent_tag  = ( (xml_plist_parser_state_t *) parser_state )->current_tag->parent_tag;
+		( (xml_plist_parser_state_t *) parser_state )->current_tag = ( (xml_plist_parser_state_t *) parser_state )->parent_tag;
+	}
+	;
+
+xml_tag_content
+	: XML_TAG_CONTENT
+	{
+		xml_plist_parser_rule_print(
+		 "xml_tag_content" );
+
+		if( $1.data == NULL )
+		{
+			libcerror_error_set(
+			 ( (xml_plist_parser_state_t *) parser_state )->error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+			 "%s: invalid attribute value.",
+			 xml_plist_parser_function );
+
+			YYABORT;
+		}
+		if( libfvde_xml_plist_tag_set_value(
+		     ( (xml_plist_parser_state_t *) parser_state )->current_tag,
+		     (uint8_t *) $1.data,
+		     $1.length,
+		     ( (xml_plist_parser_state_t *) parser_state )->error ) != 1 )
+		{
+			libcerror_error_set(
+			 ( (xml_plist_parser_state_t *) parser_state )->error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set value.",
 			 xml_plist_parser_function );
 
 			YYABORT;
@@ -379,12 +459,17 @@ int xml_plist_parser_parse_buffer(
 
 	if( buffer_state != NULL )
 	{
-		parser_state.xml_plist = xml_plist;
-		parser_state.error     = error;
+		parser_state.xml_plist   = xml_plist;
+		parser_state.error       = error;
+		parser_state.root_tag    = NULL;
+		parser_state.current_tag = NULL;
+		parser_state.parent_tag  = NULL;
 
 		if( xml_plist_scanner_parse(
 		     &parser_state ) == 0 )
 		{
+			xml_plist->root_tag = parser_state.root_tag;
+
 			result = 1;
 		}
 		xml_plist_scanner__delete_buffer(

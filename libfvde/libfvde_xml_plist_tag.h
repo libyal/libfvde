@@ -26,8 +26,8 @@
 #include <common.h>
 #include <types.h>
 
-#include "libfvde_libcerror.h"
 #include "libfvde_libcdata.h"
+#include "libfvde_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -37,21 +37,25 @@ typedef struct libfvde_xml_plist_tag libfvde_xml_plist_tag_t;
 
 struct libfvde_xml_plist_tag
 {
+	/* The parent tag
+	 */
+	libfvde_xml_plist_tag_t *parent_tag;
+
 	/* The name
 	 */
 	uint8_t *name;
 
-	/* The name length
+	/* The name size
 	 */
-	size_t name_length;
+	size_t name_size;
 
 	/* The value (value)
 	 */
 	uint8_t *value;
 
-	/* The value length
+	/* The value size
 	 */
-	size_t value_length;
+	size_t value_size;
 
 	/* The attributes array
 	 */
@@ -72,6 +76,12 @@ int libfvde_xml_plist_tag_free(
      libfvde_xml_plist_tag_t **tag,
      libcerror_error_t **error );
 
+int libfvde_xml_plist_tag_compare_name(
+     libfvde_xml_plist_tag_t *tag,
+     const uint8_t *name,
+     size_t name_length,
+     libcerror_error_t **error );
+
 int libfvde_xml_plist_tag_set_value(
      libfvde_xml_plist_tag_t *tag,
      const uint8_t *value,
@@ -84,6 +94,22 @@ int libfvde_xml_plist_tag_append_attribute(
      size_t name_length,
      const uint8_t *value,
      size_t value_length,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_tag_append_element(
+     libfvde_xml_plist_tag_t *tag,
+     libfvde_xml_plist_tag_t *element_tag,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_tag_get_number_of_elements(
+     libfvde_xml_plist_tag_t *tag,
+     int *number_of_elements,
+     libcerror_error_t **error );
+
+int libfvde_xml_plist_tag_get_element(
+     libfvde_xml_plist_tag_t *tag,
+     int element_index,
+     libfvde_xml_plist_tag_t **element_tag,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

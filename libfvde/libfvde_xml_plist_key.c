@@ -24,28 +24,26 @@
 #include <memory.h>
 #include <types.h>
 
-#include <libxml/tree.h>
-
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
 #include "libfvde_libfguid.h"
 #include "libfvde_libfvalue.h"
 #include "libfvde_libuna.h"
 #include "libfvde_xml_plist_key.h"
+#include "libfvde_xml_plist_tag.h"
 
 /* Creates an XML plist key
  * Make sure the value key is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libfvde_xml_plist_key_initialize(
-    libfvde_xml_plist_key_t **key,
-    xmlNode *xml_node,
-    uint8_t has_name,
-    libcerror_error_t **error )
+     libfvde_xml_plist_key_t **key,
+     libfvde_xml_plist_tag_t *key_tag,
+     libfvde_xml_plist_tag_t *value_tag,
+     libcerror_error_t **error )
 {
-	xmlChar *xml_content    = NULL;
-	xmlNode *value_xml_node = NULL;
-	static char *function   = "libfvde_xml_plist_key_initialize";
+	static char *function = "libfvde_xml_plist_key_initialize";
+	int result            = 0;
 
 	if( key == NULL )
 	{
@@ -69,76 +67,48 @@ int libfvde_xml_plist_key_initialize(
 
 		return( -1 );
 	}
-	if( xml_node == NULL )
+	if( value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid XML node.",
+		 "%s: invalid XML plist value tag.",
 		 function );
 
 		return( -1 );
 	}
-	if( has_name == 0 )
+	if( key_tag != NULL )
 	{
-		value_xml_node = xml_node;
-	}
-	else
-	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) != 0 )
+		result = libfvde_xml_plist_tag_compare_name(
+		          key_tag,
+		          (uint8_t *) "key",
+		          3,
+		          error );
+
+		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-			 "%s: invalid XML node - unsupported name.",
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to compare name of key tag.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
-		value_xml_node = xml_node->next;
-
-		/* Ignore text nodes
-		 */
-		while( value_xml_node != NULL )
-		{
-			if( xmlStrcmp(
-			     value_xml_node->name,
-			     (const xmlChar *) "text" ) != 0 )
-			{
-				break;
-			}
-			value_xml_node = value_xml_node->next;
-		}
-		if( value_xml_node == NULL )
+		else if( result == 0 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: invalid XML node - missing value XML node.",
-			 function );
+			 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+			 "%s: unsupported key tag: %s.",
+			 function,
+			 key_tag->name );
 
-			goto on_error;
+			return( -1 );
 		}
-		xml_content = xmlNodeGetContent(
-			       xml_node );
-
-		if( xml_content == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: invalid XML node - missing content.",
-			 function );
-
-			goto on_error;
-		}
-/* TODO add ID support ? */
 	}
 	*key = memory_allocate_structure(
 	        libfvde_xml_plist_key_t );
@@ -168,21 +138,12 @@ int libfvde_xml_plist_key_initialize(
 	
 		goto on_error;
 	}
-	if( has_name != 0 )
-	{
-		( *key )->key_xml_node    = xml_node;
-		( *key )->key_xml_content = xml_content;
-	}
-	( *key )->value_xml_node = value_xml_node;
+	( *key )->key_tag   = key_tag;
+	( *key )->value_tag = value_tag;
 
 	return( 1 );
 
 on_error:
-	if( xml_content != NULL )
-	{
-		xmlFree(
-		 xml_content );
-	}
 	if( *key != NULL )
 	{
 		memory_free(
@@ -215,12 +176,8 @@ int libfvde_xml_plist_key_free(
 	}
 	if( *key != NULL )
 	{
-		/* The key_xml_node and value_xml_node are referenced and freed elsewhere */
-		if( ( *key )->key_xml_content != NULL )
-		{
-			xmlFree(
-			 ( *key )->key_xml_content );
-		}
+		/* The key_tag and value_tag are referenced and freed elsewhere */
+
 		memory_free(
 		 *key );
 
@@ -237,6 +194,7 @@ int libfvde_xml_plist_key_is_array(
      libcerror_error_t **error )
 {
 	static char *function = "libfvde_xml_plist_key_is_array";
+	int result            = 0;
 
 	if( key == NULL )
 	{
@@ -249,24 +207,35 @@ int libfvde_xml_plist_key_is_array(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "array" ) == 0 )
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "array",
+	          5,
+	          error );
+
+	if( result == -1 )
 	{
-		return( 1 );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to compare name of value tag.",
+		 function );
+
+		return( -1 );
 	}
-	return( 0 );
+	return( result );
 }
 
 /* Determines if the value is a dict
@@ -277,6 +246,7 @@ int libfvde_xml_plist_key_is_dict(
      libcerror_error_t **error )
 {
 	static char *function = "libfvde_xml_plist_key_is_dict";
+	int result            = 0;
 
 	if( key == NULL )
 	{
@@ -289,24 +259,35 @@ int libfvde_xml_plist_key_is_dict(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "dict" ) == 0 )
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "dict",
+	          4,
+	          error );
+
+	if( result == -1 )
 	{
-		return( 1 );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to compare name of value tag.",
+		 function );
+
+		return( -1 );
 	}
-	return( 0 );
+	return( result );
 }
 
 /* Retrieves a data value
@@ -318,10 +299,10 @@ int libfvde_xml_plist_key_get_value_data(
      size_t *data_size,
      libcerror_error_t **error )
 {
-	xmlChar *xml_content      = NULL;
-	static char *function     = "libfvde_xml_plist_key_get_value_data";
-	size_t xml_content_length = 0;
-	size_t xml_content_index  = 0;
+	static char *function = "libfvde_xml_plist_key_get_value_data";
+	size_t value_index    = 0;
+	size_t value_length   = 0;
+	int result            = 0;
 
 	if( key == NULL )
 	{
@@ -334,13 +315,13 @@ int libfvde_xml_plist_key_get_value_data(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
@@ -378,42 +359,43 @@ int libfvde_xml_plist_key_get_value_data(
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "data" ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid key - invalid value XML node - value not a data.",
-		 function );
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "data",
+	          4,
+	          error );
 
-		goto on_error;
-	}
-	xml_content = xmlNodeGetContent(
-		       key->value_xml_node );
-
-	if( xml_content == NULL )
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: invalid key - invalid value XML node - unable to retrieve content data.",
+		 "%s: unable to compare name of value tag.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	xml_content_length = libcstring_narrow_string_length(
-			      (char *) xml_content );
+	else if( result == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: unsupported value tag: %s.",
+		 function,
+		 key->value_tag->name );
+
+		return( -1 );
+	}
+	value_length = key->value_tag->value_size - 1;
 
 	/* The base64 conversion function doesn't like an empty first line
 	 */
-	if( xml_content[ 0 ] == '\n' )
+	if( ( key->value_tag->value )[ 0 ] == '\n' )
 	{
-		xml_content_index  += 1;
-		xml_content_length -= 1;
+		value_index  += 1;
+		value_length -= 1;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -422,14 +404,14 @@ int libfvde_xml_plist_key_get_value_data(
 		 "%s: base64 encoded data:\n",
 		 function );
 		libcnotify_print_data(
-		 (uint8_t *) &( xml_content[ xml_content_index ] ),
-		 xml_content_length,
+		 (uint8_t *) &( ( key->value_tag->value )[ value_index ] ),
+		 value_length,
 		 0 );
 	}
 #endif
 	if( libuna_base64_stream_size_to_byte_stream(
-	     &( xml_content[ xml_content_index ] ),
-	     xml_content_length,
+	     &( ( key->value_tag->value )[ value_index ] ),
+	     value_length,
 	     data_size,
 	     LIBUNA_BASE64_VARIANT_ALPHABET_NORMAL | LIBUNA_BASE64_VARIANT_CHARACTER_LIMIT_NONE | LIBUNA_BASE64_VARIANT_PADDING_REQUIRED,
 	     LIBUNA_BASE64_FLAG_STRIP_WHITESPACE,
@@ -459,8 +441,8 @@ int libfvde_xml_plist_key_get_value_data(
 		goto on_error;
 	}
 	if( libuna_base64_stream_copy_to_byte_stream(
-	     &( xml_content[ xml_content_index ] ),
-	     xml_content_length,
+	     &( ( key->value_tag->value )[ value_index ] ),
+	     value_length,
 	     *data,
 	     *data_size,
 	     LIBUNA_BASE64_VARIANT_ALPHABET_NORMAL | LIBUNA_BASE64_VARIANT_CHARACTER_LIMIT_NONE | LIBUNA_BASE64_VARIANT_PADDING_REQUIRED,
@@ -479,11 +461,6 @@ int libfvde_xml_plist_key_get_value_data(
 	return( 1 );
 
 on_error:
-	if( xml_content != NULL )
-	{
-		xmlFree(
-		 xml_content );
-	}
 	if( *data != NULL )
 	{
 		memory_free(
@@ -504,9 +481,8 @@ int libfvde_xml_plist_key_get_value_integer(
      uint64_t *value_64bit,
      libcerror_error_t **error )
 {
-	xmlChar *xml_content      = NULL;
-	static char *function     = "libfvde_xml_plist_key_get_value_integer";
-	size_t xml_content_length = 0;
+	static char *function = "libfvde_xml_plist_key_get_value_integer";
+	int result            = 0;
 
 	if( key == NULL )
 	{
@@ -519,51 +495,50 @@ int libfvde_xml_plist_key_get_value_integer(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "integer" ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid key - invalid value XML node - value not an integer.",
-		 function );
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "integer",
+	          7,
+	          error );
 
-		goto on_error;
-	}
-/* TODO add size support ? */
-	xml_content = xmlNodeGetContent(
-		       key->value_xml_node );
-
-	if( xml_content == NULL )
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: invalid key - invalid value XML node - unable to retrieve content string.",
+		 "%s: unable to compare name of value tag.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	xml_content_length = libcstring_narrow_string_length(
-			      (char *) xml_content );
+	else if( result == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: unsupported value tag: %s.",
+		 function,
+		 key->value_tag->name );
 
+		return( -1 );
+	}
+/* TODO add size support ? */
 	if( libfvalue_utf8_string_copy_to_integer(
-	     xml_content,
-	     xml_content_length,
+	     key->value_tag->value,
+	     key->value_tag->value_size - 1,
 	     (uint64_t *) value_64bit,
 	     64,
 	     LIBFVALUE_INTEGER_FORMAT_TYPE_HEXADECIMAL | LIBFVALUE_INTEGER_FORMAT_FLAG_UNSIGNED,
@@ -573,25 +548,12 @@ int libfvde_xml_plist_key_get_value_integer(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to content string to integer.",
+		 "%s: unable to convert value to integer.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	xmlFree(
-	 xml_content );
-
-	xml_content = NULL;
-
 	return( 1 );
-
-on_error:
-	if( xml_content != NULL )
-	{
-		xmlFree(
-		 xml_content );
-	}
-	return( -1 );
 }
 
 /* Retrieves a string value
@@ -603,9 +565,8 @@ int libfvde_xml_plist_key_get_value_string(
      size_t *string_size,
      libcerror_error_t **error )
 {
-	xmlChar *xml_content      = NULL;
-	static char *function     = "libfvde_xml_plist_key_get_value_string";
-	size_t xml_content_length = 0;
+	static char *function = "libfvde_xml_plist_key_get_value_string";
+	int result            = 0;
 
 	if( key == NULL )
 	{
@@ -618,13 +579,13 @@ int libfvde_xml_plist_key_get_value_string(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
@@ -662,40 +623,39 @@ int libfvde_xml_plist_key_get_value_string(
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "string" ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid key - invalid value XML node - value not a string.",
-		 function );
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "string",
+	          6,
+	          error );
 
-		goto on_error;
-	}
-	xml_content = xmlNodeGetContent(
-		       key->value_xml_node );
-
-	if( xml_content == NULL )
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: invalid key - invalid value XML node - unable to retrieve content string.",
+		 "%s: unable to compare name of value tag.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	xml_content_length = libcstring_narrow_string_length(
-			      (char *) xml_content );
+	else if( result == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: unsupported value tag: %s.",
+		 function,
+		 key->value_tag->name );
 
-	*string_size = xml_content_length + 1;
+		return( -1 );
+	}
+	*string_size = key->value_tag->value_size;
 
 	*string = memory_allocate(
-	           sizeof( uint8_t ) * *string_size );
+	           sizeof( uint8_t ) * key->value_tag->value_size );
 
 	if( *string == NULL )
 	{
@@ -710,8 +670,8 @@ int libfvde_xml_plist_key_get_value_string(
 	}
 	if( memory_copy(
 	     *string,
-	     xml_content,
-	     xml_content_length ) == NULL )
+	     key->value_tag->value,
+	     key->value_tag->value_size ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -722,16 +682,9 @@ int libfvde_xml_plist_key_get_value_string(
 
 		goto on_error;
 	}
-	( *string )[ xml_content_length ] = 0;
-
 	return( 1 );
 
 on_error:
-	if( xml_content != NULL )
-	{
-		xmlFree(
-		 xml_content );
-	}
 	if( *string != NULL )
 	{
 		memory_free(
@@ -877,9 +830,12 @@ int libfvde_xml_plist_key_get_array_number_of_entries(
      int *number_of_entries,
      libcerror_error_t **error )
 {
-	xmlNode *xml_node     = NULL;
-	static char *function = "libfvde_xml_plist_key_get_array_number_of_entries";
-	int number_of_nodes   = 0;
+	libfvde_xml_plist_tag_t *element_tag = NULL;
+	static char *function                = "libfvde_xml_plist_key_get_array_number_of_entries";
+	int element_index                    = 0;
+	int number_of_elements               = 0;
+	int number_of_nodes                  = 0;
+	int result                           = 0;
 
 	if( key == NULL )
 	{
@@ -892,13 +848,13 @@ int libfvde_xml_plist_key_get_array_number_of_entries(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
@@ -914,32 +870,92 @@ int libfvde_xml_plist_key_get_array_number_of_entries(
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "array" ) != 0 )
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "array",
+	          5,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid key - invalid value XML node - unsupported type.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to compare name of value tag.",
 		 function );
 
 		return( -1 );
 	}
-	xml_node = key->value_xml_node->children;
-
-	while( xml_node != NULL )
+	else if( result == 0 )
 	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: unsupported value tag: %s.",
+		 function,
+		 key->value_tag->name );
+
+		return( -1 );
+	}
+	if( libfvde_xml_plist_tag_get_number_of_elements(
+	     key->value_tag,
+	     &number_of_elements,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of elements.",
+		 function );
+
+		return( -1 );
+	}
+	for( element_index = 0;
+	     element_index < number_of_elements;
+	     element_index++ )
+	{
+		if( libfvde_xml_plist_tag_get_element(
+		     key->value_tag,
+		     element_index,
+		     &element_tag,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve element: %d.",
+			 function,
+			 element_index );
+
+			return( -1 );
+		}
 		/* Ignore text nodes
 		 */
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "text" ) != 0 )
+		result = libfvde_xml_plist_tag_compare_name(
+		          element_tag,
+		          (uint8_t *) "text",
+		          4,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to compare name of value tag.",
+			 function );
+
+			return( -1 );
+		}
+		else if( result == 0 )
 		{
 			number_of_nodes++;
 		}
-		xml_node = xml_node->next;
 	}
 	*number_of_entries = number_of_nodes;
 
@@ -955,8 +971,12 @@ int libfvde_xml_plist_key_get_array_entry_by_index(
      libfvde_xml_plist_key_t **array_entry,
      libcerror_error_t **error )
 {
-	xmlNode *xml_node     = NULL;
-	static char *function = "libfvde_xml_plist_key_get_array_entry_by_index";
+	libfvde_xml_plist_tag_t *value_tag = NULL;
+	static char *function              = "libfvde_xml_plist_key_get_array_entry_by_index";
+	int entry_index                    = 0;
+	int element_index                  = 0;
+	int number_of_elements             = 0;
+	int result                         = 0;
 
 	if( key == NULL )
 	{
@@ -969,13 +989,13 @@ int libfvde_xml_plist_key_get_array_entry_by_index(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
@@ -1013,60 +1033,117 @@ int libfvde_xml_plist_key_get_array_entry_by_index(
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "array" ) != 0 )
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "array",
+	          5,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid key - invalid value XML node - unsupported type.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to compare name of value tag.",
 		 function );
 
 		return( -1 );
 	}
-	xml_node = key->value_xml_node->children;
-
-	while( xml_node != NULL )
+	else if( result == 0 )
 	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: unsupported value tag: %s.",
+		 function,
+		 key->value_tag->name );
+
+		return( -1 );
+	}
+	if( libfvde_xml_plist_tag_get_number_of_elements(
+	     key->value_tag,
+	     &number_of_elements,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of elements.",
+		 function );
+
+		return( -1 );
+	}
+	entry_index = array_entry_index;
+
+	element_index = 0;
+
+	while( element_index < number_of_elements )
+	{
+		if( libfvde_xml_plist_tag_get_element(
+		     key->value_tag,
+		     element_index,
+		     &value_tag,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve element: %d.",
+			 function,
+			 element_index );
+
+			return( -1 );
+		}
 		/* Ignore text nodes
 		 */
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "text" ) != 0 )
+		result = libfvde_xml_plist_tag_compare_name(
+		          value_tag,
+		          (uint8_t *) "text",
+		          4,
+		          error );
+
+		if( result == -1 )
 		{
-			if( array_entry_index == 0 )
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to compare name of key tag.",
+			 function );
+
+			return( -1 );
+		}
+		else if( result == 0 )
+		{
+			if( entry_index == 0 )
 			{
 				break;
 			}
-			array_entry_index--;
+			entry_index--;
 		}
-		xml_node = xml_node->next;
+		element_index++;
 	}
-	if( xml_node == NULL )
+	if( element_index >= number_of_elements )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid array entry index value out of bounds.",
-		 function );
-
-		return( -1 );
+		return( 0 );
 	}
 	if( libfvde_xml_plist_key_initialize(
 	     array_entry,
-	     xml_node,
-	     0,
+	     NULL,
+	     value_tag,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create array entry.",
-		 function );
+		 "%s: unable to create array entry: %d.",
+		 function,
+		 array_entry_index );
 
 		return( -1 );
 	}
@@ -1083,10 +1160,12 @@ int libfvde_xml_plist_key_get_sub_key_by_utf8_name(
      libfvde_xml_plist_key_t **sub_key,
      libcerror_error_t **error )
 {
-	xmlChar *xml_content  = NULL;
-	xmlNode *xml_node     = NULL;
-	static char *function = "libfvde_xml_plist_key_get_sub_key_by_utf8_name";
-	int result            = 0;
+	libfvde_xml_plist_tag_t *key_tag   = NULL;
+	libfvde_xml_plist_tag_t *value_tag = NULL;
+	static char *function              = "libfvde_xml_plist_key_get_sub_key_by_utf8_name";
+	int element_index                  = 0;
+	int number_of_elements             = 0;
+	int result                         = 0;
 
 	if( key == NULL )
 	{
@@ -1099,13 +1178,13 @@ int libfvde_xml_plist_key_get_sub_key_by_utf8_name(
 
 		return( -1 );
 	}
-	if( key->value_xml_node == NULL )
+	if( key->value_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid key - missing value XML node.",
+		 "%s: invalid key - missing value XML plist value tag.",
 		 function );
 
 		return( -1 );
@@ -1154,55 +1233,156 @@ int libfvde_xml_plist_key_get_sub_key_by_utf8_name(
 
 		return( -1 );
 	}
-	if( xmlStrcmp(
-	     key->value_xml_node->name,
-	     (const xmlChar *) "dict" ) != 0 )
+	result = libfvde_xml_plist_tag_compare_name(
+	          key->value_tag,
+	          (uint8_t *) "dict",
+	          4,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid key - invalid value XML node - unsupported type.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to compare name of value tag.",
 		 function );
 
 		return( -1 );
 	}
-	xml_node = key->value_xml_node->children;
-
-	while( xml_node != NULL )
+	else if( result == 0 )
 	{
-		if( xmlStrcmp(
-		     xml_node->name,
-		     (const xmlChar *) "key" ) == 0 )
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: unsupported value tag: %s.",
+		 function,
+		 key->value_tag->name );
+
+		return( -1 );
+	}
+	if( libfvde_xml_plist_tag_get_number_of_elements(
+	     key->value_tag,
+	     &number_of_elements,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of elements.",
+		 function );
+
+		return( -1 );
+	}
+	element_index = 0;
+
+	while( element_index < number_of_elements )
+	{
+		if( libfvde_xml_plist_tag_get_element(
+		     key->value_tag,
+		     element_index,
+		     &key_tag,
+		     error ) != 1 )
 		{
-			xml_content = xmlNodeGetContent(
-			               xml_node );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve element: %d.",
+			 function,
+			 element_index );
 
-			if( xml_content != NULL )
+			return( -1 );
+		}
+		result = libfvde_xml_plist_tag_compare_name(
+		          key_tag,
+		          (uint8_t *) "key",
+		          3,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to compare name of key tag.",
+			 function );
+
+			return( -1 );
+		}
+		else if( result != 0 )
+		{
+			if( ( key_tag->value_size == ( utf8_string_length + 1 ) )
+			 && libcstring_narrow_string_compare(
+			     key_tag->value,
+			     utf8_string,
+			     utf8_string_length ) == 0 )
 			{
-				result = xmlStrcmp(
-				          xml_content,
-				          (const xmlChar *) utf8_string );
-
-				xmlFree(
-				 xml_content );
-
-				if( result == 0 )
-				{
-					break;
-				}
+				break;
 			}
 		}
-		xml_node = xml_node->next;
+		element_index++;
 	}
-	if( xml_node == NULL )
+	if( element_index >= number_of_elements )
+	{
+		return( 0 );
+	}
+	element_index++;
+
+	while( element_index < number_of_elements )
+	{
+		if( libfvde_xml_plist_tag_get_element(
+		     key->value_tag,
+		     element_index,
+		     &value_tag,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve element: %d.",
+			 function,
+			 element_index );
+
+			return( -1 );
+		}
+		/* Ignore text nodes
+		 */
+		result = libfvde_xml_plist_tag_compare_name(
+		          value_tag,
+		          (uint8_t *) "text",
+		          4,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to compare name of value tag.",
+			 function );
+
+			return( -1 );
+		}
+		else if( result == 0 )
+		{
+			break;
+		}
+		element_index++;
+	}
+	if( element_index >= number_of_elements )
 	{
 		return( 0 );
 	}
 	if( libfvde_xml_plist_key_initialize(
 	     sub_key,
-	     xml_node,
-	     1,
+	     key_tag,
+	     value_tag,
 	     error ) != 1 )
 	{
 		libcerror_error_set(

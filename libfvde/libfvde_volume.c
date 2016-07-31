@@ -230,12 +230,6 @@ int libfvde_volume_initialize(
 
 	*volume = (libfvde_volume_t *) internal_volume;
 
-	/* This initializes the XML library and check potential ABI mismatches
-	 * between the version it was compiled for and the actual shared
-	 * library used.
-	 */
-	LIBXML_TEST_VERSION
-
 	return( 1 );
 
 on_error:

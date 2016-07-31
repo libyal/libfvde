@@ -1008,7 +1008,7 @@ int libfvde_encryption_context_plist_read_xml(
 	else
 	{
 /* TODO replace by function after refactoring */
-		if( internal_plist->xml_plist->plist_xml_node != NULL )
+		if( internal_plist->xml_plist->plist_tag != NULL )
 		{
 			if( libfvde_xml_plist_free(
 			     &( internal_plist->xml_plist ),

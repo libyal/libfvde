@@ -74,7 +74,7 @@ int libfvde_xml_plist_attribute_initialize(
 
 		return( -1 );
 	}
-	if( name_length > (size_t) SSIZE_MAX )
+	if( name_length > (size_t) ( SSIZE_MAX - 1 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -96,7 +96,7 @@ int libfvde_xml_plist_attribute_initialize(
 
 		return( -1 );
 	}
-	if( value_length > (size_t) SSIZE_MAX )
+	if( value_length > (size_t) ( SSIZE_MAX - 1 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -140,8 +140,10 @@ int libfvde_xml_plist_attribute_initialize(
 
 		return( -1 );
 	}
+	( *attribute )->name_size = name_length + 1;
+
 	( *attribute )->name = (uint8_t *) memory_allocate(
-	                                    sizeof( uint8_t ) * ( name_length + 1 ) );
+	                                    sizeof( uint8_t ) * ( *attribute )->name_size );
 
 	if( ( *attribute )->name == NULL )
 	{
@@ -170,8 +172,10 @@ int libfvde_xml_plist_attribute_initialize(
 	}
 	( *attribute )->name[ name_length ] = 0;
 
+	( *attribute )->value_size = value_length + 1;
+
 	( *attribute )->value = (uint8_t *) memory_allocate(
-	                                     sizeof( uint8_t ) * ( value_length + 1 ) );
+	                                     sizeof( uint8_t ) * ( *attribute )->value_size );
 
 	if( ( *attribute )->value == NULL )
 	{

@@ -40,17 +40,17 @@ struct libfvde_xml_plist_attribute
 	 */
 	uint8_t *name;
 
-	/* The name length
+	/* The name size
 	 */
-	size_t name_length;
+	size_t name_size;
 
 	/* The value (value)
 	 */
 	uint8_t *value;
 
-	/* The value length
+	/* The value size
 	 */
-	size_t value_length;
+	size_t value_size;
 };
 
 int libfvde_xml_plist_attribute_initialize(

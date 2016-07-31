@@ -74,7 +74,7 @@ int libfvde_xml_plist_tag_initialize(
 
 		return( -1 );
 	}
-	if( name_length > (size_t) SSIZE_MAX )
+	if( name_length > (size_t) ( SSIZE_MAX - 1 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -118,8 +118,10 @@ int libfvde_xml_plist_tag_initialize(
 
 		return( -1 );
 	}
+	( *tag )->name_size = name_length + 1;
+
 	( *tag )->name = (uint8_t *) memory_allocate(
-	                              sizeof( uint8_t ) * ( name_length + 1 ) );
+	                              sizeof( uint8_t ) * ( *tag )->name_size );
 
 	if( ( *tag )->name == NULL )
 	{
@@ -224,6 +226,8 @@ int libfvde_xml_plist_tag_free(
 	}
 	if( *tag != NULL )
 	{
+		/* The parent_tag is referenced and freed elsewhere */
+
 		if( libcdata_array_free(
 		     &( ( *tag )->elements_array ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_xml_plist_tag_free,
@@ -270,6 +274,61 @@ int libfvde_xml_plist_tag_free(
 	return( result );
 }
 
+/* Compares the name
+ * Returns 1 if equal, 0 if not or -1 on error
+ */
+int libfvde_xml_plist_tag_compare_name(
+     libfvde_xml_plist_tag_t *tag,
+     const uint8_t *name,
+     size_t name_length,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_xml_plist_tag_compare_name";
+
+	if( tag == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid XML plist tag.",
+		 function );
+
+		return( -1 );
+	}
+	if( name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid name.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_length > (size_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid name length value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( tag->name_size != ( name_length + 1 ) )
+	 || ( libcstring_narrow_string_compare(
+	       tag->name,
+	       name,
+	       name_length ) != 0 ) )
+	{
+		return( 0 );
+	}
+	return( 1 );
+}
+
 /* Sets the value
  * Returns 1 if successful or -1 on error
  */
@@ -303,7 +362,7 @@ int libfvde_xml_plist_tag_set_value(
 
 		return( -1 );
 	}
-	if( value_length > (size_t) SSIZE_MAX )
+	if( value_length > (size_t) ( SSIZE_MAX - 1 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -321,8 +380,10 @@ int libfvde_xml_plist_tag_set_value(
 
 		tag->value = NULL;
 	}
+	tag->value_size = value_length + 1;
+
 	tag->value = (uint8_t *) memory_allocate(
-	                          sizeof( uint8_t ) * ( value_length + 1 ) );
+	                          sizeof( uint8_t ) * tag->value_size );
 
 	if( tag->value == NULL )
 	{
@@ -361,6 +422,8 @@ on_error:
 
 		tag->value = NULL;
 	}
+	tag->value_size = 0;
+
 	return( -1 );
 }
 
@@ -432,5 +495,134 @@ on_error:
 		 NULL );
 	}
 	return( -1 );
+}
+
+int libfvde_xml_plist_tag_append_element(
+     libfvde_xml_plist_tag_t *tag,
+     libfvde_xml_plist_tag_t *element_tag,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_xml_plist_tag_append_element";
+	int entry_index       = 0;
+
+	if( tag == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid XML plist tag.",
+		 function );
+
+		return( -1 );
+	}
+	if( element_tag == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid XML plist element tag.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_append_entry(
+	     tag->elements_array,
+	     &entry_index,
+	     (intptr_t *) element_tag,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+		 "%s: unable to append element tag to array.",
+		 function );
+
+		return( -1 );
+	}
+	element_tag->parent_tag = tag;
+
+	return( 1 );
+}
+
+/* Retrieves the number of elements
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_xml_plist_tag_get_number_of_elements(
+     libfvde_xml_plist_tag_t *tag,
+     int *number_of_elements,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_xml_plist_tag_get_number_of_elements";
+
+	if( tag == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid XML plist tag.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     tag->elements_array,
+	     number_of_elements,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+		 "%s: unable to retrieve number of entries.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves a specific element
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_xml_plist_tag_get_element(
+     libfvde_xml_plist_tag_t *tag,
+     int element_index,
+     libfvde_xml_plist_tag_t **element_tag,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_xml_plist_tag_get_element";
+
+	if( tag == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid XML plist tag.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_entry_by_index(
+	     tag->elements_array,
+	     element_index,
+	     (intptr_t **) element_tag,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+		 "%s: unable to retrieve entry: %d.",
+		 function,
+		 element_index );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 

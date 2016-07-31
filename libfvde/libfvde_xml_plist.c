@@ -24,10 +24,6 @@
 #include <memory.h>
 #include <types.h>
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <libxml/xmlversion.h>
-
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
 #include "libfvde_xml_plist.h"
@@ -121,6 +117,7 @@ int libfvde_xml_plist_free(
     libcerror_error_t **error )
 {
 	static char *function = "libfvde_xml_plist_free";
+	int result            = 1;
 
 	if( plist == NULL )
 	{
@@ -135,22 +132,27 @@ int libfvde_xml_plist_free(
 	}
 	if( *plist != NULL )
 	{
-		/* The plist_xml_node, root_xml_node and dict_xml_node are referenced and freed elsewhere */
-		if( ( *plist )->xml_document != NULL )
+		/* The root_tag and dict_tag are referenced and freed elsewhere */
+
+		if( libfvde_xml_plist_tag_free(
+		     &( ( *plist )->root_tag ),
+		     error ) != 1 )
 		{
-			xmlFreeDoc(
-			 ( *plist )->xml_document );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free XML plist root tag.",
+			 function );
+
+			result = -1;
 		}
 		memory_free(
 		 *plist );
 
 		*plist = NULL;
 	}
-	/* Cleanup memory allocated by libxml
-	*/
-	xmlCleanupParser();
-
-	return( 1 );
+	return( result );
 }
 
 /* Copies the XML plist from the byte stream
@@ -178,13 +180,13 @@ int libfvde_xml_plist_copy_from_byte_stream(
 
 		return( -1 );
 	}
-	if( plist->xml_document != NULL )
+	if( plist->root_tag != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid plist - XML document already set.",
+		 "%s: invalid plist - XML plist root tag already set.",
 		 function );
 
 		return( -1 );
@@ -270,22 +272,6 @@ int libfvde_xml_plist_copy_from_byte_stream(
 
 	buffer = NULL;
 
-	/* Get the root node
-	 */
-	plist->root_xml_node = xmlDocGetRootElement(
-	                        plist->xml_document );
-
-	if( plist->root_xml_node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve root XML node.",
-		 function );
-
-		goto on_error;
-	}
 	return( 1 );
 
 on_error:
@@ -305,8 +291,11 @@ int libfvde_xml_plist_get_root_key(
      libfvde_xml_plist_key_t **key,
      libcerror_error_t **error )
 {
-	xmlNode *xml_node     = NULL;
-	static char *function = "libfvde_xml_plist_get_root_key";
+	libfvde_xml_plist_tag_t *element_tag = NULL;
+	static char *function                = "libfvde_xml_plist_get_root_key";
+	int element_index                    = 0;
+	int number_of_elements               = 0;
+	int result                           = 0;
 
 	if( plist == NULL )
 	{
@@ -319,13 +308,13 @@ int libfvde_xml_plist_get_root_key(
 
 		return( -1 );
 	}
-	if( plist->xml_document == NULL )
+	if( plist->root_tag == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid plist - missing XML document.",
+		 "%s: invalid plist - missing XML plist root tag.",
 		 function );
 
 		return( -1 );
@@ -352,67 +341,162 @@ int libfvde_xml_plist_get_root_key(
 
 		return( -1 );
 	}
-	if( plist->root_xml_node == NULL )
+	if( plist->root_tag == NULL )
 	{
 		return( 0 );
 	}
-	if( plist->dict_xml_node == NULL )
+	if( plist->dict_tag == NULL )
 	{
-		if( xmlStrcmp(
-		     plist->root_xml_node->name,
-		     (const xmlChar *) "dict" ) == 0 )
+		result = libfvde_xml_plist_tag_compare_name(
+		          plist->root_tag,
+		          (uint8_t *) "dict",
+		          4,
+		          error );
+
+		if( result == -1 )
 		{
-			plist->dict_xml_node = plist->root_xml_node;
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to compare name of root tag.",
+			 function );
+
+			return( -1 );
 		}
+		else if( result != 0 )
+		{
+			plist->dict_tag = plist->root_tag;
+		}
+	}
+	if( plist->dict_tag == NULL )
+	{
 		/* Ignore the plist XML node
 		 * <plist version="1.0">
 		 */
-		else if( xmlStrcmp(
-		          plist->root_xml_node->name,
-		          (const xmlChar *) "plist" ) == 0 )
+		result = libfvde_xml_plist_tag_compare_name(
+		          plist->root_tag,
+		          (uint8_t *) "plist",
+		          5,
+		          error );
+
+		if( result == -1 )
 		{
-			/* TODO: determine plist version
-			 */
-			plist->plist_xml_node = xml_node;
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to compare name of root tag.",
+			 function );
 
-			xml_node = plist->root_xml_node->children;
+			return( -1 );
+		}
+		else if( result != 0 )
+		{
+			plist->plist_tag = plist->root_tag;
 
-			/* Ignore text nodes
-			 */
-			while( xml_node != NULL )
+			if( libfvde_xml_plist_tag_get_number_of_elements(
+			     plist->root_tag,
+			     &number_of_elements,
+			     error ) != 1 )
 			{
-				if( xmlStrcmp(
-				     xml_node->name,
-				     (const xmlChar *) "text" ) != 0 )
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve number of elements.",
+				 function );
+
+				return( -1 );
+			}
+			for( element_index = 0;
+			     element_index < number_of_elements;
+			     element_index++ )
+			{
+				if( libfvde_xml_plist_tag_get_element(
+				     plist->root_tag,
+				     element_index,
+				     &element_tag,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve element: %d.",
+					 function,
+					 element_index );
+
+					return( -1 );
+				}
+				result = libfvde_xml_plist_tag_compare_name(
+				          element_tag,
+				          (uint8_t *) "text",
+				          4,
+				          error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to compare name of element tag: %d.",
+					 function,
+					 element_index );
+
+					return( -1 );
+				}
+				else if( result != 0 )
+				{
+					/* Ignore text nodes
+					 */
+					continue;
+				}
+				result = libfvde_xml_plist_tag_compare_name(
+				          element_tag,
+				          (uint8_t *) "dict",
+				          4,
+				          error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to compare name of element tag: %d.",
+					 function,
+					 element_index );
+
+					return( -1 );
+				}
+				else if( result != 0 )
+				{
+					plist->dict_tag = plist->root_tag;
+				}
+				else
 				{
 					break;
 				}
-				xml_node = xml_node->next;
-			}
-			if( ( xml_node != NULL )
-			 && ( xmlStrcmp(
-			       xml_node->name,
-			       (const xmlChar *) "dict" ) == 0 ) )
-			{
-				plist->dict_xml_node = xml_node;
 			}
 		}
 	}
-	if( plist->dict_xml_node == NULL )
+	if( plist->dict_tag == NULL )
 	{
 		return( 0 );
 	}
 	if( libfvde_xml_plist_key_initialize(
 	     key,
-	     plist->dict_xml_node,
-	     0,
+	     NULL,
+	     plist->dict_tag,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create key.",
+		 "%s: unable to create XML plist key.",
 		 function );
 
 		return( -1 );

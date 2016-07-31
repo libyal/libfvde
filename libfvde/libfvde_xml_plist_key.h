@@ -26,9 +26,8 @@
 #include <common.h>
 #include <types.h>
 
-#include <libxml/tree.h>
-
 #include "libfvde_libcerror.h"
+#include "libfvde_xml_plist_tag.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -38,23 +37,19 @@ typedef struct libfvde_xml_plist_key libfvde_xml_plist_key_t;
 
 struct libfvde_xml_plist_key
 {
-	/* The key XML node
+	/* The XML plist key tag
 	 */
-	xmlNode *key_xml_node;
+	libfvde_xml_plist_tag_t *key_tag;
 
-	/* The key XML content which contains the name.
+	/* The XML plist value tag
 	 */
-	xmlChar *key_xml_content;
-
-	/* The value XML node
-	 */
-	xmlNode *value_xml_node;
+	libfvde_xml_plist_tag_t *value_tag;
 };
 
 int libfvde_xml_plist_key_initialize(
      libfvde_xml_plist_key_t **key,
-     xmlNode *xml_node,
-     uint8_t has_name,
+     libfvde_xml_plist_tag_t *key_tag,
+     libfvde_xml_plist_tag_t *value_tag,
      libcerror_error_t **error );
 
 int libfvde_xml_plist_key_free(

@@ -116,9 +116,6 @@ dnl Check for zlib compression support
 AX_ZLIB_CHECK_ENABLE
 AX_ZLIB_CHECK_UNCOMPRESS
 
-dnl Check for libxml2 XML parsing support
-AX_LIBXML2_CHECK_ENABLE
-
 dnl Check for functions
 AS_IF(
  [test "x$ac_cv_enable_winapi" = xno],
@@ -289,7 +286,6 @@ Building:
    AES support:                               $ac_cv_libcaes_aes
    libcsystem support:                        $ac_cv_libcsystem
    FUSE support:                              $ac_cv_libfuse
-   XML support:                               $ac_cv_libxml2
 
 Features:
    Multi-threading support:                   $ac_cv_libcthreads_multi_threading
