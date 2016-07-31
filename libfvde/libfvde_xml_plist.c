@@ -32,6 +32,13 @@
 #include "libfvde_libcnotify.h"
 #include "libfvde_xml_plist.h"
 #include "libfvde_xml_plist_key.h"
+#include "libfvde_xml_plist_parser.h"
+
+extern int xml_plist_parser_parse_buffer(
+            libfvde_xml_plist_t *xml_plist,
+            const uint8_t *buffer,
+            size_t buffer_size,
+            libcerror_error_t **error );
 
 /* Creates an XML plist
  * Make sure the value plist is referencing, is set to NULL
@@ -155,7 +162,10 @@ int libfvde_xml_plist_copy_from_byte_stream(
      size_t byte_stream_size,
      libcerror_error_t **error )
 {
+	uint8_t *buffer       = NULL;
 	static char *function = "libfvde_xml_plist_copy_from_byte_stream";
+	size_t buffer_size    = 0;
+	int result            = 0;
 
 	if( plist == NULL )
 	{
@@ -201,24 +211,65 @@ int libfvde_xml_plist_copy_from_byte_stream(
 
 		return( -1 );
 	}
-	plist->xml_document = xmlReadMemory(
-			       (char *) byte_stream,
-			       (int) byte_stream_size,
-			       "plist.xml",
-			       NULL,
-			       0 );
+	/* Lex wants 2 zero bytes at the end of the buffer
+	 */
+	buffer_size = byte_stream_size + 1;
 
-	if( plist->xml_document == NULL )
+	buffer = (uint8_t *) memory_allocate(
+	                      sizeof( uint8_t ) * buffer_size );
+
+	if( buffer == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create XML document.",
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create buffer.",
 		 function );
 
 		goto on_error;
 	}
+	if( memory_copy(
+	     buffer,
+	     byte_stream,
+	     byte_stream_size - 1 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy byte stream.",
+		 function );
+	
+		goto on_error;
+	}
+	/* Lex wants 2 zero bytes at the end of the buffer
+	 */
+	buffer[ buffer_size - 2 ] = 0;
+	buffer[ buffer_size - 1 ] = 0;
+
+	result = xml_plist_parser_parse_buffer(
+	          plist,
+	          buffer,
+	          buffer_size,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to parse XML plist.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 buffer );
+
+	buffer = NULL;
+
 	/* Get the root node
 	 */
 	plist->root_xml_node = xmlDocGetRootElement(
@@ -238,12 +289,10 @@ int libfvde_xml_plist_copy_from_byte_stream(
 	return( 1 );
 
 on_error:
-	if( plist->xml_document != NULL )
+	if( buffer != NULL )
 	{
-		xmlFreeDoc(
-		 plist->xml_document );
-
-		plist->xml_document = NULL;
+		memory_free(
+		 buffer );
 	}
 	return( -1 );
 }

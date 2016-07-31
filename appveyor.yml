@@ -12,10 +12,13 @@ configuration:
 install:
   - cmd: git clone https://github.com/libyal/libyal.git && move libyal ..\
   - cmd: git clone https://github.com/joachimmetz/dokan.git && move dokan ..\
+  - ps: .\syncwinflexbison.ps1
 
 before_build:
   - ps: .\synclibs.ps1
   - ps: .\autogen.ps1
+  - cmd: ..\win_flex_bison\win_flex.exe -Cf libodraw\libodraw_cue_scanner.l && move lex.yy.c libodraw\libodraw_cue_scanner.c
+  - cmd: ..\win_flex_bison\win_bison.exe -d -v -l -p cue_scanner_ libodraw\libodraw_cue_parser.y && move libodraw_cue_parser.tab.c libodraw\libodraw_cue_parser.c && move libodraw_cue_parser.tab.h libodraw\libodraw_cue_parser.h
   - cmd: C:\Python27\python.exe ..\libyal\scripts\msvscpp-convert.py --to 2010 msvscpp\libfvde.sln
 
 build:

@@ -260,7 +260,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_xml_plist_attribute.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_xml_plist_key.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_xml_plist_parser.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_xml_plist_scanner.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_xml_plist_tag.c"
 				>
 			</File>
 		</Filter>
@@ -438,7 +454,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_xml_plist_attribute.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_xml_plist_key.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_xml_plist_parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_xml_plist_tag.h"
 				>
 			</File>
 		</Filter>

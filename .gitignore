@@ -119,6 +119,10 @@ stamp-h[1-9]
 /include/libfvde/types.h
 /libfvde/libfvde.rc
 /libfvde/libfvde_definitions.h
+/libfvde/libfvde_xml_plist_parser.c
+/libfvde/libfvde_xml_plist_parser.h
+/libfvde/libfvde_xml_plist_parser.output
+/libfvde/libfvde_xml_plist_scanner.c
 /pyfvde-python[23]/*.[ch]
 /fvdetools/fvdeinfo
 /fvdetools/fvdemount

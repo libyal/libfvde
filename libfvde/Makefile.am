@@ -1,3 +1,6 @@
+AM_LFLAGS = -Cf
+AM_YFLAGS = -d -v -l -p xml_plist_scanner_
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
@@ -21,6 +24,8 @@ AM_CPPFLAGS = \
 	@LIBHMAC_CPPFLAGS@ \
 	@LIBCAES_CPPFLAGS@ \
 	@LIBXML2_CPPFLAGS@
+
+BUILT_SOURCES = libfvde_xml_plist_parser.h
 
 lib_LTLIBRARIES = libfvde.la
 
@@ -68,7 +73,11 @@ libfvde_la_SOURCES = \
 	libfvde_volume.c libfvde_volume.h \
 	libfvde_volume_group.c libfvde_volume_group.h \
 	libfvde_xml_plist.c libfvde_xml_plist.h \
-	libfvde_xml_plist_key.c libfvde_xml_plist_key.h
+	libfvde_xml_plist_attribute.c libfvde_xml_plist_attribute.h \
+	libfvde_xml_plist_key.c libfvde_xml_plist_key.h \
+	libfvde_xml_plist_parser.y \
+	libfvde_xml_plist_scanner.l \
+	libfvde_xml_plist_tag.c libfvde_xml_plist_tag.h
 
 libfvde_la_LIBADD = \
 	@LIBCSTRING_LIBADD@ \
@@ -98,6 +107,8 @@ libfvde_la_LDFLAGS = -no-undefined -version-info 1:0:0
 
 EXTRA_DIST = \
 	libfvde_definitions.h.in \
+	libfvde_xml_plist_parser.c libfvde_xml_plist_parser.h \
+	libfvde_xml_plist_scanner.c \
 	libfvde.rc \
 	libfvde.rc.in
 
