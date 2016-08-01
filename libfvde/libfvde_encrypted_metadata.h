@@ -79,25 +79,25 @@ struct libfvde_encrypted_metadata
 	 */
 	uint8_t encryption_context_plist_file_is_set;
 
-	/* The logical volume first block as defined by metadata block 0x0305
+	/* The logical volume block number as defined by metadata block 0x0305
 	 */
-	uint64_t logical_volume_first_block_0x0305;
+	uint64_t logical_volume_block_number_0x0305;
 
 	/* The logical volume number of blocks as defined by metadata block 0x0305
 	 */
 	uint64_t logical_volume_number_of_blocks_0x0305;
 
-	/* The logical volume first block as defined by metadata block 0x0405
+	/* The logical volume block number as defined by metadata block 0x0405
 	 */
-	uint64_t logical_volume_first_block_0x0405;
+	uint64_t logical_volume_block_number_0x0405;
 
 	/* The logical volume number of blocks as defined by metadata block 0x0405
 	 */
 	uint64_t logical_volume_number_of_blocks_0x0405;
 
-	/* The logical volume first block as defined by metadata block 0x0505
+	/* The logical volume block number as defined by metadata block 0x0505
 	 */
-	uint64_t logical_volume_first_block_0x0505;
+	uint64_t logical_volume_block_number_0x0505;
 
 	/* The logical volume number of blocks as defined by metadata block 0x0505
 	 */

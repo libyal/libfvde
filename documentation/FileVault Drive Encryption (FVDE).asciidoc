@@ -2072,12 +2072,12 @@ consists of:
 |===
 | 0 | 16 | | [yellow-background]*Unknown*
 | 8 | 8 | | [yellow-background]*Unknown*
-| 16 | 4 | | Logical volume number of blocks
+| 16 | 4 | | Number of blocks
 | 20 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*0 if not set e.g. non-removable?*
 | 24 | 4 | | [yellow-background]*Unknown*
 | 28 | 4 | | [yellow-background]*Unknown*
-| 32 | 4 | | Logical volume first block +
+| 32 | 4 | | Block number +
 Contains the first block number relative from the start of the Core Storage volume of the logical volume data +
 [yellow-background]*0 if not set e.g. non-removable?*
 | 36 | 4 | | [yellow-background]*Unknown*
@@ -2281,8 +2281,8 @@ consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | | Logical volume number of blocks +
-| 8 | 8 | | Logical volume first block +
+| 0 | 8 | | Number of blocks +
+| 8 | 8 | | Block number +
 Contains the first block number relative from the start of the Core Storage volume of the encrypted logical volume data
 |===
 
@@ -2571,10 +2571,12 @@ Metadata block data type 0x0505
 Metadata block data type 0x0305
 
 * If present
-* If number of entries is 1
+* Last entry
 
 Metadata block data type 0x0405
 
+* If present
+* Entry where data type is 0x09 or 0x0a and unknown2 is not set. 
 
 === Block type 0x0011
 ....
