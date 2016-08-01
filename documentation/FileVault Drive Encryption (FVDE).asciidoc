@@ -2548,17 +2548,10 @@ The size of these parent blocks is defined in the volume header, in the
 /System/Library/Caches/com.apple.corestorage/EncryptedRoot.plist.wipekey
 
 === Determining the logical volume size and offset
-The "com.apple.corestorage.lv.size" in the plist in metadata block data type 
-0x001a contains the logical volume size. 
 
-For a system volume this value should correspond with the extent in the 
-metadata block data type 0x0505 which provides the block number of the start of 
-the logical volume. ([yellow-background]*is this always the first encrypted 
-metadata revision set number 2?*)
+Use the values in metadata block data type 0x0505 if present.
 
-For a removable disk
-
-* primary or secondary encrypted metadata + encrypted metadata size?
+Use the values in metadata block data type 0x0305 if present.
 
 === Block type 0x0011
 ....
