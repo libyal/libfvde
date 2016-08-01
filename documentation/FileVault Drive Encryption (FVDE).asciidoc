@@ -2604,6 +2604,14 @@ Logical Volume Group
 ** Logical Volume Family
 ** Logical Volume
 
+yellow-background]*Only a single LV allowed per LVG?*
+
+....
+diskutil cs createVolume ...
+
+Your Logical Volume Group already has a Logical Volume
+....
+
 === Partial encrypted volume
 Seen in 10.7 partial encrypted volume
 
