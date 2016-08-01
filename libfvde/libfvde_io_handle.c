@@ -999,7 +999,7 @@ on_error:
 }
 
 /* Reads the logical volume header
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not or -1 on error
  */
 int libfvde_io_handle_read_logical_volume_header(
      libfvde_io_handle_t *io_handle,
@@ -1012,6 +1012,7 @@ int libfvde_io_handle_read_logical_volume_header(
 	uint32_t block_size                = 0;
 	uint32_t number_of_blocks          = 0;
 	uint16_t volume_signature          = 0;
+	int result                         = 0;
 
 	if( io_handle == NULL )
 	{
@@ -1097,6 +1098,7 @@ int libfvde_io_handle_read_logical_volume_header(
 			 "\n" );
 		}
 #endif
+		result = 1;
 	}
 	if( libfvde_sector_data_free(
 	     &sector_data,
@@ -1111,7 +1113,7 @@ int libfvde_io_handle_read_logical_volume_header(
 
 		goto on_error;
 	}
-	return( 1 );
+	return( result );
 
 on_error:
 	if( sector_data != NULL )

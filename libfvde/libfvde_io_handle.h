@@ -198,5 +198,5 @@ int libfvde_io_handle_read_logical_volume_header(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_IO_HANDLE_H ) */
 

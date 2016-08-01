@@ -1275,10 +1275,9 @@ int libfvde_volume_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	static char *function             = "libfvde_volume_open_read";
-	off64_t encrypted_metadata_offset = 0;
-	int segment_index                 = 0;
-	int result                        = 0;
+	static char *function = "libfvde_volume_open_read";
+	int segment_index     = 0;
+	int result            = 0;
 
 	if( internal_volume == NULL )
 	{
@@ -1562,150 +1561,190 @@ int libfvde_volume_open_read(
 
 		goto on_error;
 	}
-	if( internal_volume->primary_encrypted_metadata->logical_volume_values_are_set == 0 )
+	if( internal_volume->primary_encrypted_metadata->logical_volume_size > 0 )
 	{
-		encrypted_metadata_offset = (off64_t) internal_volume->primary_metadata->secondary_encrypted_metadata_offset;
-
-		if( encrypted_metadata_offset < (off64_t) internal_volume->primary_metadata->primary_encrypted_metadata_offset )
-		{
-			encrypted_metadata_offset = (off64_t) internal_volume->primary_metadata->primary_encrypted_metadata_offset;
-		}
-		encrypted_metadata_offset += internal_volume->primary_metadata->encrypted_metadata_size;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: fallback logical volume offset\t\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 encrypted_metadata_offset );
-		}
-#endif
-		internal_volume->primary_encrypted_metadata->logical_volume_offset = encrypted_metadata_offset;
-
-		internal_volume->primary_encrypted_metadata->logical_volume_values_are_set = 1;
-	}
-/* TODO what about secondary encrypted metadata */
-	result = libfvde_volume_open_read_keys_from_encrypted_metadata(
-		  internal_volume,
-		  internal_volume->primary_encrypted_metadata,
-		  error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read keys from primary encrypted metadata.",
-		 function );
-
-		goto on_error;
-	}
-	else if( result != 0 )
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: physical volume size\t\t\t\t: %" PRIu64 "\n",
-			 function,
-			 internal_volume->io_handle->physical_volume_size );
-
-			libcnotify_printf(
-			 "%s: logical volume offset\t\t\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 internal_volume->primary_encrypted_metadata->logical_volume_offset );
-
-			libcnotify_printf(
-			 "%s: logical volume size\t\t\t\t: %" PRIu64 "\n",
-			 function,
-			 internal_volume->primary_encrypted_metadata->logical_volume_size );
-
-			libcnotify_printf(
-			 "\n" );
-		}
-#endif
 		internal_volume->io_handle->logical_volume_offset = internal_volume->primary_encrypted_metadata->logical_volume_offset;
 		internal_volume->io_handle->logical_volume_size   = internal_volume->primary_encrypted_metadata->logical_volume_size;
+	}
+	else if( internal_volume->secondary_encrypted_metadata->logical_volume_size > 0 )
+	{
+		internal_volume->io_handle->logical_volume_offset = internal_volume->secondary_encrypted_metadata->logical_volume_offset;
+		internal_volume->io_handle->logical_volume_size   = internal_volume->secondary_encrypted_metadata->logical_volume_size;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: physical volume size\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 internal_volume->io_handle->physical_volume_size );
 
+		libcnotify_printf(
+		 "%s: logical volume offset\t\t\t\t: 0x%08" PRIx64 "\n",
+		 function,
+		 internal_volume->io_handle->logical_volume_offset );
+
+		libcnotify_printf(
+		 "%s: logical volume size\t\t\t\t: %" PRIu64 "\n",
+		 function,
+		 internal_volume->io_handle->logical_volume_size );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	if( internal_volume->io_handle->logical_volume_size == 0 )
+	{
+		result = 1;
+	}
+	else
+	{
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
 			 "Reading logical volume header:\n" );
+		}
+#endif
+		result = libfvde_io_handle_read_logical_volume_header(
+		          internal_volume->io_handle,
+		          file_io_handle,
+		          internal_volume->io_handle->logical_volume_offset + 1024,
+		          error );
 
-			if( libfvde_io_handle_read_logical_volume_header(
-			     internal_volume->io_handle,
-			     file_io_handle,
-			     internal_volume->io_handle->logical_volume_offset + 1024,
-			     error ) != 1 )
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read logical volume header.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result == 0 )
+		{
+			result = libfvde_volume_open_read_keys_from_encrypted_metadata(
+				  internal_volume,
+				  internal_volume->primary_encrypted_metadata,
+				  error );
+
+			if( result == -1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read logical volume header.",
+				 "%s: unable to read keys from primary encrypted metadata.",
 				 function );
 
 				goto on_error;
 			}
-		}
+			else if( result == 0 )
+			{
+				result = libfvde_volume_open_read_keys_from_encrypted_metadata(
+					  internal_volume,
+					  internal_volume->secondary_encrypted_metadata,
+					  error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read keys from secondary encrypted metadata.",
+					 function );
+
+					goto on_error;
+				}
+			}
+			if( result != 0 )
+			{
+#if defined( HAVE_DEBUG_OUTPUT )
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+					 "Reading logical volume header:\n" );
+				}
 #endif
+				result = libfvde_io_handle_read_logical_volume_header(
+					  internal_volume->io_handle,
+					  file_io_handle,
+					  internal_volume->io_handle->logical_volume_offset + 1024,
+					  error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read logical volume header.",
+					 function );
+
+					goto on_error;
+				}
+			}
+		}
+		if( result != 0 )
+		{
 /* TODO clone function ? */
-		if( libfdata_vector_initialize(
-		     &( internal_volume->sectors_vector ),
-		     (size64_t) internal_volume->io_handle->bytes_per_sector,
-		     (intptr_t *) internal_volume->io_handle,
-		     NULL,
-		     NULL,
-		     (int (*)(intptr_t *, intptr_t *, libfdata_vector_t *, libfcache_cache_t *, int, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libfvde_io_handle_read_sector,
-		     NULL,
-		     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create sectors vector.",
-			 function );
+			if( libfdata_vector_initialize(
+			     &( internal_volume->sectors_vector ),
+			     (size64_t) internal_volume->io_handle->bytes_per_sector,
+			     (intptr_t *) internal_volume->io_handle,
+			     NULL,
+			     NULL,
+			     (int (*)(intptr_t *, intptr_t *, libfdata_vector_t *, libfcache_cache_t *, int, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libfvde_io_handle_read_sector,
+			     NULL,
+			     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create sectors vector.",
+				 function );
 
-			goto on_error;
-		}
-		if( libfdata_vector_append_segment(
-		     internal_volume->sectors_vector,
-		     &segment_index,
-		     0,
-		     internal_volume->io_handle->logical_volume_offset,
-		     internal_volume->io_handle->logical_volume_size,
-		     0,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append segment to sectors vector.",
-			 function );
+				goto on_error;
+			}
+			if( libfdata_vector_append_segment(
+			     internal_volume->sectors_vector,
+			     &segment_index,
+			     0,
+			     internal_volume->io_handle->logical_volume_offset,
+			     internal_volume->io_handle->logical_volume_size,
+			     0,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to append segment to sectors vector.",
+				 function );
 
-			goto on_error;
-		}
-		if( libfcache_cache_initialize(
-		     &( internal_volume->sectors_cache ),
-		     LIBFVDE_MAXIMUM_CACHE_ENTRIES_SECTORS,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create sectors cache.",
-			 function );
+				goto on_error;
+			}
+			if( libfcache_cache_initialize(
+			     &( internal_volume->sectors_cache ),
+			     LIBFVDE_MAXIMUM_CACHE_ENTRIES_SECTORS,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create sectors cache.",
+				 function );
 
-			goto on_error;
+				goto on_error;
+			}
+			internal_volume->is_locked = 0;
 		}
-		internal_volume->is_locked = 0;
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(

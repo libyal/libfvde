@@ -4465,28 +4465,24 @@ int libfvde_encrypted_metadata_read(
 
 	encrypted_data = NULL;
 
-	if( encrypted_metadata->logical_volume_values_are_set == 0 )
+	if( encrypted_metadata->logical_volume_number_of_blocks_0x0505 != 0 )
 	{
-		if( encrypted_metadata->logical_volume_number_of_blocks_0x0505 != 0 )
-		{
-			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0505;
-			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0505;
-		}
-		else if( encrypted_metadata->logical_volume_number_of_blocks_0x0305 != 0 )
-		{
-			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0305;
-			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0305;
-		}
-		else if( encrypted_metadata->logical_volume_number_of_blocks_0x0405 != 0 )
-		{
-			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0405;
-			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0405;
-		}
-		encrypted_metadata->logical_volume_offset *= io_handle->block_size;
-		encrypted_metadata->logical_volume_size   *= io_handle->block_size;
-
-		encrypted_metadata->logical_volume_values_are_set = 1;
+		encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0505;
+		encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0505;
 	}
+	else if( encrypted_metadata->logical_volume_number_of_blocks_0x0305 != 0 )
+	{
+		encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0305;
+		encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0305;
+	}
+	else if( encrypted_metadata->logical_volume_number_of_blocks_0x0405 != 0 )
+	{
+		encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0405;
+		encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0405;
+	}
+	encrypted_metadata->logical_volume_offset *= io_handle->block_size;
+	encrypted_metadata->logical_volume_size   *= io_handle->block_size;
+
 	return( 1 );
 
 on_error:
