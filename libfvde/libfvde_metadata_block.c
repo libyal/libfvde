@@ -345,6 +345,10 @@ int libfvde_metadata_block_read(
 	 metadata_block->serial_number );
 
 	byte_stream_copy_to_uint64_little_endian(
+	 ( (fvde_metadata_block_header_t *) block_data )->group,
+	 metadata_block->group );
+
+	byte_stream_copy_to_uint64_little_endian(
 	 ( (fvde_metadata_block_header_t *) block_data )->number,
 	 metadata_block->number );
 
@@ -388,13 +392,10 @@ int libfvde_metadata_block_read(
 		 function,
 		 metadata_block->serial_number );
 
-		byte_stream_copy_to_uint64_little_endian(
-		 ( (fvde_metadata_block_header_t *) block_data )->unknown2,
-		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown2\t\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: group\t\t\t\t\t: %" PRIu64 "\n",
 		 function,
-		 value_64bit );
+		 metadata_block->group );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (fvde_metadata_block_header_t *) block_data )->unknown3,

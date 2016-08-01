@@ -44,6 +44,10 @@ struct libfvde_metadata_block
 	 */
 	uint32_t serial_number;
 
+	/* The group
+	 */
+	uint64_t group;
+
 	/* The number
 	 */
 	uint64_t number;
@@ -84,5 +88,5 @@ int libfvde_metadata_block_read(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_METADATA_BLOCK_H ) */
 

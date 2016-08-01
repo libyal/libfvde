@@ -61,10 +61,10 @@ struct fvde_metadata_block_header
 	 */
 	uint8_t serial_number[ 4 ];
 
-	/* Unknown
+	/* The group
 	 * Consists of 8 bytes
 	 */
-	uint8_t unknown2[ 8 ];
+	uint8_t group[ 8 ];
 
 	/* Unknown
 	 * Consists of 8 bytes
