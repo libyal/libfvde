@@ -2833,13 +2833,10 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 #endif
 			block_data_offset += 40;
 		}
-		/* Use the last 0x0305 entry
+		/* Use the last entry in the last 0x0305 metadata block
 		 */
-		if( encrypted_metadata->logical_volume_number_of_blocks_0x0305 == 0 )
-		{
-			encrypted_metadata->logical_volume_block_number_0x0305     = block_number;
-			encrypted_metadata->logical_volume_number_of_blocks_0x0305 = number_of_blocks;
-		}
+		encrypted_metadata->logical_volume_block_number_0x0305     = block_number;
+		encrypted_metadata->logical_volume_number_of_blocks_0x0305 = number_of_blocks;
 	}
 	return( 1 );
 }
@@ -3198,9 +3195,6 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 		 "\n" );
 	}
 #endif
-/* TODO: check bounds of number_of_entries */
-	block_data_offset = 8;
-
 	if( libcdata_array_empty(
 	     encrypted_metadata->data_area_descriptors,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
@@ -3215,124 +3209,139 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 
 		goto on_error;
 	}
-	for( entry_index = 0;
-	     entry_index < number_of_entries;
-	     entry_index++ )
+	block_data_offset = 8;
+
+	if( number_of_entries > 0 )
 	{
-		if( libfvde_data_area_descriptor_initialize(
-		     &data_area_descriptor,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-			 "%s: unable to create data area descriptor.",
-			 function );
-
-			goto on_error;
-		}
-		byte_stream_copy_to_uint64_little_endian(
-		 &( block_data[ block_data_offset ] ),
-		 data_area_descriptor->offset );
-
-		byte_stream_copy_to_uint64_little_endian(
-		 &( block_data[ block_data_offset + 8 ] ),
-		 data_area_descriptor->size );
-
-		byte_stream_copy_to_uint64_little_endian(
-		 &( block_data[ block_data_offset + 16 ] ),
-		 data_area_descriptor->data_type );
-
-		byte_stream_copy_to_uint64_little_endian(
-		 &( block_data[ block_data_offset + 40 ] ),
-		 unknown2 );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: entry: %03d block number\t\t: %" PRIi64 "\n",
-			 function,
-			 entry_index,
-			 data_area_descriptor->offset );
-
-			libcnotify_printf(
-			 "%s: entry: %03d number of blocks\t: %" PRIu64 "\n",
-			 function,
-			 entry_index,
-			 data_area_descriptor->size );
-
-			libcnotify_printf(
-			 "%s: entry: %03d data type\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 entry_index,
-			 data_area_descriptor->data_type );
-
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 24 ] ),
-			 value_64bit );
-			libcnotify_printf(
-			 "%s: entry: %03d copy number\t\t: %" PRIu64 "\n",
-			 function,
-			 entry_index,
-			 value_64bit );
-
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 32 ] ),
-			 value_64bit );
-			libcnotify_printf(
-			 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 entry_index,
-			 value_64bit );
-
-			libcnotify_printf(
-			 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 entry_index,
-			 unknown2 );
-
-			libcnotify_printf(
-			 "\n" );
-		}
-#endif
-		block_data_offset += 48;
-
-		if( ( data_area_descriptor->data_type == 0x09 )
-		 || ( data_area_descriptor->data_type == 0x0a ) )
-		{
-			if( unknown2 == 0 )
-			{
-				block_number = (uint64_t) data_area_descriptor->offset;
-				number_of_blocks = (uint64_t) data_area_descriptor->size;
-			}
-		}
-		data_area_descriptor->offset *= io_handle->block_size;
-		data_area_descriptor->size   *= io_handle->block_size;
-
-		if( libcdata_array_append_entry(
-		     encrypted_metadata->data_area_descriptors,
-		     &data_area_descriptor_index,
-		     (intptr_t *) data_area_descriptor,
-		     error ) != 1 )
+		if( ( (size_t) number_of_entries * 48 ) > ( block_data_size - block_data_offset ) )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append data area descriptor to array.",
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid number of entries value out of bounds.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
-		data_area_descriptor = NULL;
-	}
-	/* Use the last 0x0405 metadata block
-	 */
-	encrypted_metadata->logical_volume_block_number_0x0405     = block_number;
-	encrypted_metadata->logical_volume_number_of_blocks_0x0405 = number_of_blocks;
+		for( entry_index = 0;
+		     entry_index < number_of_entries;
+		     entry_index++ )
+		{
+			if( libfvde_data_area_descriptor_initialize(
+			     &data_area_descriptor,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+				 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+				 "%s: unable to create data area descriptor.",
+				 function );
 
+				goto on_error;
+			}
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 data_area_descriptor->offset );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 data_area_descriptor->size );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 16 ] ),
+			 data_area_descriptor->data_type );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 40 ] ),
+			 unknown2 );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: entry: %03d block number\t\t: %" PRIi64 "\n",
+				 function,
+				 entry_index,
+				 data_area_descriptor->offset );
+
+				libcnotify_printf(
+				 "%s: entry: %03d number of blocks\t: %" PRIu64 "\n",
+				 function,
+				 entry_index,
+				 data_area_descriptor->size );
+
+				libcnotify_printf(
+				 "%s: entry: %03d data type\t\t: 0x%08" PRIx64 "\n",
+				 function,
+				 entry_index,
+				 data_area_descriptor->data_type );
+
+				byte_stream_copy_to_uint64_little_endian(
+				 &( block_data[ block_data_offset + 24 ] ),
+				 value_64bit );
+				libcnotify_printf(
+				 "%s: entry: %03d copy number\t\t: %" PRIu64 "\n",
+				 function,
+				 entry_index,
+				 value_64bit );
+
+				byte_stream_copy_to_uint64_little_endian(
+				 &( block_data[ block_data_offset + 32 ] ),
+				 value_64bit );
+				libcnotify_printf(
+				 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+				 function,
+				 entry_index,
+				 value_64bit );
+
+				libcnotify_printf(
+				 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx64 "\n",
+				 function,
+				 entry_index,
+				 unknown2 );
+
+				libcnotify_printf(
+				 "\n" );
+			}
+#endif
+			block_data_offset += 48;
+
+			if( ( data_area_descriptor->data_type == 0x09 )
+			 || ( data_area_descriptor->data_type == 0x0a ) )
+			{
+				if( unknown2 == 0 )
+				{
+					block_number = (uint64_t) data_area_descriptor->offset;
+					number_of_blocks = (uint64_t) data_area_descriptor->size;
+				}
+			}
+			data_area_descriptor->offset *= io_handle->block_size;
+			data_area_descriptor->size   *= io_handle->block_size;
+
+			if( libcdata_array_append_entry(
+			     encrypted_metadata->data_area_descriptors,
+			     &data_area_descriptor_index,
+			     (intptr_t *) data_area_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to append data area descriptor to array.",
+				 function );
+
+				goto on_error;
+			}
+			data_area_descriptor = NULL;
+		}
+		/* Use the last 0x0405 metadata block
+		 */
+		encrypted_metadata->logical_volume_block_number_0x0405     = block_number;
+		encrypted_metadata->logical_volume_number_of_blocks_0x0405 = number_of_blocks;
+	}
 	return( 1 );
 
 on_error:
@@ -3481,8 +3490,9 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 #endif
 			block_data_offset += 16;
 		}
-		if( ( number_of_entries == 1 )
-		 && ( encrypted_metadata->logical_volume_number_of_blocks_0x0505 == 0 ) )
+		/* Use the last 0x0505 metadata block
+		 */
+		if( number_of_entries == 1 )
 		{
 			encrypted_metadata->logical_volume_block_number_0x0505     = block_number;
 			encrypted_metadata->logical_volume_number_of_blocks_0x0505 = number_of_blocks;
@@ -4012,33 +4022,20 @@ int libfvde_encrypted_metadata_read(
 
 	if( encrypted_metadata->logical_volume_values_are_set == 0 )
 	{
-		/* Metadata block 0x0505 defines the logical volume of encrypted system volume
-		 * in Mac OS X 10.7, 10.8, 10.9, 10.10
-		 */
 		if( encrypted_metadata->logical_volume_number_of_blocks_0x0505 != 0 )
 		{
 			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0505;
 			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0505;
-
-			encrypted_metadata->is_encrypted     = 1;
-			encrypted_metadata->is_system_volume = 1;
 		}
-		/* Metadata block 0x0305 defines the logical volume of encrypted removable volume
-		 * in Mac OS X 10.7, 10.8, 10.9, 10.10
-		 */
 		else if( encrypted_metadata->logical_volume_number_of_blocks_0x0305 != 0 )
 		{
 			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0305;
 			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0305;
-
-			encrypted_metadata->is_encrypted = 1;
 		}
 		else if( encrypted_metadata->logical_volume_number_of_blocks_0x0405 != 0 )
 		{
 			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_block_number_0x0405;
 			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0405;
-
-			encrypted_metadata->is_encrypted = 1;
 		}
 		encrypted_metadata->logical_volume_offset *= io_handle->block_size;
 		encrypted_metadata->logical_volume_size   *= io_handle->block_size;

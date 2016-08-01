@@ -63,14 +63,6 @@ struct libfvde_encrypted_metadata
 	 */
 	uint8_t logical_volume_values_are_set;
 
-	/* Value to indicate the volume is a system volume
-	 */
-	uint8_t is_system_volume;
-
-	/* Value to indicate the volume is encrpted
-	 */
-	uint8_t is_encrypted;
-
 	/* The encryption context plist (com.apple.corestorage.lvf.encryption.context)
 	 */
 	libfvde_encryption_context_plist_t *encryption_context_plist;

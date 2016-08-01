@@ -2567,16 +2567,19 @@ Metadata block data type 0x0505
 * If present
 * If number of entries is 1
 * If logical volume number of blocks greater than 0
+* Use the last block
 
 Metadata block data type 0x0305
 
 * If present
-* Last entry
+* Use the last entry
+* Use the last block
 
 Metadata block data type 0x0405
 
 * If present
-* Entry where data type is 0x09 or 0x0a and unknown2 is not set. 
+* Use the entry where data type is 0x09 or 0x0a and unknown2 is not set
+* Use the last block
 
 === Block type 0x0011
 ....
