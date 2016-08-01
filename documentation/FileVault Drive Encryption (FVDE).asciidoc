@@ -885,6 +885,46 @@ relative block numbers?
 ....
 
 === Metadata block data type 0x0014
+Metadata block data type 0x0014 contains information about [yellow-background]*TODO: describe*
+
+The metadata block data is variable in size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Checksum +
+[yellow-background]*Contains a CRC-32 of bytes ?*
+| 4 | 4 | 0xffffffff | Initial value of the CRC-32
+| 8 | 16 | | Volume group identifier (com.apple.corestorage.lv.groupUUID) +
+Contains a UUID
+| 24 | 8 | 0x13 +
+0x1f | [yellow-background]*Unknown*
+| 32 | 8 | 1 | [yellow-background]*Unknown
+| 40 | 4 | | [yellow-background]*Unknown
+| 44 | 4 | | [yellow-background]*Unknown
+| 48 | 4 | 0x01 | [yellow-background]*Unknown (index1 ?)*
+| 52 | 4 | | [yellow-background]*Unknown (index2 ?)*
+| 56 | 4 | | [yellow-background]*Unknown (number of entries 1)*
+| 60 | 4 | | [yellow-background]*Unknown (number of entries 2)*
+| 64 | 4 | | [yellow-background]*Unknown (index5, index2 + 1 ?)*
+| 68 | 4 | | [yellow-background]*Unknown (empty values)*
+| 72 | 8 | | [yellow-background]*Unknown*
+| 80 | 4 | 1 | [yellow-background]*Unknown*
+| 84 | 4 | 1 | [yellow-background]*Unknown*
+| 88 | 8 | | [yellow-background]*Unknown*
+| 96 | 8 | | [yellow-background]*Unknown*
+| 104 | 8 | | [yellow-background]*Unknown*
+| 112 | 8 | | [yellow-background]*Unknown*
+| 120 | 4 | | [yellow-background]*Unknown* +
+Number of blocks to next 0x0014 block? Does not seem consistent
+| 122 | 2 | | [yellow-background]*Unknown* +
+Seen: 0, 1 or 2
+| 122 | 2 | | [yellow-background]*Unknown* +
+Seen: 0 or 1
+| 128 | ... | | [yellow-background]*Unknown (Array of entries 1)*
+| ... | ... | | [yellow-background]*Unknown (Array of entries 2)*
+|===
+
 ....
 00000000: 39 c2 e3 4d ff ff ff ff  ff 8f c7 af 5e 33 43 45   9..M.... ....^3CE 
 00000010: aa 73 5c fb 28 0a fd 08  02 00 00 00 00 00 00 00   .s\.(... ........ 
@@ -1987,14 +2027,30 @@ Metadata block data type 0x0304 contains information about [yellow-background]*T
 
 The metadata block data is variable in size and consists of:
 
-[yellow-background]*Present when volume group contains a volume?*
-
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | | Number of entries
 | 4 | 4 | | [yellow-background]*Unknown (Empty values)*
 | 8 | ... | | Array of entries
+|===
+
+The metadata block data type 0x0305 array entry is 40 bytes in size and 
+consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| 0 | 8 | | [yellow-background]*Unknown*
+| 8 | 8 | | [yellow-background]*Unknown*
+| 16 | 4 | | Number of blocks
+| 20 | 4 | | [yellow-background]*Unknown* +
+[yellow-background]*0 if not set e.g. non-removable?*
+| 24 | 4 | | [yellow-background]*Unknown*
+| 28 | 4 | | [yellow-background]*Unknown*
+| 32 | 4 | | Block number +
+Contains the first block number relative from the start of the Core Storage volume of the logical volume data +
+[yellow-background]*0 if not set e.g. non-removable?*
+| 36 | 4 | | [yellow-background]*Unknown*
 |===
 
 ....
@@ -2070,7 +2126,7 @@ consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
-| 0 | 16 | | [yellow-background]*Unknown*
+| 0 | 8 | | [yellow-background]*Unknown*
 | 8 | 8 | | [yellow-background]*Unknown*
 | 16 | 4 | | Number of blocks
 | 20 | 4 | | [yellow-background]*Unknown* +
