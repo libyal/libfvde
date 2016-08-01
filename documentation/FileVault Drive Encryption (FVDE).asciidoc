@@ -755,9 +755,12 @@ Contains a UUID
 | 96 | 8 | | [yellow-background]*Unknown*
 | 104 | 8 | | [yellow-background]*Unknown*
 | 112 | 8 | | [yellow-background]*Unknown*
-| 120 | 4 | | [yellow-background]*Unknown*
-| 122 | 2 | 2 | [yellow-background]*Unknown*
-| 122 | 2 | 1 | [yellow-background]*Unknown*
+| 120 | 4 | | [yellow-background]*Unknown* +
+Number of blocks to next 0x0013 block? Does not seem consistent
+| 122 | 2 | | [yellow-background]*Unknown* +
+Seen: 0, 1 or 2
+| 122 | 2 | | [yellow-background]*Unknown* +
+Seen: 0 or 1
 | 128 | ... | | [yellow-background]*Unknown (Array of entries 1)*
 | ... | ... | | [yellow-background]*Unknown (Array of entries 2)*
 |===

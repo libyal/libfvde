@@ -637,58 +637,64 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 /* TODO: check bounds of number_of_entries */
 	block_data_offset = 128;
 
-	for( entry_index = 0;
-	     entry_index < number_of_entries1;
-	     entry_index++ )
+	if( number_of_entries1 > 0 )
 	{
+		for( entry_index = 0;
+		     entry_index < number_of_entries1;
+		     entry_index++ )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				byte_stream_copy_to_uint64_little_endian(
+				 &( block_data[ block_data_offset ] ),
+				 value_64bit );
+				libcnotify_printf(
+				 "%s: entry1: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+				 function,
+				 entry_index,
+				 value_64bit );
+			}
+#endif
+			block_data_offset += 8;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset ] ),
-			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry1: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 entry_index,
-			 value_64bit );
+			 "\n" );
 		}
 #endif
-		block_data_offset += 8;
 	}
+	if( number_of_entries2 > 0 )
+	{
+		for( entry_index = 0;
+		     entry_index < number_of_entries2;
+		     entry_index++ )
+		{
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "\n" );
-	}
+			if( libcnotify_verbose != 0 )
+			{
+				byte_stream_copy_to_uint64_little_endian(
+				 &( block_data[ block_data_offset ] ),
+				 value_64bit );
+				libcnotify_printf(
+				 "%s: entry2: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+				 function,
+				 entry_index,
+				 value_64bit );
+			}
 #endif
-	for( entry_index = 0;
-	     entry_index < number_of_entries2;
-	     entry_index++ )
-	{
+			block_data_offset += 8;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset ] ),
-			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry2: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 entry_index,
-			 value_64bit );
+			 "\n" );
 		}
 #endif
-		block_data_offset += 8;
 	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "\n" );
-	}
-#endif
 	return( 1 );
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -2645,17 +2651,17 @@ int libfvde_encrypted_metadata_read_type_0x0305(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	static char *function      = "libfvde_encrypted_metadata_read_type_0x0305";
-	size_t block_data_offset   = 0;
-	size_t entries_data_size   = 0;
-	uint32_t entry_index       = 0;
-	uint32_t first_block       = 0;
-	uint32_t number_of_blocks  = 0;
-	uint32_t number_of_entries = 0;
+	static char *function                    = "libfvde_encrypted_metadata_read_type_0x0305";
+	size_t block_data_offset                 = 0;
+	size_t entries_data_size                 = 0;
+	uint32_t entry_index                     = 0;
+	uint32_t logical_volume_first_block      = 0;
+	uint32_t logical_volume_number_of_blocks = 0;
+	uint32_t number_of_entries               = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint64_t value_64bit       = 0;
-	uint32_t value_32bit       = 0;
+	uint64_t value_64bit                     = 0;
+	uint32_t value_32bit                     = 0;
 #endif
 
 	if( encrypted_metadata == NULL )
@@ -2757,11 +2763,11 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 	{
 		byte_stream_copy_to_uint32_little_endian(
 		 &( block_data[ block_data_offset ] ),
-		 number_of_blocks );
+		 logical_volume_number_of_blocks );
 
 		byte_stream_copy_to_uint32_little_endian(
 		 &( block_data[ block_data_offset + 16 ] ),
-		 first_block );
+		 logical_volume_first_block );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -2769,7 +2775,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 			libcnotify_printf(
 			 "%s: logical volume number of blocks\t: %" PRIu32 "\n",
 			 function,
-			 number_of_blocks );
+			 logical_volume_number_of_blocks );
 
 			byte_stream_copy_to_uint32_little_endian(
 			 &( block_data[ block_data_offset + 4 ] ),
@@ -2790,12 +2796,17 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 			libcnotify_printf(
 			 "%s: logical volume block number\t: %" PRIu32 "\n",
 			 function,
-			 first_block );
+			 logical_volume_first_block );
 
 			libcnotify_printf(
 			 "\n" );
 		}
 #endif
+	}
+	if( encrypted_metadata->logical_volume_number_of_blocks_0x0305 == 0 )
+	{
+		encrypted_metadata->logical_volume_first_block_0x0305      = logical_volume_first_block;
+		encrypted_metadata->logical_volume_number_of_blocks_0x0305 = logical_volume_number_of_blocks;
 	}
 	return( 1 );
 }
@@ -2813,11 +2824,8 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 	libfvde_data_area_descriptor_t *data_area_descriptor = NULL;
 	static char *function                                = "libfvde_encrypted_metadata_read_type_0x0404";
 	size_t block_data_offset                             = 0;
-	uint64_t logical_volume_first_block                  = 0;
-	uint64_t logical_volume_number_of_blocks             = 0;
 	uint32_t entry_index                                 = 0;
 	uint32_t number_of_entries                           = 0;
-	int data_area_descriptor_index                       = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint64_t value_64bit                                 = 0;
@@ -3004,15 +3012,6 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 #endif
 		block_data_offset += 48;
 
-		if( ( data_area_descriptor->data_type == 0x09 )
-		 || ( data_area_descriptor->data_type == 0x0a ) )
-		{
-			if( data_area_descriptor->mapped_offset == 0 )
-			{
-				logical_volume_first_block = (uint64_t) data_area_descriptor->offset;
-			}
-			logical_volume_number_of_blocks += (uint64_t) data_area_descriptor->size;
-		}
 		data_area_descriptor->offset        *= io_handle->block_size;
 		data_area_descriptor->size          *= io_handle->block_size;
 		data_area_descriptor->mapped_offset *= io_handle->block_size;
@@ -3050,23 +3049,6 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 #endif
 		data_area_descriptor = NULL;
 	}
-#ifdef TODO
-	/* Use the last 0x0404 metadata block
-	 */
-	if( logical_volume_number_of_blocks > 0 )
-	{
-		encrypted_metadata->logical_volume_first_block      = logical_volume_first_block;
-		encrypted_metadata->logical_volume_number_of_blocks = logical_volume_number_of_blocks;
-
-		encrypted_metadata->logical_volume_block_values_are_set = 1;
-
-		/* Overwrite com.apple.corestorage.lv.size from metadata block 0x001a because it seems unreliable
-		 */
-		encrypted_metadata->logical_volume_size = encrypted_metadata->logical_volume_number_of_blocks * io_handle->block_size;
-
-		encrypted_metadata->logical_volume_size_value_is_set = 1;
-	}
-#endif /* TODO */
 	return( 1 );
 
 on_error:
@@ -3319,19 +3301,9 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 	}
 	/* Use the last 0x0405 metadata block
 	 */
-	if( logical_volume_number_of_blocks > 0 )
-	{
-		encrypted_metadata->logical_volume_first_block      = logical_volume_first_block;
-		encrypted_metadata->logical_volume_number_of_blocks = logical_volume_number_of_blocks;
+	encrypted_metadata->logical_volume_first_block_0x0405      = logical_volume_first_block;
+	encrypted_metadata->logical_volume_number_of_blocks_0x0405 = logical_volume_number_of_blocks;
 
-		encrypted_metadata->logical_volume_block_values_are_set = 1;
-
-		/* Overwrite com.apple.corestorage.lv.size from metadata block 0x001a because it seems unreliable
-		 */
-		encrypted_metadata->logical_volume_size = encrypted_metadata->logical_volume_number_of_blocks * io_handle->block_size;
-
-		encrypted_metadata->logical_volume_size_value_is_set = 1;
-	}
 	return( 1 );
 
 on_error:
@@ -3353,10 +3325,10 @@ int libfvde_encrypted_metadata_read_type_0x0505(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	static char *function      = "libfvde_encrypted_metadata_read_type_0x0505";
-	uint64_t first_block       = 0;
-	uint64_t number_of_blocks  = 0;
-	uint64_t number_of_entries = 0;
+	static char *function                    = "libfvde_encrypted_metadata_read_type_0x0505";
+	uint64_t logical_volume_first_block      = 0;
+	uint64_t logical_volume_number_of_blocks = 0;
+	uint64_t number_of_entries               = 0;
 
 	if( encrypted_metadata == NULL )
 	{
@@ -3408,11 +3380,11 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 
 	byte_stream_copy_to_uint64_little_endian(
 	 &( block_data[ 8 ] ),
-	 number_of_blocks );
+	 logical_volume_number_of_blocks );
 
 	byte_stream_copy_to_uint64_little_endian(
 	 &( block_data[ 16 ] ),
-	 first_block );
+	 logical_volume_first_block );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -3425,24 +3397,21 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 		libcnotify_printf(
 		 "%s: logical volume number of blocks\t: %" PRIu64 "\n",
 		 function,
-		 number_of_blocks );
+		 logical_volume_number_of_blocks );
 
 		libcnotify_printf(
 		 "%s: logical volume block number\t: %" PRIu64 "\n",
 		 function,
-		 first_block );
+		 logical_volume_first_block );
 
 		libcnotify_printf(
 		 "\n" );
 	}
 #endif
-/* TODO: check bounds of number_of_entries */
-	if( encrypted_metadata->logical_volume_block_values_are_set == 0 )
+	if( encrypted_metadata->logical_volume_number_of_blocks_0x0505 == 0 )
 	{
-		encrypted_metadata->logical_volume_first_block      = first_block;
-		encrypted_metadata->logical_volume_number_of_blocks = number_of_blocks;
-
-		encrypted_metadata->logical_volume_block_values_are_set = 1;
+		encrypted_metadata->logical_volume_first_block_0x0505      = logical_volume_first_block;
+		encrypted_metadata->logical_volume_number_of_blocks_0x0505 = logical_volume_number_of_blocks;
 	}
 	return( 1 );
 }
@@ -3966,26 +3935,29 @@ int libfvde_encrypted_metadata_read(
 
 	encrypted_data = NULL;
 
-	/* The 0x0505 metadata block contains the logical volume first block and number of blocks.
-	 * The number of blocks should match the logical volume size in the XML plist in the 0x001a
-	 * metadata block.
-	 */
-	if( ( encrypted_metadata->logical_volume_values_are_set == 0 )
-	 && ( encrypted_metadata->logical_volume_block_values_are_set != 0 )
-	 && ( encrypted_metadata->logical_volume_size_value_is_set != 0 ) )
+	if( encrypted_metadata->logical_volume_values_are_set == 0 )
 	{
-		encrypted_metadata->logical_volume_number_of_blocks *= io_handle->block_size;
-
-		if( encrypted_metadata->logical_volume_number_of_blocks == encrypted_metadata->logical_volume_size )
+		/* Metadata block 0x0505 defines the logical volume of encrypted system volume in Mac OS X 10.7 and 10.8
+		 */
+		if( encrypted_metadata->logical_volume_number_of_blocks_0x0505 != 0 )
 		{
-			encrypted_metadata->logical_volume_offset  = encrypted_metadata->logical_volume_first_block;
-			encrypted_metadata->logical_volume_offset *= io_handle->block_size;
+			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_first_block_0x0505;
+			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0505;
 
 			encrypted_metadata->is_encrypted     = 1;
 			encrypted_metadata->is_system_volume = 1;
-
-			encrypted_metadata->logical_volume_values_are_set = 1;
 		}
+		/* Metadata block 0x0305 defines the logical volume of encrypted removable volume in Mac OS X 10.7 and 10.8
+		 */
+		else if( encrypted_metadata->logical_volume_number_of_blocks_0x0305 != 0 )
+		{
+			encrypted_metadata->logical_volume_offset = encrypted_metadata->logical_volume_first_block_0x0305;
+			encrypted_metadata->logical_volume_size   = encrypted_metadata->logical_volume_number_of_blocks_0x0305;
+		}
+		encrypted_metadata->logical_volume_offset *= io_handle->block_size;
+		encrypted_metadata->logical_volume_size   *= io_handle->block_size;
+
+		encrypted_metadata->logical_volume_values_are_set = 1;
 	}
 	return( 1 );
 
