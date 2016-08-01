@@ -2061,22 +2061,26 @@ The metadata block data is variable in size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | 1 | Number of entries
-| 4 | 20 | | [yellow-background]*Unknown (empty values)*
-| 24 | ... | | Array of entries
+| 4 | 4 | | [yellow-background]*Unknown (empty values)*
+| 8 | ... | | Array of entries
 |===
 
-The metadata block data type 0x0305 array entry is 24 bytes in size and 
+The metadata block data type 0x0305 array entry is 40 bytes in size and 
 consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
-| 0 | 4 | | Logical volume number of blocks
-| 4 | 4 | | [yellow-background]*Unknown* +
+| 0 | 16 | | [yellow-background]*Unknown*
+| 8 | 8 | | [yellow-background]*Unknown*
+| 16 | 4 | | Logical volume number of blocks
+| 20 | 4 | | [yellow-background]*Unknown* +
 [yellow-background]*0 if not set e.g. non-removable?*
-| 8 | 8 | | [yellow-background]*Unknown (empty values)*
-| 16 | 4 | | Logical volume first block +
+| 24 | 4 | | [yellow-background]*Unknown*
+| 28 | 4 | | [yellow-background]*Unknown*
+| 32 | 4 | | Logical volume first block +
 Contains the first block number relative from the start of the Core Storage volume of the logical volume data +
 [yellow-background]*0 if not set e.g. non-removable?*
+| 36 | 4 | | [yellow-background]*Unknown*
 |===
 
 [yellow-background]*TODO: could this be used as volume offset of removable media?*
@@ -2549,9 +2553,12 @@ The size of these parent blocks is defined in the volume header, in the
 
 === Determining the logical volume size and offset
 
-Use the values in metadata block data type 0x0505 if present.
+If metadata block data type 0x0505 is present.
 
-Use the values in metadata block data type 0x0305 if present.
+If metadata block data type 0x0305 is present and has single entry.
+
+If metadata block data type 0x0405 is present.
+
 
 === Block type 0x0011
 ....
