@@ -3073,6 +3073,7 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 				 "\n" );
 			}
 #endif
+			block_data_offset += 40;
 		}
 	}
 	return( 1 );
