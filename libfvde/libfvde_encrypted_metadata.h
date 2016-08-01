@@ -126,6 +126,12 @@ int libfvde_encrypted_metadata_read_type_0x0013(
      size_t block_data_size,
      libcerror_error_t **error );
 
+int libfvde_encrypted_metadata_read_type_0x0014(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
 int libfvde_encrypted_metadata_read_type_0x0016(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
