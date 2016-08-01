@@ -1,6 +1,6 @@
 dnl Functions for libhmac
 dnl
-dnl Version: 20141205
+dnl Version: 20160731
 
 dnl Function to detect if libhmac is available
 dnl ac_libhmac_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -204,24 +204,21 @@ AC_DEFUN([AX_LIBHMAC_CHECK_LOCAL],
  ac_cv_libhmac_sha512=no
 
  dnl Check for Windows crypto API support
+ AX_WINCRYPT_CHECK_LIB
+
  AS_IF(
-  [test "x$ac_cv_enable_winapi" = xyes],
-  [AX_WINCRYPT_CHECK_LIB
+  [test "x$ac_cv_wincrypt" != xno],
+  [AX_WINCRYPT_CHECK_MD5
+  AX_WINCRYPT_CHECK_SHA1
+  AX_WINCRYPT_CHECK_SHA224
+  AX_WINCRYPT_CHECK_SHA256
+  AX_WINCRYPT_CHECK_SHA512
 
-  AS_IF(
-   [test "x$ac_cv_wincrypt" != xno],
-   [AX_WINCRYPT_CHECK_MD5
-   AX_WINCRYPT_CHECK_SHA1
-   AX_WINCRYPT_CHECK_SHA224
-   AX_WINCRYPT_CHECK_SHA256
-   AX_WINCRYPT_CHECK_SHA512
-
-   ac_cv_libhmac_md5=$ac_cv_wincrypt_md5
-   ac_cv_libhmac_sha1=$ac_cv_wincrypt_sha1
-   ac_cv_libhmac_sha224=$ac_cv_wincrypt_sha224
-   ac_cv_libhmac_sha256=$ac_cv_wincrypt_sha256
-   ac_cv_libhmac_sha521=$ac_cv_wincrypt_sha521
-  ])
+  ac_cv_libhmac_md5=$ac_cv_wincrypt_md5
+  ac_cv_libhmac_sha1=$ac_cv_wincrypt_sha1
+  ac_cv_libhmac_sha224=$ac_cv_wincrypt_sha224
+  ac_cv_libhmac_sha256=$ac_cv_wincrypt_sha256
+  ac_cv_libhmac_sha521=$ac_cv_wincrypt_sha521
  ])
 
  dnl Check for libcrypto (openssl) support
