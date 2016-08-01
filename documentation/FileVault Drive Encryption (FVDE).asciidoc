@@ -2265,15 +2265,24 @@ Metadata block data type 0x0505 contains information about location of the
 logical volume data inside the physical volume. This block type is used in 
 combination with encrypted system volumes.
 
-The metadata block data is 24 bytes in size and consists of:
+The metadata block data is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | | [yellow-background]*Number of entries*
-| 8 | 8 | | [yellow-background]*Number of blocks?* +
-[yellow-background]*Can differ from com.apple.corestorage.lv.size*
-| 16 | 8 | | First block +
+| 0 | 4 | 1 | Number of entries
+| 4 | 4 | | [yellow-background]*Unknown (empty values)*
+| 8 | ... | | Array of entries
+|===
+
+The metadata block data type 0x0505 array entry is 16 bytes in size and 
+consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | Logical volume number of blocks +
+| 8 | 8 | | Logical volume first block +
 Contains the first block number relative from the start of the Core Storage volume of the encrypted logical volume data
 |===
 
@@ -2553,11 +2562,18 @@ The size of these parent blocks is defined in the volume header, in the
 
 === Determining the logical volume size and offset
 
-If metadata block data type 0x0505 is present.
+Metadata block data type 0x0505
 
-If metadata block data type 0x0305 is present and has single entry.
+* If present
+* If number of entries is 1
+* If logical volume number of blocks greater than 0
 
-If metadata block data type 0x0405 is present.
+Metadata block data type 0x0305
+
+* If present
+* If number of entries is 1
+
+Metadata block data type 0x0405
 
 
 === Block type 0x0011

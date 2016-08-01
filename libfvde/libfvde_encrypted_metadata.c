@@ -2696,7 +2696,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 
 		return( -1 );
 	}
-	if( block_data_size < 24 )
+	if( block_data_size < 8 )
 	{
 		libcerror_error_set(
 		 error,
@@ -2715,7 +2715,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of entries\t\t\t: %" PRIu32 "\n",
+		 "%s: number of entries\t\t\t\t: %" PRIu32 "\n",
 		 function,
 		 number_of_entries );
 
@@ -2723,7 +2723,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 		 &( block_data[ 4 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown1\t\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -2735,7 +2735,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 
 	if( number_of_entries > 0 )
 	{
-		if( ( (size_t) number_of_entries * 40 ) >= ( block_data_size - block_data_offset ) )
+		if( ( (size_t) number_of_entries * 40 ) > ( block_data_size - block_data_offset ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -2765,7 +2765,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 				 &( block_data[ block_data_offset ] ),
 				 value_64bit );
 				libcnotify_printf(
-				 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+				 "%s: entry: %03d unknown1\t\t\t: 0x%08" PRIx64 "\n",
 				 function,
 				 entry_index,
 				 value_64bit );
@@ -2774,21 +2774,22 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 				 &( block_data[ block_data_offset + 8 ] ),
 				 value_64bit );
 				libcnotify_printf(
-				 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx64 "\n",
+				 "%s: entry: %03d unknown2\t\t\t: 0x%08" PRIx64 "\n",
 				 function,
 				 entry_index,
 				 value_64bit );
 
 				libcnotify_printf(
-				 "%s: logical volume number of blocks\t: %" PRIu32 "\n",
+				 "%s: entry: %03d logical volume number of blocks\t: %" PRIu32 "\n",
 				 function,
+				 entry_index,
 				 logical_volume_number_of_blocks );
 
 				byte_stream_copy_to_uint32_little_endian(
 				 &( block_data[ block_data_offset + 20 ] ),
 				 value_32bit );
 				libcnotify_printf(
-				 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx32 "\n",
+				 "%s: entry: %03d unknown3\t\t\t: 0x%08" PRIx32 "\n",
 				 function,
 				 entry_index,
 				 value_32bit );
@@ -2797,7 +2798,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 				 &( block_data[ block_data_offset + 24 ] ),
 				 value_32bit );
 				libcnotify_printf(
-				 "%s: entry: %03d unknown4\t\t: 0x%08" PRIx32 "\n",
+				 "%s: entry: %03d unknown4\t\t\t: 0x%08" PRIx32 "\n",
 				 function,
 				 entry_index,
 				 value_32bit );
@@ -2806,21 +2807,22 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 				 &( block_data[ block_data_offset + 28 ] ),
 				 value_32bit );
 				libcnotify_printf(
-				 "%s: entry: %03d unknown4\t\t: 0x%08" PRIx32 "\n",
+				 "%s: entry: %03d unknown5\t\t\t: 0x%08" PRIx32 "\n",
 				 function,
 				 entry_index,
 				 value_32bit );
 
 				libcnotify_printf(
-				 "%s: logical volume block number\t: %" PRIu32 "\n",
+				 "%s: entry: %03d logical volume block number\t: %" PRIu32 "\n",
 				 function,
+				 entry_index,
 				 logical_volume_first_block );
 
 				byte_stream_copy_to_uint32_little_endian(
 				 &( block_data[ block_data_offset + 36 ] ),
 				 value_32bit );
 				libcnotify_printf(
-				 "%s: entry: %03d unknown5\t\t: 0x%08" PRIx32 "\n",
+				 "%s: entry: %03d unknown6\t\t\t: 0x%08" PRIx32 "\n",
 				 function,
 				 entry_index,
 				 value_32bit );
@@ -3356,9 +3358,15 @@ int libfvde_encrypted_metadata_read_type_0x0505(
      libcerror_error_t **error )
 {
 	static char *function                    = "libfvde_encrypted_metadata_read_type_0x0505";
+	size_t block_data_offset                 = 0;
 	uint64_t logical_volume_first_block      = 0;
 	uint64_t logical_volume_number_of_blocks = 0;
-	uint64_t number_of_entries               = 0;
+	uint32_t entry_index                     = 0;
+	uint32_t number_of_entries               = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint32_t value_32bit                     = 0;
+#endif
 
 	if( encrypted_metadata == NULL )
 	{
@@ -3393,7 +3401,7 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 
 		return( -1 );
 	}
-	if( block_data_size < 24 )
+	if( block_data_size < 8 )
 	{
 		libcerror_error_set(
 		 error,
@@ -3404,44 +3412,84 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 
 		return( -1 );
 	}
-	byte_stream_copy_to_uint64_little_endian(
-	 block_data,
+	byte_stream_copy_to_uint32_little_endian(
+	 &( block_data[ 0 ] ),
 	 number_of_entries );
-
-	byte_stream_copy_to_uint64_little_endian(
-	 &( block_data[ 8 ] ),
-	 logical_volume_number_of_blocks );
-
-	byte_stream_copy_to_uint64_little_endian(
-	 &( block_data[ 16 ] ),
-	 logical_volume_first_block );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of entries\t\t\t: %" PRIu64 "\n",
+		 "%s: number of entries\t\t\t: %" PRIu32 "\n",
 		 function,
 		 number_of_entries );
 
+		byte_stream_copy_to_uint32_little_endian(
+		 &( block_data[ 4 ] ),
+		 value_32bit );
 		libcnotify_printf(
-		 "%s: logical volume number of blocks\t: %" PRIu64 "\n",
+		 "%s: unknown1\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
-		 logical_volume_number_of_blocks );
-
-		libcnotify_printf(
-		 "%s: logical volume block number\t: %" PRIu64 "\n",
-		 function,
-		 logical_volume_first_block );
+		 value_32bit );
 
 		libcnotify_printf(
 		 "\n" );
 	}
 #endif
-	if( encrypted_metadata->logical_volume_number_of_blocks_0x0505 == 0 )
+	block_data_offset = 8;
+
+	if( number_of_entries > 0 )
 	{
-		encrypted_metadata->logical_volume_first_block_0x0505      = logical_volume_first_block;
-		encrypted_metadata->logical_volume_number_of_blocks_0x0505 = logical_volume_number_of_blocks;
+		if( ( (size_t) number_of_entries * 16 ) > ( block_data_size - block_data_offset ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid number of entries value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		for( entry_index = 0;
+		     entry_index < number_of_entries;
+		     entry_index++ )
+		{
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 logical_volume_number_of_blocks );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 logical_volume_first_block );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: entry: %03d logical volume number of blocks\t: %" PRIu64 "\n",
+				 function,
+				 entry_index,
+				 logical_volume_number_of_blocks );
+
+				libcnotify_printf(
+				 "%s: entry: %03d logical volume block number\t: %" PRIu64 "\n",
+				 function,
+				 entry_index,
+				 logical_volume_first_block );
+
+				libcnotify_printf(
+				 "\n" );
+			}
+#endif
+			block_data_offset += 16;
+		}
+		if( ( number_of_entries == 1 )
+		 && ( encrypted_metadata->logical_volume_number_of_blocks_0x0505 == 0 ) )
+		{
+			encrypted_metadata->logical_volume_first_block_0x0505      = logical_volume_first_block;
+			encrypted_metadata->logical_volume_number_of_blocks_0x0505 = logical_volume_number_of_blocks;
+		}
 	}
 	return( 1 );
 }
