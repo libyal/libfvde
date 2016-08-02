@@ -1,6 +1,6 @@
 dnl Functions for wincrypt
 dnl
-dnl Version: 20160731
+dnl Version: 20160802
 
 dnl Function to detect whether a certain #define is present in a certain WINAPI header
 AC_DEFUN([AX_WINCRYPT_CHECK_WINAPI_DEFINE],
@@ -19,7 +19,8 @@ AC_DEFUN([AX_WINCRYPT_CHECK_WINAPI_DEFINE],
     [[]] )],
    [ac_cv_winapi_define_$2=yes],
    [ac_cv_winapi_define_$2=no])
-   AC_LANG_POP(C) ])
+   AC_LANG_POP(C)
+  ])
  ])
 
 dnl Function to detect if wincrypt functions are available
@@ -41,7 +42,7 @@ AC_DEFUN([AX_WINCRYPT_CHECK_LIB],
     [-ladvapi32])
 
    ac_cv_wincrypt=libadvapi32])
- ])
+  ])
 
  AM_CONDITIONAL(
   [HAVE_WINCRYPT],
