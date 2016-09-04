@@ -16,12 +16,25 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	fvde_test_error \
 	fvde_test_get_version
 
-fvde_test_get_version_SOURCES = \
+fvde_test_error_SOURCES = \
+	fvde_test_error.c \
 	fvde_test_libfvde.h \
 	fvde_test_libcstring.h \
+	fvde_test_macros.h \
+	fvde_test_unused.h
+
+fvde_test_error_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCSTRING_LIBADD@
+
+fvde_test_get_version_SOURCES = \
 	fvde_test_get_version.c \
+	fvde_test_libfvde.h \
+	fvde_test_libcstring.h \
+	fvde_test_macros.h \
 	fvde_test_unused.h
 
 fvde_test_get_version_LDADD = \

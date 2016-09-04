@@ -102,6 +102,24 @@ SED_SCRIPT="/^$/ {
 	sed -i'~' -f ${LOCAL_LIB}-$$.sed ${LOCAL_LIB_MAKEFILE_AM};
 	rm -f ${LOCAL_LIB}-$$.sed;
 
+	# Make the necessary changes to libcfile/Makefile.am
+	if test ${LOCAL_LIB} = "libcfile";
+	then
+		if ! test -f "m4/libuna.m4";
+		then
+			sed -i'~' 's?@LIBUNA_CPPFLAGS@?-I$(top_srcdir)/libuna?' ${LOCAL_LIB_MAKEFILE_AM};
+		fi
+	fi
+
+	# Make the necessary changes to libcsystem/Makefile.am
+	if test ${LOCAL_LIB} = "libcsystem";
+	then
+		if ! test -f "m4/libuna.m4";
+		then
+			sed -i'~' 's?@LIBUNA_CPPFLAGS@?-I$(top_srcdir)/libuna?' ${LOCAL_LIB_MAKEFILE_AM};
+		fi
+	fi
+
 	# Make the necessary changes to libfvalue/Makefile.am
 	if test ${LOCAL_LIB} = "libfvalue";
 	then

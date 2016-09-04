@@ -1,5 +1,6 @@
 MSVSCPP_FILES = \
 	dokan/dokan.vcproj \
+	fvde_test_error/fvde_test_error.vcproj \
 	fvde_test_get_version/fvde_test_get_version.vcproj \
 	fvdeinfo/fvdeinfo.vcproj \
 	fvdemount/fvdemount.vcproj \
@@ -27,17 +28,8 @@ MSVSCPP_FILES = \
 	zlib/zlib.vcproj \
 	libfvde.sln
 
-SCRIPT_FILES = \
-	scripts/vs2008_x64.sh \
-	scripts/vs2008_x64_sln.sed \
-	scripts/vs2008_x64_vcproj.sed \
-	scripts/vs2010_x64.sh \
-	scripts/vs2010_x64_sln.sed \
-	scripts/vs2010_x64_vcxproj.sed
-
 EXTRA_DIST = \
-	$(MSVSCPP_FILES) \
-	$(SCRIPT_FILES)
+	$(MSVSCPP_FILES)
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fvde_test_get_version"
-	ProjectGUID="{0BDBB0A0-EDD7-46BC-98B8-6C173AE5504F}"
-	RootNamespace="fvde_test_get_version"
+	Name="fvde_test_error"
+	ProjectGUID="{5BB1DE5D-043C-4A5E-A8F2-513444D64331}"
+	RootNamespace="fvde_test_error"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\fvde_test_get_version.c"
+				RelativePath="..\..\tests\fvde_test_error.c"
 				>
 			</File>
 		</Filter>
