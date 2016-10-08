@@ -74,7 +74,7 @@ int main(
 
 	FVDE_TEST_RUN(
 	 "libfvde_get_version",
-	 fvde_test_get_version() )
+	 fvde_test_get_version );
 
 	return( EXIT_SUCCESS );
 

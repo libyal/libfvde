@@ -123,23 +123,23 @@ int main(
 
 	FVDE_TEST_RUN(
 	 "libfvde_error_free",
-	 fvde_test_error_free() )
+	 fvde_test_error_free );
 
 	FVDE_TEST_RUN(
 	 "libfvde_error_fprint",
-	 fvde_test_error_fprint() )
+	 fvde_test_error_fprint );
 
 	FVDE_TEST_RUN(
 	 "libfvde_error_sprint",
-	 fvde_test_error_sprint() )
+	 fvde_test_error_sprint );
 
 	FVDE_TEST_RUN(
 	 "libfvde_error_backtrace_fprint",
-	 fvde_test_error_backtrace_fprint() )
+	 fvde_test_error_backtrace_fprint );
 
 	FVDE_TEST_RUN(
 	 "libfvde_error_backtrace_sprint",
-	 fvde_test_error_backtrace_sprint() )
+	 fvde_test_error_backtrace_sprint );
 
 	return( EXIT_SUCCESS );
 
