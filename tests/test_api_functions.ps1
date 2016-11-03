@@ -10,7 +10,7 @@ $TestPrefix = Split-Path -path ${Pwd}.Path -parent
 $TestPrefix = Split-Path -path ${TestPrefix} -leaf
 $TestPrefix = ${TestPrefix}.Substring(3)
 
-$TestFunctions = "get_version error" -split " "
+$TestFunctions = "error support" -split " "
 
 $TestToolDirectory = "..\vs2010\Release"
 

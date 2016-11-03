@@ -128,7 +128,7 @@ stamp-h[1-9]
 /fvdetools/fvdemount
 /fvdetools/fvdewipekey
 /tests/fvde_test_error
-/tests/fvde_test_get_version
+/tests/fvde_test_support
 /tests/input
 /tests/tmp*
 
