@@ -1,7 +1,7 @@
 /*
  * Features of libfvde
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -25,9 +25,12 @@
 
 /* The libfvde type support features
  */
-#if @HAVE_WIDE_CHARACTER_TYPE@ || defined( HAVE_WIDE_CHARACTER_TYPE )
+#if defined( WINAPI ) || @HAVE_WIDE_CHARACTER_TYPE@
 #define LIBFVDE_HAVE_WIDE_CHARACTER_TYPE	1
+#endif
 
+#if defined( WINAPI ) || @HAVE_MULTI_THREAD_SUPPORT@
+#define LIBFVDE_HAVE_MULTI_THREAD_SUPPORT	1
 #endif
 
 #if defined( HAVE_LIBBFIO ) || ( !defined( WINAPI ) && @HAVE_LIBBFIO@ )
@@ -44,5 +47,5 @@
 #endif
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_FEATURES_H ) */
 

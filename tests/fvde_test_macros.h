@@ -57,6 +57,13 @@
 		goto on_error; \
 	}
 
+#define FVDE_TEST_ASSERT_EQUAL_SIZE( name, value, expected_value ) \
+	if( value != expected_value ) \
+	{ \
+		fprintf( stdout, "%s:%d %s != %" PRIzd "\n", __FILE__, __LINE__, name, expected_value ); \
+		goto on_error; \
+	}
+
 #define FVDE_TEST_ASSERT_EQUAL_SSIZE( name, value, expected_value ) \
 	if( value != expected_value ) \
 	{ \

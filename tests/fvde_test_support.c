@@ -1,5 +1,5 @@
 /*
- * Library get version test program
+ * Library support functions test program
  *
  * Copyright (C) 2011-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -26,11 +26,12 @@
 #endif
 
 #include "fvde_test_libcstring.h"
+#include "fvde_test_libcerror.h"
 #include "fvde_test_libfvde.h"
 #include "fvde_test_macros.h"
 #include "fvde_test_unused.h"
 
-/* Tests retrieving the library version
+/* Tests the libfvde_get_version function
  * Returns 1 if successful or 0 if not
  */
 int fvde_test_get_version(
@@ -54,6 +55,130 @@ int fvde_test_get_version(
 	return( 1 );
 
 on_error:
+	return( 0 );
+}
+
+/* Tests the libfvde_get_access_flags_read function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_get_access_flags_read(
+     void )
+{
+	int access_flags = 0;
+
+	access_flags = libfvde_get_access_flags_read();
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "access_flags",
+	 access_flags,
+	 LIBFVDE_ACCESS_FLAG_READ );
+
+	return( 1 );
+
+on_error:
+	return( 0 );
+}
+
+/* Tests the libfvde_get_codepage function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_get_codepage(
+     void )
+{
+	libcerror_error_t *error = NULL;
+	int codepage             = 0;
+	int result               = 0;
+
+	result = libfvde_get_codepage(
+	          &codepage,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test error cases
+	 */
+	result = libfvde_get_codepage(
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        FVDE_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfvde_set_codepage function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_set_codepage(
+     void )
+{
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	result = libfvde_set_codepage(
+	          0,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test error cases
+	 */
+	result = libfvde_set_codepage(
+	          -1,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        FVDE_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 

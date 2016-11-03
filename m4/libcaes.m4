@@ -1,6 +1,6 @@
 dnl Functions for libcaes
 dnl
-dnl Version: 20160911
+dnl Version: 20161025
 
 dnl Function to detect if libcaes is available
 dnl ac_libcaes_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -24,7 +24,7 @@ AC_DEFUN([AX_LIBCAES_CHECK_LIB],
    [test "x$cross_compiling" != "xyes" && test "x$PKGCONFIG" != "x"],
    [PKG_CHECK_MODULES(
     [libcaes],
-    [libcaes >= 20130716],
+    [libcaes >= 20161025],
     [ac_cv_libcaes=yes],
     [ac_cv_libcaes=no])
    ])

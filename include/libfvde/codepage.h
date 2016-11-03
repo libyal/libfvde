@@ -1,7 +1,7 @@
 /*
  * Codepage definitions for libfvde
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -119,5 +119,5 @@ enum LIBFVDE_CODEPAGES
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_CODEPAGE_H ) */
 

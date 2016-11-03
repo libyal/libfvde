@@ -1,8 +1,7 @@
 /*
- * The internal extern definition
+ * The internal libclocale header
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
- *                          Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2016, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -20,28 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_INTERNAL_EXTERN_H )
-#define _LIBFVDE_INTERNAL_EXTERN_H
+#if !defined( _FVDE_TEST_LIBCLOCALE_H )
+#define _FVDE_TEST_LIBCLOCALE_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBFVDE for local use of libfvde
+/* Define HAVE_LOCAL_LIBCLOCALE for local use of libclocale
  */
-#if !defined( HAVE_LOCAL_LIBFVDE )
+#if defined( HAVE_LOCAL_LIBCLOCALE )
 
-/* If libtool DLL support is enabled set LIBFVDE_DLL_EXPORT
- * before including libfvde/extern.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBFVDE_DLL_EXPORT
-#endif
-
-#include <libfvde/extern.h>
+#include <libclocale_codepage.h>
+#include <libclocale_definitions.h>
+#include <libclocale_locale.h>
+#include <libclocale_support.h>
 
 #else
-#define LIBFVDE_EXTERN	extern
 
+/* If libtool DLL support is enabled set LIBCLOCALE_DLL_IMPORT
+ * before including libclocale.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBCLOCALE_DLL_IMPORT
 #endif
 
-#endif /* !defined( _LIBFVDE_INTERNAL_EXTERN_H ) */
+#include <libclocale.h>
+
+#endif /* defined( HAVE_LOCAL_LIBCLOCALE ) */
+
+#endif /* !defined( _FVDE_TEST_LIBCLOCALE_H ) */
 

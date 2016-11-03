@@ -1,7 +1,7 @@
 /*
- * Library to access the  FileVault Drive Encryption (FVDE) format
+ * Library to access the FileVault Drive Encryption (FVDE) format
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -52,7 +52,7 @@ BOOL WINAPI DllMain(
 		case DLL_PROCESS_ATTACH:
 			DisableThreadLibraryCalls(
 			 hinstDLL );
-		break;
+			break;
 
 		case DLL_THREAD_ATTACH:
 			break;
@@ -78,3 +78,4 @@ int libfvde_is_dll(
 #endif /* defined( WINAPI ) && defined( HAVE_DLLMAIN ) */
 
 #endif /* !defined( HAVE_LOCAL_LIBFVDE ) */
+

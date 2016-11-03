@@ -1,7 +1,7 @@
 /*
  * The error code definitions for libfvde
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -40,7 +40,7 @@ enum LIBFVDE_ERROR_DOMAINS
 	LIBFVDE_ERROR_DOMAIN_INPUT			= (int) 'i',
 	LIBFVDE_ERROR_DOMAIN_MEMORY			= (int) 'm',
 	LIBFVDE_ERROR_DOMAIN_OUTPUT			= (int) 'o',
-	LIBFVDE_ERROR_DOMAIN_RUNTIME			= (int) 'r',
+	LIBFVDE_ERROR_DOMAIN_RUNTIME			= (int) 'r'
 };
 
 /* The argument error codes
@@ -209,6 +209,17 @@ enum LIBFVDE_MEMORY_ERROR
 	LIBFVDE_MEMORY_ERROR_SET_FAILED			= 3
 };
 
+/* The output error codes
+ */
+enum LIBFVDE_OUTPUT_ERROR
+{
+	LIBFVDE_OUTPUT_ERROR_GENERIC			= 0,
+
+	/* There is insuficient space to write the output
+	 */
+	LIBFVDE_OUTPUT_ERROR_INSUFFICIENT_SPACE		= 1
+};
+
 /* The runtime error codes
  * to signify errors regarding runtime processing
  */
@@ -277,16 +288,5 @@ enum LIBFVDE_RUNTIME_ERROR
 	LIBFVDE_RUNTIME_ERROR_ABORT_REQUESTED		= 15
 };
 
-/* The output error codes
- */
-enum LIBFVDE_OUTPUT_ERROR
-{
-	LIBFVDE_OUTPUT_ERROR_GENERIC			= 0,
-
-	/* There is insuficient space to write the output
-	 */
-	LIBFVDE_OUTPUT_ERROR_INSUFFICIENT_SPACE		= 1
-};
-
-#endif
+#endif /* !defined( _LIBFVDE_ERROR_H ) */
 
