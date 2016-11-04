@@ -1,9 +1,12 @@
 MSVSCPP_FILES = \
 	dokan/dokan.vcproj \
+	fvde_test_encryption_context_plist/fvde_test_encryption_context_plist.vcproj \
 	fvde_test_error/fvde_test_error.vcproj \
+	fvde_test_logical_volume/fvde_test_logical_volume.vcproj \
 	fvde_test_notify/fvde_test_notify.vcproj \
 	fvde_test_support/fvde_test_support.vcproj \
 	fvde_test_volume/fvde_test_volume.vcproj \
+	fvde_test_volume_group/fvde_test_volume_group.vcproj \
 	fvdeinfo/fvdeinfo.vcproj \
 	fvdemount/fvdemount.vcproj \
 	fvdewipekey/fvdewipekey.vcproj \

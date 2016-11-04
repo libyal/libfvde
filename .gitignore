@@ -128,10 +128,13 @@ stamp-h[1-9]
 /fvdetools/fvdeinfo
 /fvdetools/fvdemount
 /fvdetools/fvdewipekey
+/tests/fvde_test_encryption_context_plist
 /tests/fvde_test_error
+/tests/fvde_test_logical_volume
 /tests/fvde_test_notify
 /tests/fvde_test_support
 /tests/fvde_test_volume
+/tests/fvde_test_volume_group
 /tests/input
 /tests/tmp*
 

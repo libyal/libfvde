@@ -28,10 +28,27 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	fvde_test_encryption_context_plist \
 	fvde_test_error \
+	fvde_test_logical_volume \
 	fvde_test_notify \
 	fvde_test_support \
-	fvde_test_volume
+	fvde_test_volume \
+	fvde_test_volume_group
+
+fvde_test_encryption_context_plist_SOURCES = \
+	fvde_test_encryption_context_plist.c \
+	fvde_test_libcerror.h \
+	fvde_test_libcstring.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_encryption_context_plist_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
 
 fvde_test_error_SOURCES = \
 	fvde_test_error.c \
@@ -42,6 +59,20 @@ fvde_test_error_SOURCES = \
 
 fvde_test_error_LDADD = \
 	../libfvde/libfvde.la \
+	@LIBCSTRING_LIBADD@
+
+fvde_test_logical_volume_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libcstring.h \
+	fvde_test_libfvde.h \
+	fvde_test_logical_volume.c \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_logical_volume_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@
 
 fvde_test_notify_SOURCES = \
@@ -87,6 +118,20 @@ fvde_test_volume_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@ \
 	@PTHREAD_LIBADD@
+
+fvde_test_volume_group_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libcstring.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h \
+	fvde_test_volume_group.c
+
+fvde_test_volume_group_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
 
 MAINTAINERCLEANFILES = \
 	Makefile.in
