@@ -30,10 +30,9 @@
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
+#include "libfvde_libfplist.h"
 #include "libfvde_metadata.h"
 #include "libfvde_metadata_block.h"
-#include "libfvde_xml_plist.h"
-#include "libfvde_xml_plist_key.h"
 
 #include "fvde_metadata.h"
 
@@ -644,15 +643,15 @@ int libfvde_metadata_read_core_storage_plist(
      const uint8_t *xml_plist_data,
      libcerror_error_t **error )
 {
-	libfvde_xml_plist_t *xml_plist              = NULL;
-	libfvde_xml_plist_key_t *xml_plist_root_key = NULL;
-	libfvde_xml_plist_key_t *xml_plist_key      = NULL;
-	static char *function                       = "libfvde_metadata_read_core_storage_plist";
-	size_t xml_length                           = 0;
+	libfplist_plist_t *xml_plist        = NULL;
+	libfplist_key_t *xml_plist_root_key = NULL;
+	libfplist_key_t *xml_plist_key      = NULL;
+	static char *function               = "libfvde_metadata_read_core_storage_plist";
+	size_t xml_length                   = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint8_t *string                             = NULL;
-	size_t string_size                          = 0;
+	uint8_t *string                     = NULL;
+	size_t string_size                  = 0;
 #endif
 
 	if( metadata == NULL )
@@ -709,7 +708,7 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_initialize(
+		if( libfplist_plist_initialize(
 		     &xml_plist,
 		     error ) != 1 )
 		{
@@ -722,7 +721,7 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_copy_from_byte_stream(
+		if( libfplist_plist_copy_from_byte_stream(
 		     xml_plist,
 		     xml_plist_data,
 		     xml_length + 1,
@@ -737,7 +736,7 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_get_root_key(
+		if( libfplist_plist_get_root_key(
 		     xml_plist,
 		     &xml_plist_root_key,
 		     error ) != 1 )
@@ -751,7 +750,7 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+		if( libfplist_key_get_sub_key_by_utf8_name(
 		     xml_plist_root_key,
 		     (uint8_t *) "com.apple.corestorage.lvg.uuid",
 		     30,
@@ -770,7 +769,7 @@ int libfvde_metadata_read_core_storage_plist(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			if( libfvde_xml_plist_key_get_value_string(
+			if( libfplist_key_get_value_string(
 			     xml_plist_key,
 			     &string,
 			     &string_size,
@@ -796,7 +795,7 @@ int libfvde_metadata_read_core_storage_plist(
 			string = NULL;
 		}
 #endif
-		if( libfvde_xml_plist_key_free(
+		if( libfplist_key_free(
 		     &xml_plist_key,
 		     error ) != 1 )
 		{
@@ -809,7 +808,7 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_free(
+		if( libfplist_key_free(
 		     &xml_plist_root_key,
 		     error ) != 1 )
 		{
@@ -822,7 +821,7 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_free(
+		if( libfplist_plist_free(
 		     &xml_plist,
 		     error ) != 1 )
 		{
@@ -855,19 +854,19 @@ on_error:
 #endif
 	if( xml_plist_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_key,
 		 NULL );
 	}
 	if( xml_plist_root_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_root_key,
 		 NULL );
 	}
 	if( xml_plist != NULL )
 	{
-		libfvde_xml_plist_free(
+		libfplist_plist_free(
 		 &xml_plist,
 		 NULL );
 	}

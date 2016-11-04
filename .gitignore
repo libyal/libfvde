@@ -151,6 +151,7 @@ stamp-h[1-9]
 /libfcache
 /libfdata
 /libfguid
+/libfplist
 /libfvalue
 /libhmac
 /libuna

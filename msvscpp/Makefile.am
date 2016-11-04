@@ -22,6 +22,7 @@ MSVSCPP_FILES = \
 	libfcache/libfcache.vcproj \
 	libfdata/libfdata.vcproj \
 	libfguid/libfguid.vcproj \
+	libfplist/libfplist.vcproj \
 	libfvalue/libfvalue.vcproj \
 	libfvde/libfvde.vcproj \
 	libhmac/libhmac.vcproj \

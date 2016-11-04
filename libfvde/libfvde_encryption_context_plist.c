@@ -27,11 +27,10 @@
 #include "libfvde_encryption_context_plist.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
+#include "libfvde_libfplist.h"
 #include "libfvde_libhmac.h"
 #include "libfvde_libuna.h"
 #include "libfvde_types.h"
-#include "libfvde_xml_plist.h"
-#include "libfvde_xml_plist_key.h"
 
 /* Creates an encryption context plist
  * Make sure the value plist is referencing, is set to NULL
@@ -146,7 +145,7 @@ int libfvde_encryption_context_plist_free(
 		}
 		if( internal_plist->wrapped_volume_keys_key != NULL )
 		{
-			if( libfvde_xml_plist_key_free(
+			if( libfplist_key_free(
 			     &( internal_plist->wrapped_volume_keys_key ),
 			     error ) != 1 )
 			{
@@ -162,7 +161,7 @@ int libfvde_encryption_context_plist_free(
 		}
 		if( internal_plist->crypto_users_key != NULL )
 		{
-			if( libfvde_xml_plist_key_free(
+			if( libfplist_key_free(
 			     &( internal_plist->crypto_users_key ),
 			     error ) != 1 )
 			{
@@ -178,7 +177,7 @@ int libfvde_encryption_context_plist_free(
 		}
 		if( internal_plist->conversion_info_key != NULL )
 		{
-			if( libfvde_xml_plist_key_free(
+			if( libfplist_key_free(
 			     &( internal_plist->conversion_info_key ),
 			     error ) != 1 )
 			{
@@ -194,7 +193,7 @@ int libfvde_encryption_context_plist_free(
 		}
 		if( internal_plist->xml_plist != NULL )
 		{
-			if( libfvde_xml_plist_free(
+			if( libfplist_plist_free(
 			     &( internal_plist->xml_plist ),
 			     error ) != 1 )
 			{
@@ -851,7 +850,7 @@ int libfvde_encryption_context_plist_decrypt(
 on_error:
 	if( internal_plist->xml_plist != NULL )
 	{
-		libfvde_xml_plist_free(
+		libfplist_plist_free(
 		 &( internal_plist->xml_plist ),
 		 NULL );
 	}
@@ -879,8 +878,8 @@ int libfvde_encryption_context_plist_read_xml(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	libfvde_xml_plist_key_t *encryption_context_key             = NULL;
-	libfvde_xml_plist_key_t *root_key                           = NULL;
+	libfplist_key_t *encryption_context_key                     = NULL;
+	libfplist_key_t *root_key                                   = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_read_xml";
 	int result                                                  = 0;
 
@@ -941,7 +940,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_initialize(
+	if( libfplist_plist_initialize(
 	     &( internal_plist->xml_plist ),
 	     error ) != 1 )
 	{
@@ -954,7 +953,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_copy_from_byte_stream(
+	if( libfplist_plist_copy_from_byte_stream(
 	     internal_plist->xml_plist,
 	     internal_plist->data_decrypted,
 	     (size_t) internal_plist->data_size,
@@ -969,7 +968,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_get_root_key(
+	if( libfplist_plist_get_root_key(
 	     internal_plist->xml_plist,
 	     &root_key,
 	     error ) != 1 )
@@ -983,7 +982,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	result = libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	result = libfplist_key_get_sub_key_by_utf8_name(
 	          root_key,
 	          (uint8_t *) "com.apple.corestorage.lvf.encryption.context",
 	          44,
@@ -1007,10 +1006,24 @@ int libfvde_encryption_context_plist_read_xml(
 	}
 	else
 	{
-/* TODO replace by function after refactoring */
-		if( internal_plist->xml_plist->plist_tag != NULL )
+		result = libfplist_plist_has_plist_root_element(
+		          internal_plist->xml_plist,
+		          error );
+
+		if( result == -1 )
 		{
-			if( libfvde_xml_plist_free(
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine if plist has plist root element.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result == 1 )
+		{
+			if( libfplist_plist_free(
 			     &( internal_plist->xml_plist ),
 			     error ) != 1 )
 			{
@@ -1026,7 +1039,7 @@ int libfvde_encryption_context_plist_read_xml(
 			return( 0 );
 		}
 	}
-	if( libfvde_xml_plist_key_is_dict(
+	if( libfplist_key_is_dict(
 	     encryption_context_key,
 	     error ) != 1 )
 	{
@@ -1039,7 +1052,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	if( libfplist_key_get_sub_key_by_utf8_name(
 	     encryption_context_key,
 	     (uint8_t *) "ConversionInfo",
 	     14,
@@ -1055,7 +1068,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	if( libfplist_key_get_sub_key_by_utf8_name(
 	     encryption_context_key,
 	     (uint8_t *) "CryptoUsers",
 	     11,
@@ -1071,7 +1084,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_array_number_of_entries(
+	if( libfplist_key_get_array_number_of_entries(
 	     internal_plist->crypto_users_key,
 	     &( internal_plist->number_of_crypto_users_entries ),
 	     error ) != 1 )
@@ -1085,7 +1098,7 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	if( libfplist_key_get_sub_key_by_utf8_name(
 	     encryption_context_key,
 	     (uint8_t *) "WrappedVolumeKeys",
 	     17,
@@ -1103,7 +1116,7 @@ int libfvde_encryption_context_plist_read_xml(
 	}
 	if( encryption_context_key != root_key )
 	{
-		if( libfvde_xml_plist_key_free(
+		if( libfplist_key_free(
 		     &encryption_context_key,
 		     error ) != 1 )
 		{
@@ -1117,7 +1130,7 @@ int libfvde_encryption_context_plist_read_xml(
 			goto on_error;
 		}
 	}
-	if( libfvde_xml_plist_key_free(
+	if( libfplist_key_free(
 	     &root_key,
 	     error ) != 1 )
 	{
@@ -1135,38 +1148,38 @@ int libfvde_encryption_context_plist_read_xml(
 on_error:
 	if( internal_plist->wrapped_volume_keys_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &( internal_plist->wrapped_volume_keys_key ),
 		 NULL );
 	}
 	if( internal_plist->crypto_users_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &( internal_plist->crypto_users_key ),
 		 NULL );
 	}
 	if( internal_plist->conversion_info_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &( internal_plist->conversion_info_key ),
 		 NULL );
 	}
 	if( ( encryption_context_key != NULL )
 	 && ( encryption_context_key != root_key ) )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &encryption_context_key,
 		 NULL );
 	}
 	if( root_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &root_key,
 		 NULL );
 	}
 	if( internal_plist->xml_plist != NULL )
 	{
-		libfvde_xml_plist_free(
+		libfplist_plist_free(
 		 &( internal_plist->xml_plist ),
 		 NULL );
 	}
@@ -1183,7 +1196,7 @@ int libfvde_encryption_context_plist_get_conversion_status(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	libfvde_xml_plist_key_t *xml_plist_key                      = NULL;
+	libfplist_key_t *xml_plist_key                              = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_conversion_status";
 
 	if( plist == NULL )
@@ -1243,7 +1256,7 @@ int libfvde_encryption_context_plist_get_conversion_status(
 
 		return( -1 );
 	}
-	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	if( libfplist_key_get_sub_key_by_utf8_name(
 	     internal_plist->conversion_info_key,
 	     (uint8_t *) "ConversionStatus",
 	     16,
@@ -1259,7 +1272,7 @@ int libfvde_encryption_context_plist_get_conversion_status(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_value_string(
+	if( libfplist_key_get_value_string(
 	     xml_plist_key,
 	     conversion_status,
 	     conversion_status_size,
@@ -1286,7 +1299,7 @@ int libfvde_encryption_context_plist_get_conversion_status(
 		 0 );
 	}
 #endif
-	if( libfvde_xml_plist_key_free(
+	if( libfplist_key_free(
 	     &xml_plist_key,
 	     error ) != 1 )
 	{
@@ -1304,7 +1317,7 @@ int libfvde_encryption_context_plist_get_conversion_status(
 on_error:
 	if( xml_plist_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_key,
 		 NULL );
 	}
@@ -1331,8 +1344,8 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	libfvde_xml_plist_key_t *xml_plist_array_entry              = NULL;
-	libfvde_xml_plist_key_t *xml_plist_key                      = NULL;
+	libfplist_key_t *xml_plist_array_entry                      = NULL;
+	libfplist_key_t *xml_plist_key                              = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_passphrase_wrapped_kek";
 
 	if( plist == NULL )
@@ -1407,7 +1420,7 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 	{
 		return( 0 );
 	}
-	if( libfvde_xml_plist_key_get_array_entry_by_index(
+	if( libfplist_key_get_array_entry_by_index(
 	     internal_plist->crypto_users_key,
 	     passphrase_wrapped_kek_index,
 	     &xml_plist_array_entry,
@@ -1423,7 +1436,7 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	if( libfplist_key_get_sub_key_by_utf8_name(
 	     xml_plist_array_entry,
 	     (uint8_t *) "PassphraseWrappedKEKStruct",
 	     26,
@@ -1439,7 +1452,7 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_value_data(
+	if( libfplist_key_get_value_data(
 	     xml_plist_key,
 	     passphrase_wrapped_kek,
 	     passphrase_wrapped_kek_size,
@@ -1466,7 +1479,7 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 		 0 );
 	}
 #endif
-	if( libfvde_xml_plist_key_free(
+	if( libfplist_key_free(
 	     &xml_plist_key,
 	     error ) != 1 )
 	{
@@ -1479,7 +1492,7 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_free(
+	if( libfplist_key_free(
 	     &xml_plist_array_entry,
 	     error ) != 1 )
 	{
@@ -1498,13 +1511,13 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 on_error:
 	if( xml_plist_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_key,
 		 NULL );
 	}
 	if( xml_plist_array_entry != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_array_entry,
 		 NULL );
 	}
@@ -1530,8 +1543,8 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
-	libfvde_xml_plist_key_t *xml_plist_array_entry              = NULL;
-	libfvde_xml_plist_key_t *xml_plist_key                      = NULL;
+	libfplist_key_t *xml_plist_array_entry                      = NULL;
+	libfplist_key_t *xml_plist_key                              = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_kek_wrapped_volume_key";
 
 	if( plist == NULL )
@@ -1591,7 +1604,7 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		return( -1 );
 	}
-	if( libfvde_xml_plist_key_is_array(
+	if( libfplist_key_is_array(
 	     internal_plist->wrapped_volume_keys_key,
 	     error ) != 1 )
 	{
@@ -1604,7 +1617,7 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_array_entry_by_index(
+	if( libfplist_key_get_array_entry_by_index(
 	     internal_plist->wrapped_volume_keys_key,
 	     1,
 	     &xml_plist_array_entry,
@@ -1619,7 +1632,7 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+	if( libfplist_key_get_sub_key_by_utf8_name(
 	     xml_plist_array_entry,
 	     (uint8_t *) "KEKWrappedVolumeKeyStruct",
 	     25,
@@ -1635,7 +1648,7 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_get_value_data(
+	if( libfplist_key_get_value_data(
 	     xml_plist_key,
 	     kek_wrapped_volume_key,
 	     kek_wrapped_volume_key_size,
@@ -1662,7 +1675,7 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 		 0 );
 	}
 #endif
-	if( libfvde_xml_plist_key_free(
+	if( libfplist_key_free(
 	     &xml_plist_key,
 	     error ) != 1 )
 	{
@@ -1675,7 +1688,7 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		goto on_error;
 	}
-	if( libfvde_xml_plist_key_free(
+	if( libfplist_key_free(
 	     &xml_plist_array_entry,
 	     error ) != 1 )
 	{
@@ -1693,13 +1706,13 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 on_error:
 	if( xml_plist_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_key,
 		 NULL );
 	}
 	if( xml_plist_array_entry != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_array_entry,
 		 NULL );
 	}

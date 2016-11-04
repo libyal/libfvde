@@ -12,7 +12,7 @@ TEST_PREFIX=`basename ${TEST_PREFIX} | sed 's/^lib\([^-]*\).*$/\1/'`;
 
 TEST_PROFILE="lib${TEST_PREFIX}";
 TEST_TYPES="";
-TEST_TYPES_WITH_INPUT="volume";
+TEST_TYPES_WITH_INPUT="volume volume_group logical_volume encryption_context_plist";
 OPTION_SETS="";
 
 TEST_TOOL_DIRECTORY=".";

@@ -10,7 +10,7 @@ $TestPrefix = Split-Path -path ${Pwd}.Path -parent
 $TestPrefix = Split-Path -path ${TestPrefix} -leaf
 $TestPrefix = ${TestPrefix}.Substring(3)
 
-$TestTypes = "volume" -split " "
+$TestTypes = "volume volume_group logical_volume encryption_context_plist" -split " "
 
 $TestToolDirectory = "..\vs2010\Release"
 

@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20161103],
+ [20161104],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -91,11 +91,14 @@ AX_LIBFCACHE_CHECK_ENABLE
 dnl Check for enabling libfdata for file data types support
 AX_LIBFDATA_CHECK_ENABLE
 
-dnl Check for enabling libfguid for file GUID/UUID support
+dnl Check for enabling libfguid for GUID/UUID format support
 AX_LIBFGUID_CHECK_ENABLE
 
 dnl Check for enabling libfvalue for file value support
 AX_LIBFVALUE_CHECK_ENABLE
+
+dnl Check for enabling libfplist for plist formats support
+AX_LIBFPLIST_CHECK_ENABLE
 
 dnl Check for enabling libhmac for message digest hash function support
 AX_LIBHMAC_CHECK_ENABLE
@@ -183,7 +186,7 @@ CFLAGS="$CFLAGS -Wall";
 
 dnl Check if requires and build requires should be set in spec file
 AS_IF(
- [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcthreads" = xyes || test "x$ac_cv_libcdata" = xyes || test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes  || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfdata" = xyes || test "x$ac_cv_libfguid" = xyes || test "x$ac_cv_libfvalue" = xyes || test "x$ac_cv_zlib" != xno || test "x$ac_cv_libcaes" = xyes || test "x$ac_cv_libhmac" = xyes || test "x$ac_cv_libcrypto" = xyes],
+ [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcthreads" = xyes || test "x$ac_cv_libcdata" = xyes || test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes  || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfdata" = xyes || test "x$ac_cv_libfguid" = xyes || test "x$ac_cv_libfvalue" = xyes || test "x$ac_cv_libfplist" = xyes || test "x$ac_cv_zlib" != xno || test "x$ac_cv_libcaes" = xyes || test "x$ac_cv_libhmac" = xyes || test "x$ac_cv_libcrypto" = xyes],
  [AC_SUBST(
   [libfvde_spec_requires],
   [Requires:])
@@ -233,6 +236,7 @@ AC_CONFIG_FILES([libfcache/Makefile])
 AC_CONFIG_FILES([libfdata/Makefile])
 AC_CONFIG_FILES([libfguid/Makefile])
 AC_CONFIG_FILES([libfvalue/Makefile])
+AC_CONFIG_FILES([libfplist/Makefile])
 AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([libcaes/Makefile])
 AC_CONFIG_FILES([libfvde/Makefile])
@@ -282,6 +286,7 @@ Building:
    libfdata support:                          $ac_cv_libfdata
    libfguid support:                          $ac_cv_libfguid
    libfvalue support:                         $ac_cv_libfvalue
+   libfplist support:                         $ac_cv_libfplist
    DEFLATE compression support:               $ac_cv_uncompress
    libhmac support:                           $ac_cv_libhmac
    SHA256 support:                            $ac_cv_libhmac_sha256

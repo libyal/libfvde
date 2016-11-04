@@ -18,8 +18,8 @@ install:
 before_build:
   - ps: .\synclibs.ps1
   - ps: .\autogen.ps1
-  - cmd: ..\win_flex_bison\win_flex.exe -Cf libfvde\libfvde_xml_plist_scanner.l && move lex.yy.c libfvde\libfvde_xml_plist_scanner.c
-  - cmd: ..\win_flex_bison\win_bison.exe -d -v -l -p xml_plist_scanner_ libfvde\libfvde_xml_plist_parser.y && move libfvde_xml_plist_parser.tab.c libfvde\libfvde_xml_plist_parser.c && move libfvde_xml_plist_parser.tab.h libfvde\libfvde_xml_plist_parser.h
+  - cmd: ..\win_flex_bison\win_flex.exe -Cf libfplist\libfplist_xml_scanner.l && move lex.yy.c libfplist\libfplist_xml_scanner.c
+  - cmd: ..\win_flex_bison\win_bison.exe -d -v -l -p xml_scanner_ libfplist\libfplist_xml_parser.y && move libfplist_xml_parser.tab.c libfplist\libfplist_xml_parser.c && move libfplist_xml_parser.tab.h libfplist\libfplist_xml_parser.h
   - cmd: C:\Python27\python.exe ..\libyal\scripts\msvscpp-convert.py --to 2010 msvscpp\libfvde.sln
 
 build:

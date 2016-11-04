@@ -38,11 +38,10 @@
 #include "libfvde_libcnotify.h"
 #include "libfvde_libcstring.h"
 #include "libfvde_libfguid.h"
+#include "libfvde_libfplist.h"
 #include "libfvde_libfvalue.h"
 #include "libfvde_metadata_block.h"
 #include "libfvde_password.h"
-#include "libfvde_xml_plist.h"
-#include "libfvde_xml_plist_key.h"
 
 #include "fvde_metadata.h"
 
@@ -1696,9 +1695,9 @@ int libfvde_encrypted_metadata_read_type_0x001a(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	libfvde_xml_plist_t *xml_plist            = NULL;
-	libfvde_xml_plist_key_t *root_key         = NULL;
-	libfvde_xml_plist_key_t *xml_plist_key    = NULL;
+	libfplist_plist_t *xml_plist              = NULL;
+	libfplist_key_t *root_key                 = NULL;
+	libfplist_key_t *xml_plist_key            = NULL;
 	const uint8_t *xml_plist_data             = NULL;
 	static char *function                     = "libfvde_encrypted_metadata_read_type_0x001a";
 	size_t xml_length                         = 0;
@@ -1876,7 +1875,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_initialize(
+		if( libfplist_plist_initialize(
 		     &xml_plist,
 		     error ) != 1 )
 		{
@@ -1889,7 +1888,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_copy_from_byte_stream(
+		if( libfplist_plist_copy_from_byte_stream(
 		     xml_plist,
 		     xml_plist_data,
 		     xml_length + 1,
@@ -1904,7 +1903,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_get_root_key(
+		if( libfplist_plist_get_root_key(
 		     xml_plist,
 		     &root_key,
 		     error ) != 1 )
@@ -1918,7 +1917,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+		if( libfplist_key_get_sub_key_by_utf8_name(
 		     root_key,
 		     (uint8_t *) "com.apple.corestorage.lv.familyUUID",
 		     35,
@@ -1937,7 +1936,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			if( libfvde_xml_plist_key_get_value_string(
+			if( libfplist_key_get_value_string(
 			     xml_plist_key,
 			     &string,
 			     &string_size,
@@ -1963,7 +1962,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			string = NULL;
 		}
 #endif
-		if( libfvde_xml_plist_key_value_uuid_string_copy_to_byte_stream(
+		if( libfplist_key_value_uuid_string_copy_to_byte_stream(
 		     xml_plist_key,
 		     encrypted_metadata->logical_volume_family_identifier,
 		     16,
@@ -1978,7 +1977,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_free(
+		if( libfplist_key_free(
 		     &xml_plist_key,
 		     error ) != 1 )
 		{
@@ -1991,7 +1990,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_get_sub_key_by_utf8_name(
+		if( libfplist_key_get_sub_key_by_utf8_name(
 		     root_key,
 		     (uint8_t *) "com.apple.corestorage.lv.size",
 		     29,
@@ -2007,7 +2006,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_get_value_integer(
+		if( libfplist_key_get_value_integer(
 		     xml_plist_key,
 		     (uint64_t *) &logical_volume_size,
 		     error ) != 1 )
@@ -2030,7 +2029,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			 logical_volume_size );
 		}
 #endif
-		if( libfvde_xml_plist_key_free(
+		if( libfplist_key_free(
 		     &xml_plist_key,
 		     error ) != 1 )
 		{
@@ -2043,7 +2042,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_key_free(
+		if( libfplist_key_free(
 		     &root_key,
 		     error ) != 1 )
 		{
@@ -2056,7 +2055,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
-		if( libfvde_xml_plist_free(
+		if( libfplist_plist_free(
 		     &xml_plist,
 		     error ) != 1 )
 		{
@@ -2089,19 +2088,19 @@ on_error:
 #endif
 	if( xml_plist_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &xml_plist_key,
 		 NULL );
 	}
 	if( root_key != NULL )
 	{
-		libfvde_xml_plist_key_free(
+		libfplist_key_free(
 		 &root_key,
 		 NULL );
 	}
 	if( xml_plist != NULL )
 	{
-		libfvde_xml_plist_free(
+		libfplist_plist_free(
 		 &xml_plist,
 		 NULL );
 	}
