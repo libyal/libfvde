@@ -56,6 +56,7 @@ fvde_test_notify_LDADD = \
 	@LIBCSTRING_LIBADD@
 
 fvde_test_support_SOURCES = \
+	fvde_test_libcerror.h \
 	fvde_test_libcstring.h \
 	fvde_test_libfvde.h \
 	fvde_test_macros.h \
@@ -64,6 +65,7 @@ fvde_test_support_SOURCES = \
 
 fvde_test_support_LDADD = \
 	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@
 
 fvde_test_volume_SOURCES = \
