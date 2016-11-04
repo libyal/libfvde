@@ -20,8 +20,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_INTERNAL_VOLUME_H )
-#define _LIBFVDE_INTERNAL_VOLUME_H
+#if !defined( _LIBFVDE_VOLUME_H )
+#define _LIBFVDE_VOLUME_H
 
 #include <common.h>
 #include <types.h>
@@ -353,5 +353,5 @@ int libfvde_volume_read_encrypted_root_plist_file_io_handle(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_VOLUME_H ) */
 

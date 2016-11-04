@@ -91,7 +91,10 @@ int libfvde_encryption_context_plist_initialize(
 		 "%s: unable to clear plist.",
 		 function );
 	
-		goto on_error;
+		memory_free(
+		 internal_plist );
+
+		return( -1 );
 	}
 	*plist = (libfvde_encryption_context_plist_t *) internal_plist;
 
@@ -208,9 +211,7 @@ int libfvde_encryption_context_plist_free(
 			}
 		}
 		memory_free(
-		 *plist );
-
-		*plist = NULL;
+		 internal_plist );
 	}
 	return( result );
 }
@@ -1023,6 +1024,19 @@ int libfvde_encryption_context_plist_read_xml(
 		}
 		else if( result == 1 )
 		{
+			if( libfplist_key_free(
+			     &encryption_context_key,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free encryption context key.",
+				 function );
+
+				goto on_error;
+			}
 			if( libfplist_plist_free(
 			     &( internal_plist->xml_plist ),
 			     error ) != 1 )
