@@ -643,15 +643,15 @@ int libfvde_metadata_read_core_storage_plist(
      const uint8_t *xml_plist_data,
      libcerror_error_t **error )
 {
-	libfplist_plist_t *xml_plist        = NULL;
-	libfplist_key_t *xml_plist_root_key = NULL;
-	libfplist_key_t *xml_plist_key      = NULL;
-	static char *function               = "libfvde_metadata_read_core_storage_plist";
-	size_t xml_length                   = 0;
+	libfplist_property_list_t *property_list = NULL;
+	libfplist_property_t *root_property      = NULL;
+	libfplist_property_t *sub_property       = NULL;
+	static char *function                    = "libfvde_metadata_read_core_storage_plist";
+	size_t xml_length                        = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint8_t *string                     = NULL;
-	size_t string_size                  = 0;
+	uint8_t *string                          = NULL;
+	size_t string_size                       = 0;
 #endif
 
 	if( metadata == NULL )
@@ -708,21 +708,21 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
-		if( libfplist_plist_initialize(
-		     &xml_plist,
+		if( libfplist_property_list_initialize(
+		     &property_list,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create XML plist.",
+			 "%s: unable to create property list.",
 			 function );
 
 			goto on_error;
 		}
-		if( libfplist_plist_copy_from_byte_stream(
-		     xml_plist,
+		if( libfplist_property_list_copy_from_byte_stream(
+		     property_list,
 		     xml_plist_data,
 		     xml_length + 1,
 		     error ) != 1 )
@@ -731,37 +731,37 @@ int libfvde_metadata_read_core_storage_plist(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy XML plist from byte stream.",
+			 "%s: unable to copy property list from byte stream.",
 			 function );
 
 			goto on_error;
 		}
-		if( libfplist_plist_get_root_key(
-		     xml_plist,
-		     &xml_plist_root_key,
+		if( libfplist_property_list_get_root_property(
+		     property_list,
+		     &root_property,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve root key.",
+			 "%s: unable to retrieve root property.",
 			 function );
 
 			goto on_error;
 		}
-		if( libfplist_key_get_sub_key_by_utf8_name(
-		     xml_plist_root_key,
+		if( libfplist_property_get_sub_property_by_utf8_name(
+		     root_property,
 		     (uint8_t *) "com.apple.corestorage.lvg.uuid",
 		     30,
-		     &xml_plist_key,
+		     &sub_property,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve com.apple.corestorage.lvg.uuid key.",
+			 "%s: unable to retrieve com.apple.corestorage.lvg.uuid sub property.",
 			 function );
 
 			goto on_error;
@@ -769,8 +769,8 @@ int libfvde_metadata_read_core_storage_plist(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			if( libfplist_key_get_value_string(
-			     xml_plist_key,
+			if( libfplist_property_get_value_string(
+			     sub_property,
 			     &string,
 			     &string_size,
 			     error ) != 1 )
@@ -795,41 +795,41 @@ int libfvde_metadata_read_core_storage_plist(
 			string = NULL;
 		}
 #endif
-		if( libfplist_key_free(
-		     &xml_plist_key,
+		if( libfplist_property_free(
+		     &sub_property,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free XML plist com.apple.corestorage.lvg.uuid key.",
+			 "%s: unable to free com.apple.corestorage.lvg.uuid property.",
 			 function );
 
 			goto on_error;
 		}
-		if( libfplist_key_free(
-		     &xml_plist_root_key,
+		if( libfplist_property_free(
+		     &root_property,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free XML root key.",
+			 "%s: unable to free root property.",
 			 function );
 
 			goto on_error;
 		}
-		if( libfplist_plist_free(
-		     &xml_plist,
+		if( libfplist_property_list_free(
+		     &property_list,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free XML plist.",
+			 "%s: unable to free property list.",
 			 function );
 
 			goto on_error;
@@ -852,22 +852,22 @@ on_error:
 		 string );
 	}
 #endif
-	if( xml_plist_key != NULL )
+	if( sub_property != NULL )
 	{
-		libfplist_key_free(
-		 &xml_plist_key,
+		libfplist_property_free(
+		 &sub_property,
 		 NULL );
 	}
-	if( xml_plist_root_key != NULL )
+	if( root_property != NULL )
 	{
-		libfplist_key_free(
-		 &xml_plist_root_key,
+		libfplist_property_free(
+		 &root_property,
 		 NULL );
 	}
-	if( xml_plist != NULL )
+	if( property_list != NULL )
 	{
-		libfplist_plist_free(
-		 &xml_plist,
+		libfplist_property_list_free(
+		 &property_list,
 		 NULL );
 	}
 	return( -1 );

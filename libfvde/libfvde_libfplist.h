@@ -30,8 +30,8 @@
 #if defined( HAVE_LOCAL_LIBFPLIST )
 
 #include <libfplist_definitions.h>
-#include <libfplist_key.h>
-#include <libfplist_plist.h>
+#include <libfplist_property.h>
+#include <libfplist_property_list.h>
 #include <libfplist_types.h>
 
 #else

@@ -20,8 +20,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_LVF_ENCRYPTION_CONTEXT_PLIST_H )
-#define _LIBFVDE_LVF_ENCRYPTION_CONTEXT_PLIST_H
+#if !defined( _LIBFVDE_ENCRYPTION_CONTEXT_PLIST_H )
+#define _LIBFVDE_ENCRYPTION_CONTEXT_PLIST_H
 
 #include <common.h>
 #include <types.h>
@@ -53,25 +53,25 @@ struct libfvde_internal_encryption_context_plist
 	 */
         size64_t data_size;
 
-        /* The XML plist
+        /* The property list
 	 */
-	libfplist_plist_t *xml_plist;
+	libfplist_property_list_t *property_list;
 
-        /* The XML plist conversion info key
+        /* The XML plist conversion info property
 	 */
-	libfplist_key_t *conversion_info_key;
+	libfplist_property_t *conversion_info_property;
 
-        /* The XML plist crypto users key
+        /* The XML plist crypto users property
 	 */
-	libfplist_key_t *crypto_users_key;
+	libfplist_property_t *crypto_users_property;
 
 	/* The number of crypto users array entries
 	 */
 	int number_of_crypto_users_entries;
 
-        /* The XML plist wrapped volume keys key
+        /* The XML plist wrapped volume keys property
 	 */
-	libfplist_key_t *wrapped_volume_keys_key;
+	libfplist_property_t *wrapped_volume_keys_property;
 };
 
 LIBFVDE_EXTERN \
@@ -143,5 +143,5 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 }
 #endif
 
-#endif /* !defined( _LIBFVDE_LVF_ENCRYPTION_CONTEXT_PLIST_H ) */
+#endif /* !defined( _LIBFVDE_ENCRYPTION_CONTEXT_PLIST_H ) */
 

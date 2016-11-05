@@ -1,6 +1,6 @@
 dnl Functions for libfplist
 dnl
-dnl Version: 20161104
+dnl Version: 20161105
 
 dnl Function to detect if libfplist is available
 dnl ac_libfplist_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -24,7 +24,7 @@ AC_DEFUN([AX_LIBFPLIST_CHECK_LIB],
    [test "x$cross_compiling" != "xyes" && test "x$PKGCONFIG" != "x"],
    [PKG_CHECK_MODULES(
     [libfplist],
-    [libfplist >= 20161104],
+    [libfplist >= 20161105],
     [ac_cv_libfplist=yes],
     [ac_cv_libfplist=no])
    ])
@@ -50,34 +50,56 @@ AC_DEFUN([AX_LIBFPLIST_CHECK_LIB],
     dnl Plist functions
     AC_CHECK_LIB(
      fplist,
-     libfplist_plist_initialize,
+     libfplist_property_list_initialize,
      [ac_cv_libfplist_dummy=yes],
      [ac_cv_libfplist=no])
     AC_CHECK_LIB(
      fplist,
-     libfplist_plist_free,
+     libfplist_property_list_free,
      [ac_cv_libfplist_dummy=yes],
      [ac_cv_libfplist=no])
     AC_CHECK_LIB(
      fplist,
-     libfplist_plist_copy_from_byte_stream,
+     libfplist_property_list_copy_from_byte_stream,
      [ac_cv_libfplist_dummy=yes],
      [ac_cv_libfplist=no])
     AC_CHECK_LIB(
      fplist,
-     libfplist_plist_has_plist_root_element,
+     libfplist_property_list_has_plist_root_element,
      [ac_cv_libfplist_dummy=yes],
      [ac_cv_libfplist=no])
     AC_CHECK_LIB(
      fplist,
-     libfplist_plist_get_root_key,
+     libfplist_property_list_get_root_property,
      [ac_cv_libfplist_dummy=yes],
      [ac_cv_libfplist=no])
   
     dnl Key functions
     AC_CHECK_LIB(
      fplist,
-     libfplist_key_free,
+     libfplist_property_free,
+     [ac_cv_libfplist_dummy=yes],
+     [ac_cv_libfplist=no])
+    AC_CHECK_LIB(
+     fplist,
+     libfplist_property_get_value_type,
+     [ac_cv_libfplist_dummy=yes],
+     [ac_cv_libfplist=no])
+
+    AC_CHECK_LIB(
+     fplist,
+     libfplist_property_get_value_data_size,
+     [ac_cv_libfplist_dummy=yes],
+     [ac_cv_libfplist=no])
+    AC_CHECK_LIB(
+     fplist,
+     libfplist_property_get_value_data,
+     [ac_cv_libfplist_dummy=yes],
+     [ac_cv_libfplist=no])
+
+    AC_CHECK_LIB(
+     fplist,
+     libfplist_property_get_value_integer,
      [ac_cv_libfplist_dummy=yes],
      [ac_cv_libfplist=no])
 
