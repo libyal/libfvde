@@ -1,7 +1,6 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCTHREADS_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
@@ -49,7 +48,6 @@ libfvde_la_SOURCES = \
 	libfvde_libcerror.h \
 	libfvde_libclocale.h \
 	libfvde_libcnotify.h \
-	libfvde_libcstring.h \
 	libfvde_libcthreads.h \
 	libfvde_libfcache.h \
 	libfvde_libfdata.h \
@@ -70,7 +68,6 @@ libfvde_la_SOURCES = \
 	libfvde_volume_group.c libfvde_volume_group.h
 
 libfvde_la_LIBADD = \
-	@LIBCSTRING_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCDATA_LIBADD@ \

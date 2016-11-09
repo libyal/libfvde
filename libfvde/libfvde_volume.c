@@ -22,7 +22,9 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libfvde_codepage.h"
 #include "libfvde_debug.h"
@@ -34,7 +36,6 @@
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
-#include "libfvde_libcstring.h"
 #include "libfvde_libcthreads.h"
 #include "libfvde_libfcache.h"
 #include "libfvde_libfdata.h"
@@ -563,7 +564,7 @@ int libfvde_volume_open(
 
 		return( -1 );
 	}
-	filename_length = libcstring_narrow_string_length(
+	filename_length = narrow_string_length(
 	                   filename );
 
 	if( filename_length == 0 )
@@ -766,7 +767,7 @@ int libfvde_volume_open_wide(
 
 		return( -1 );
 	}
-	filename_length = libcstring_wide_string_length(
+	filename_length = wide_string_length(
 	                   filename );
 
 	if( filename_length == 0 )
@@ -4090,7 +4091,7 @@ int libfvde_volume_read_encrypted_root_plist(
 		return( -1 );
 	}
 /* TODO HAVE_LIBFVDE_MULTI_THREAD_SUPPORT */
-	filename_length = libcstring_narrow_string_length(
+	filename_length = narrow_string_length(
 	                   filename );
 
 	if( filename_length == 0 )
@@ -4199,7 +4200,7 @@ int libfvde_volume_read_encrypted_root_plist_wide(
 		return( -1 );
 	}
 /* TODO HAVE_LIBFVDE_MULTI_THREAD_SUPPORT */
-	filename_length = libcstring_wide_string_length(
+	filename_length = wide_string_length(
 	                   filename );
 
 	if( filename_length == 0 )

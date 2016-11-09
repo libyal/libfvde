@@ -20,13 +20,15 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
+#include <narrow_string.h>
+#include <types.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
 #endif
 
 #include "fvde_test_libcerror.h"
-#include "fvde_test_libcstring.h"
 #include "fvde_test_libfvde.h"
 #include "fvde_test_macros.h"
 #include "fvde_test_unused.h"
@@ -42,7 +44,7 @@ int fvde_test_get_version(
 
 	version_string = libfvde_get_version();
 
-	result = libcstring_narrow_string_compare(
+	result = narrow_string_compare(
 	          version_string,
 	          LIBFVDE_VERSION_STRING,
 	          9 );
@@ -184,7 +186,7 @@ on_error:
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain(
      int argc FVDE_TEST_ATTRIBUTE_UNUSED,
      wchar_t * const argv[] FVDE_TEST_ATTRIBUTE_UNUSED )

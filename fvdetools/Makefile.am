@@ -1,7 +1,6 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
@@ -35,7 +34,6 @@ fvdeinfo_SOURCES = \
 	fvdetools_libclocale.h \
 	fvdetools_libcnotify.h \
 	fvdetools_libcsplit.h \
-	fvdetools_libcstring.h \
 	fvdetools_libcsystem.h \
 	fvdetools_libfvde.h \
 	fvdetools_libfguid.h \
@@ -55,7 +53,6 @@ fvdeinfo_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
 	@LIBINTL@
 
 fvdemount_SOURCES = \
@@ -66,7 +63,6 @@ fvdemount_SOURCES = \
 	fvdetools_libclocale.h \
 	fvdetools_libcnotify.h \
 	fvdetools_libcsplit.h \
-	fvdetools_libcstring.h \
 	fvdetools_libcsystem.h \
 	fvdetools_libfvde.h \
 	fvdetools_libuna.h \
@@ -85,7 +81,6 @@ fvdemount_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
 	@LIBINTL@
 
 fvdewipekey_SOURCES = \
@@ -95,7 +90,6 @@ fvdewipekey_SOURCES = \
 	fvdetools_libcerror.h \
 	fvdetools_libclocale.h \
 	fvdetools_libcnotify.h \
-	fvdetools_libcstring.h \
 	fvdetools_libcsystem.h \
 	fvdetools_libuna.h \
 	wipekey_handle.c wipekey_handle.h
@@ -115,7 +109,6 @@ fvdewipekey_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
 	@LIBINTL@
 
 MAINTAINERCLEANFILES = \

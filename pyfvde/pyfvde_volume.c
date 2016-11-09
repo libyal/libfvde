@@ -20,7 +20,9 @@
  */
 
 #include <common.h>
+#include <narrow_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( HAVE_WINAPI )
 #include <stdlib.h>
@@ -34,7 +36,6 @@
 #include "pyfvde_libbfio.h"
 #include "pyfvde_libcerror.h"
 #include "pyfvde_libclocale.h"
-#include "pyfvde_libcstring.h"
 #include "pyfvde_libfvde.h"
 #include "pyfvde_python.h"
 #include "pyfvde_unused.h"
@@ -556,7 +557,7 @@ PyObject *pyfvde_volume_open(
 	char *mode                   = NULL;
 	int result                   = 0;
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	const wchar_t *filename_wide = NULL;
 #else
 	PyObject *utf8_string_object = NULL;
@@ -616,7 +617,7 @@ PyObject *pyfvde_volume_open(
 	{
 		PyErr_Clear();
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		filename_wide = (wchar_t *) PyUnicode_AsUnicode(
 		                             string_object );
 		Py_BEGIN_ALLOW_THREADS
@@ -1426,7 +1427,7 @@ PyObject *pyfvde_volume_set_keys(
 
 		return( NULL );
 	}
-	volume_encryption_key_string_length = libcstring_narrow_string_length(
+	volume_encryption_key_string_length = narrow_string_length(
 	                                       volume_encryption_key_string );
 
 	Py_BEGIN_ALLOW_THREADS
@@ -1458,7 +1459,7 @@ PyObject *pyfvde_volume_set_keys(
 	return( Py_None );
 }
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 
 /* Sets the password
  * Returns a Python object if successful or NULL on error
@@ -1522,7 +1523,7 @@ PyObject *pyfvde_volume_set_password(
 		password_string_wide = (wchar_t *) PyUnicode_AsUnicode(
 		                                    string_object );
 
-		password_string_length = libcstring_wide_string_length(
+		password_string_length = wide_string_length(
 		                          password_string_wide );
 
 		Py_BEGIN_ALLOW_THREADS
@@ -1584,7 +1585,7 @@ PyObject *pyfvde_volume_set_password(
 		password_string_narrow = PyString_AsString(
 				          string_object );
 #endif
-		password_string_length = libcstring_narrow_string_length(
+		password_string_length = narrow_string_length(
 		                          password_string_narrow );
 
 		Py_BEGIN_ALLOW_THREADS
@@ -1670,7 +1671,7 @@ PyObject *pyfvde_volume_set_password(
 
 		return( NULL );
 	}
-	password_string_length = libcstring_narrow_string_length(
+	password_string_length = narrow_string_length(
 	                          password_string );
 
 	Py_BEGIN_ALLOW_THREADS
@@ -1702,9 +1703,9 @@ PyObject *pyfvde_volume_set_password(
 	return( Py_None );
 }
 
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 
 /* Sets the recovery password
  * Returns a Python object if successful or NULL on error
@@ -1768,7 +1769,7 @@ PyObject *pyfvde_volume_set_recovery_password(
 		recovery_password_string_wide = (wchar_t *) PyUnicode_AsUnicode(
 		                                             string_object );
 
-		recovery_password_string_length = libcstring_wide_string_length(
+		recovery_password_string_length = wide_string_length(
 		                                   recovery_password_string_wide );
 
 		Py_BEGIN_ALLOW_THREADS
@@ -1830,7 +1831,7 @@ PyObject *pyfvde_volume_set_recovery_password(
 		recovery_password_string_narrow = PyString_AsString(
 		                                   string_object );
 #endif
-		recovery_password_string_length = libcstring_narrow_string_length(
+		recovery_password_string_length = narrow_string_length(
 		                                   recovery_password_string_narrow );
 
 		Py_BEGIN_ALLOW_THREADS
@@ -1916,7 +1917,7 @@ PyObject *pyfvde_volume_set_recovery_password(
 
 		return( NULL );
 	}
-	recovery_password_string_length = libcstring_narrow_string_length(
+	recovery_password_string_length = narrow_string_length(
 	                                   recovery_password_string );
 
 	Py_BEGIN_ALLOW_THREADS
@@ -1948,9 +1949,9 @@ PyObject *pyfvde_volume_set_recovery_password(
 	return( Py_None );
 }
 
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 
 /* Reads the EncryptedRoot.plist from a file
  * Returns a Python object if successful or NULL on error
@@ -2179,5 +2180,5 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 	return( Py_None );
 }
 
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 

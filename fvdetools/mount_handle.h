@@ -75,32 +75,32 @@ int mount_handle_signal_abort(
 
 int mount_handle_set_keys(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      libcerror_error_t **error );
 
 int mount_handle_set_password(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      libcerror_error_t **error );
 
 int mount_handle_set_recovery_password(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      libcerror_error_t **error );
 
 int mount_handle_read_encrypted_root_plist(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *filename,
+     const system_character_t *filename,
      libcerror_error_t **error );
 
 int mount_handle_set_volume_offset(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      libcerror_error_t **error );
 
 int mount_handle_open_input(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *filename,
+     const system_character_t *filename,
      libcerror_error_t **error );
 
 int mount_handle_close_input(

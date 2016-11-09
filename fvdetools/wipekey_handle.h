@@ -29,7 +29,6 @@
 
 #include "fvdetools_libbfio.h"
 #include "fvdetools_libcerror.h"
-#include "fvdetools_libcstring.h"
 #include "fvdetools_libfvde.h"
 
 #if defined( __cplusplus )
@@ -75,12 +74,12 @@ int wipekey_handle_signal_abort(
 
 int wipekey_handle_set_volume_key_data(
      wipekey_handle_t *wipekey_handle,
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      libcerror_error_t **error );
 
 int wipekey_handle_open_input(
      wipekey_handle_t *wipekey_handle,
-     const libcstring_system_character_t *filename,
+     const system_character_t *filename,
      libcerror_error_t **error );
 
 int wipekey_handle_close_input(

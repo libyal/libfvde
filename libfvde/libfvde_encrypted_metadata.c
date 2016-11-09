@@ -23,6 +23,8 @@
 #include <common.h>
 #include <byte_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
 
 #include "libfvde_checksum.h"
@@ -36,7 +38,6 @@
 #include "libfvde_libcaes.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
-#include "libfvde_libcstring.h"
 #include "libfvde_libfguid.h"
 #include "libfvde_libfplist.h"
 #include "libfvde_libfvalue.h"
@@ -322,7 +323,7 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 	uint32_t number_of_entries2 = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libcstring_system_character_t guid_string[ 48 ];
+	system_character_t guid_string[ 48 ];
 
 	libfguid_identifier_t *guid = NULL;
 	uint64_t value_64bit        = 0;
@@ -431,7 +432,7 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 
 			goto on_error;
 		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libfguid_identifier_copy_to_utf16_string(
 			  guid,
 			  (uint16_t *) guid_string,
@@ -458,7 +459,7 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 			goto on_error;
 		}
 		libcnotify_printf(
-		 "%s: logical volume group identifier\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+		 "%s: logical volume group identifier\t: %" PRIs_SYSTEM "\n",
 		 function,
 		 guid_string );
 
@@ -724,7 +725,7 @@ int libfvde_encrypted_metadata_read_type_0x0014(
 	uint32_t number_of_entries2 = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libcstring_system_character_t guid_string[ 48 ];
+	system_character_t guid_string[ 48 ];
 
 	libfguid_identifier_t *guid = NULL;
 	uint64_t value_64bit        = 0;
@@ -833,7 +834,7 @@ int libfvde_encrypted_metadata_read_type_0x0014(
 
 			goto on_error;
 		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libfguid_identifier_copy_to_utf16_string(
 			  guid,
 			  (uint16_t *) guid_string,
@@ -860,7 +861,7 @@ int libfvde_encrypted_metadata_read_type_0x0014(
 			goto on_error;
 		}
 		libcnotify_printf(
-		 "%s: logical volume group identifier\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+		 "%s: logical volume group identifier\t: %" PRIs_SYSTEM "\n",
 		 function,
 		 guid_string );
 
@@ -1861,7 +1862,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 #endif
 /* TODO for now determine the XML string length */
 /* TODO refactor this to a separate function */
-		xml_length = libcstring_narrow_string_length(
+		xml_length = narrow_string_length(
 			      (char *) xml_plist_data );
 
 		if( xml_length > (size_t) ( INT_MAX - 1 ) )

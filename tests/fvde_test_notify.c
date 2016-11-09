@@ -20,12 +20,13 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
+#include <types.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
 #endif
 
-#include "fvde_test_libcerror.h"
 #include "fvde_test_libfvde.h"
 #include "fvde_test_macros.h"
 #include "fvde_test_unused.h"
@@ -90,7 +91,7 @@ int fvde_test_notify_stream_close(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain(
      int argc FVDE_TEST_ATTRIBUTE_UNUSED,
      wchar_t * const argv[] FVDE_TEST_ATTRIBUTE_UNUSED )

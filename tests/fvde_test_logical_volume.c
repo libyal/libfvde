@@ -28,7 +28,6 @@
 #endif
 
 #include "fvde_test_libcerror.h"
-#include "fvde_test_libcstring.h"
 #include "fvde_test_libfvde.h"
 #include "fvde_test_macros.h"
 #include "fvde_test_memory.h"
@@ -36,7 +35,7 @@
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain(
      int argc FVDE_TEST_ATTRIBUTE_UNUSED,
      wchar_t * const argv[] FVDE_TEST_ATTRIBUTE_UNUSED )

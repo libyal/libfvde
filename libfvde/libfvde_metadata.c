@@ -23,6 +23,7 @@
 #include <common.h>
 #include <byte_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
 #include <types.h>
 
 #include "libfvde_checksum.h"
@@ -694,7 +695,7 @@ int libfvde_metadata_read_core_storage_plist(
 #endif
 /* TODO for now determine the XML string length */
 /* TODO refactor this to a separate function */
-		xml_length = libcstring_narrow_string_length(
+		xml_length = narrow_string_length(
 			      (char *) xml_plist_data );
 
 		if( xml_length > (size_t) ( INT_MAX - 1 ) )

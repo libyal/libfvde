@@ -30,7 +30,6 @@
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
-#include "fvdetools_libcstring.h"
 #include "fvdetools_libcsystem.h"
 #include "fvdetools_libfvde.h"
 #include "fvdetools_libuna.h"

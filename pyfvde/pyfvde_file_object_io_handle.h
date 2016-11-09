@@ -27,7 +27,6 @@
 
 #include "pyfvde_libbfio.h"
 #include "pyfvde_libcerror.h"
-#include "pyfvde_libcstring.h"
 #include "pyfvde_python.h"
 
 #if defined( __cplusplus )

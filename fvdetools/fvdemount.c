@@ -23,6 +23,8 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
 
 #if defined( HAVE_ERRNO_H )
@@ -64,7 +66,6 @@
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
-#include "fvdetools_libcstring.h"
 #include "fvdetools_libcsystem.h"
 #include "fvdetools_libfvde.h"
 #include "mount_handle.h"
@@ -190,11 +191,11 @@ int fvdemount_fuse_open(
 
 		goto on_error;
 	}
-	path_length = libcstring_narrow_string_length(
+	path_length = narrow_string_length(
 	               path );
 
 	if( ( path_length != fvdemount_fuse_path_length )
-	 || ( libcstring_narrow_string_compare(
+	 || ( narrow_string_compare(
 	       path,
 	       fvdemount_fuse_path,
 	       fvdemount_fuse_path_length ) != 0 ) )
@@ -291,11 +292,11 @@ int fvdemount_fuse_read(
 
 		goto on_error;
 	}
-	path_length = libcstring_narrow_string_length(
+	path_length = narrow_string_length(
 	               path );
 
 	if( ( path_length != fvdemount_fuse_path_length )
-	 || ( libcstring_narrow_string_compare(
+	 || ( narrow_string_compare(
 	       path,
 	       fvdemount_fuse_path,
 	       fvdemount_fuse_path_length ) != 0 ) )
@@ -391,7 +392,7 @@ int fvdemount_fuse_readdir(
 
 		goto on_error;
 	}
-	path_length = libcstring_narrow_string_length(
+	path_length = narrow_string_length(
 	               path );
 
 	if( ( path_length != 1 )
@@ -531,7 +532,7 @@ int fvdemount_fuse_getattr(
 
 		goto on_error;
 	}
-	path_length = libcstring_narrow_string_length(
+	path_length = narrow_string_length(
 	               path );
 
 	if( path_length == 1 )
@@ -546,7 +547,7 @@ int fvdemount_fuse_getattr(
 	}
 	else if( path_length == fvdemount_fuse_path_length )
 	{
-		if( libcstring_narrow_string_compare(
+		if( narrow_string_compare(
 		     path,
 		     fvdemount_fuse_path,
 		     fvdemount_fuse_path_length ) == 0 )
@@ -672,32 +673,32 @@ on_error:
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain( int argc, wchar_t * const argv[] )
 #else
 int main( int argc, char * const argv[] )
 #endif
 {
-	libfvde_error_t *error                                              = NULL;
-	libcstring_system_character_t *mount_point                          = NULL;
-	libcstring_system_character_t *option_encrypted_root_plist_filename = NULL;
-	libcstring_system_character_t *option_extended_options              = NULL;
-	libcstring_system_character_t *option_keys                          = NULL;
-	libcstring_system_character_t *option_password                      = NULL;
-	libcstring_system_character_t *option_recovery_password             = NULL;
-	libcstring_system_character_t *option_volume_offset                 = NULL;
-	libcstring_system_character_t *source                               = NULL;
-	char *program                                                       = "fvdemount";
-	libcstring_system_integer_t option                                  = 0;
-	int result                                                          = 0;
-	int verbose                                                         = 0;
+	libfvde_error_t *error                                   = NULL;
+	system_character_t *mount_point                          = NULL;
+	system_character_t *option_encrypted_root_plist_filename = NULL;
+	system_character_t *option_extended_options              = NULL;
+	system_character_t *option_keys                          = NULL;
+	system_character_t *option_password                      = NULL;
+	system_character_t *option_recovery_password             = NULL;
+	system_character_t *option_volume_offset                 = NULL;
+	system_character_t *source                               = NULL;
+	char *program                                            = "fvdemount";
+	system_integer_t option                                  = 0;
+	int result                                               = 0;
+	int verbose                                              = 0;
 
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
 	struct fuse_operations fvdemount_fuse_operations;
 
-	struct fuse_args fvdemount_fuse_arguments                           = FUSE_ARGS_INIT(0, NULL);
-	struct fuse_chan *fvdemount_fuse_channel                            = NULL;
-	struct fuse *fvdemount_fuse_handle                                  = NULL;
+	struct fuse_args fvdemount_fuse_arguments                = FUSE_ARGS_INIT(0, NULL);
+	struct fuse_chan *fvdemount_fuse_channel                 = NULL;
+	struct fuse *fvdemount_fuse_handle                       = NULL;
 #endif
 
 	libcnotify_stream_set(
@@ -733,15 +734,15 @@ int main( int argc, char * const argv[] )
 	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBCSTRING_SYSTEM_STRING( "e:hk:o:p:r:vVX:" ) ) ) != (libcstring_system_integer_t) -1 )
+	                   _SYSTEM_STRING( "e:hk:o:p:r:vVX:" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
-			case (libcstring_system_integer_t) '?':
+			case (system_integer_t) '?':
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
+				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind - 1 ] );
 
 				usage_fprint(
@@ -749,49 +750,49 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_FAILURE );
 
-			case (libcstring_system_integer_t) 'e':
+			case (system_integer_t) 'e':
 				option_encrypted_root_plist_filename = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'h':
+			case (system_integer_t) 'h':
 				usage_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );
 
-			case (libcstring_system_integer_t) 'k':
+			case (system_integer_t) 'k':
 				option_keys = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'o':
+			case (system_integer_t) 'o':
 				option_volume_offset = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'p':
+			case (system_integer_t) 'p':
 				option_password = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'r':
+			case (system_integer_t) 'r':
 				option_recovery_password = optarg;
 
 				break;
 
-			case (libcstring_system_integer_t) 'v':
+			case (system_integer_t) 'v':
 				verbose = 1;
 
 				break;
 
-			case (libcstring_system_integer_t) 'V':
+			case (system_integer_t) 'V':
 				fvdeoutput_copyright_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );
 
-			case (libcstring_system_integer_t) 'X':
+			case (system_integer_t) 'X':
 				option_extended_options = optarg;
 
 				break;
@@ -920,7 +921,7 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to open: %" PRIs_LIBCSTRING_SYSTEM ".\n",
+		 "Unable to open: %" PRIs_SYSTEM ".\n",
 		 source );
 
 		goto on_error;

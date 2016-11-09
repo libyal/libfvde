@@ -8,7 +8,6 @@ if HAVE_PYTHON3
 AM_CFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
@@ -31,7 +30,6 @@ BUILT_SOURCES = \
 	pyfvde_libbfio.h \
 	pyfvde_libcerror.h \
 	pyfvde_libclocale.h \
-	pyfvde_libcstring.h \
 	pyfvde_libfguid.h \
 	pyfvde_libfvde.h \
 	pyfvde_python.h \
@@ -43,7 +41,6 @@ pyexec_LTLIBRARIES = pyfvde.la
 nodist_pyfvde_la_SOURCES = $(BUILT_SOURCES)
 
 pyfvde_la_LIBADD = \
-	@LIBCSTRING_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	../libfvde/libfvde.la \
 	@LIBCDATA_LIBADD@ \
