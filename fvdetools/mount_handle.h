@@ -128,5 +128,5 @@ int mount_handle_get_size(
 }
 #endif
 
-#endif
+#endif /* !defined( _MOUNT_HANDLE_H ) */
 

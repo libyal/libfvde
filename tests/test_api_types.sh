@@ -1,7 +1,7 @@
 #!/bin/bash
 # Library API type testing script
 #
-# Version: 20161105
+# Version: 20161110
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -11,8 +11,8 @@ TEST_PREFIX=`dirname ${PWD}`;
 TEST_PREFIX=`basename ${TEST_PREFIX} | sed 's/^lib\([^-]*\).*$/\1/'`;
 
 TEST_PROFILE="lib${TEST_PREFIX}";
-TEST_TYPES="encryption_context_plist logical_volume volume volume_group";
-TEST_TYPES_WITH_INPUT="";
+TEST_TYPES="volume_group";
+TEST_TYPES_WITH_INPUT="volume";
 OPTION_SETS="";
 
 TEST_TOOL_DIRECTORY=".";
@@ -96,8 +96,14 @@ fi
 
 for TEST_TYPE in ${TEST_TYPES_WITH_INPUT};
 do
-	test_api_type_with_input "${TEST_TYPE}";
-	RESULT=$?;
+	if test -d ${INPUT_DIRECTORY};
+	then
+		test_api_type_with_input "${TEST_TYPE}";
+		RESULT=$?;
+	else
+		test_api_type "${TEST_TYPE}";
+		RESULT=$?;
+	fi
 
 	if test ${RESULT} -ne ${EXIT_SUCCESS};
 	then

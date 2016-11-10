@@ -217,10 +217,6 @@
 				RelativePath="..\..\tests\fvde_test_memory.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\tests\fvde_test_unused.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

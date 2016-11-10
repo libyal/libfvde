@@ -57,5 +57,5 @@ int libfvde_keyring_free(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_KEYRING_H ) */
 

@@ -94,5 +94,5 @@ int wipekey_handle_wipekey_fprint(
 }
 #endif
 
-#endif
+#endif /* !defined( _WIPEKEY_HANDLE_H ) */
 

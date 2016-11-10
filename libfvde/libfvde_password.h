@@ -46,5 +46,5 @@ int libfvde_password_pbkdf2(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_PASSWORD_H ) */
 

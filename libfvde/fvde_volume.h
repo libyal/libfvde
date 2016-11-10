@@ -197,4 +197,4 @@ struct fvde_volume_header
 }
 #endif
 
-#endif
+#endif /* !defined( _FVDE_VOLUME_H ) */

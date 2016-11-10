@@ -44,5 +44,5 @@ PyObject *pyfvde_datetime_new_from_posix_time(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYFVDE_DATETIME_H ) */
 

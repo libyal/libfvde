@@ -887,7 +887,7 @@ int libfvde_deflate_decode_huffman(
 
 			if( libfvde_deflate_bit_stream_get_value(
 			     bit_stream,
-			     number_of_extra_bits,
+			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
 			     error ) != 1 )
 			{
@@ -921,7 +921,7 @@ int libfvde_deflate_decode_huffman(
 
 			if( libfvde_deflate_bit_stream_get_value(
 			     bit_stream,
-			     number_of_extra_bits,
+			     (uint8_t) number_of_extra_bits,
 			     &extra_bits,
 			     error ) != 1 )
 			{

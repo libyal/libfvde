@@ -46,5 +46,5 @@ int libfvde_encryption_aes_key_unwrap(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_ENCRYPTION_H ) */
 

@@ -38,12 +38,12 @@
 #include "fvde_test_macros.h"
 #include "fvde_test_memory.h"
 
-#if SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
 #error Unsupported size of wchar_t
 #endif
 
 /* Define to make fvde_test_volume generate verbose output
-#define FVDE_TEST_FILE_VERBOSE
+#define FVDE_TEST_VOLUME_VERBOSE
  */
 
 /* Retrieves source as a narrow string
@@ -256,8 +256,8 @@ int fvde_test_volume_get_wide_source(
      libcerror_error_t **error )
 {
 	static char *function   = "fvde_test_volume_get_wide_source";
-	size_t wide_source_size = 0;
 	size_t source_length    = 0;
+	size_t wide_source_size = 0;
 
 #if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result              = 0;
@@ -585,10 +585,10 @@ int fvde_test_volume_initialize(
      void )
 {
 	libcerror_error_t *error = NULL;
-	libfvde_volume_t *volume      = NULL;
+	libfvde_volume_t *volume = NULL;
 	int result               = 0;
 
-	/* Test libfvde_volume_initialize
+	/* Test volume initialization
 	 */
 	result = libfvde_volume_initialize(
 	          &volume,
@@ -795,7 +795,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfvde_volume_open functions
+/* Tests the libfvde_volume_open function
  * Returns 1 if successful or 0 if not
  */
 int fvde_test_volume_open(
@@ -804,7 +804,7 @@ int fvde_test_volume_open(
 	char narrow_source[ 256 ];
 
 	libcerror_error_t *error = NULL;
-	libfvde_volume_t *volume      = NULL;
+	libfvde_volume_t *volume = NULL;
 	int result               = 0;
 
 	/* Initialize test
@@ -858,21 +858,28 @@ int fvde_test_volume_open(
          "error",
          error );
 
-	/* Clean up
+	/* Test error cases
 	 */
-	result = libfvde_volume_close(
+	result = libfvde_volume_open(
 	          volume,
+	          narrow_source,
+	          LIBFVDE_OPEN_READ,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 0 );
+	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
+        FVDE_TEST_ASSERT_IS_NOT_NULL(
          "error",
          error );
 
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
 	result = libfvde_volume_free(
 	          &volume,
 	          &error );
@@ -909,7 +916,7 @@ on_error:
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Tests the libfvde_volume_open_wide functions
+/* Tests the libfvde_volume_open_wide function
  * Returns 1 if successful or 0 if not
  */
 int fvde_test_volume_open_wide(
@@ -918,7 +925,7 @@ int fvde_test_volume_open_wide(
 	wchar_t wide_source[ 256 ];
 
 	libcerror_error_t *error = NULL;
-	libfvde_volume_t *volume      = NULL;
+	libfvde_volume_t *volume = NULL;
 	int result               = 0;
 
 	/* Initialize test
@@ -972,21 +979,28 @@ int fvde_test_volume_open_wide(
          "error",
          error );
 
-	/* Clean up
+	/* Test error cases
 	 */
-	result = libfvde_volume_close(
+	result = libfvde_volume_open_wide(
 	          volume,
+	          wide_source,
+	          LIBFVDE_OPEN_READ,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 0 );
+	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
+        FVDE_TEST_ASSERT_IS_NOT_NULL(
          "error",
          error );
 
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
 	result = libfvde_volume_free(
 	          &volume,
 	          &error );
@@ -1022,6 +1036,185 @@ on_error:
 }
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+/* Tests the libfvde_volume_close function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_volume_close(
+     void )
+{
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test error cases
+	 */
+	result = libfvde_volume_close(
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        FVDE_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfvde_volume_open and libfvde_volume_close functions
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_volume_open_close(
+     const system_character_t *source )
+{
+	libcerror_error_t *error = NULL;
+	libfvde_volume_t *volume = NULL;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = libfvde_volume_initialize(
+	          &volume,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FVDE_TEST_ASSERT_IS_NOT_NULL(
+         "volume",
+         volume );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test open and close
+	 */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfvde_volume_open_wide(
+	          volume,
+	          source,
+	          LIBFVDE_OPEN_READ,
+	          &error );
+#else
+	result = libfvde_volume_open(
+	          volume,
+	          source,
+	          LIBFVDE_OPEN_READ,
+	          &error );
+#endif
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	result = libfvde_volume_close(
+	          volume,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test open and close a second time to validate clean up on close
+	 */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfvde_volume_open_wide(
+	          volume,
+	          source,
+	          LIBFVDE_OPEN_READ,
+	          &error );
+#else
+	result = libfvde_volume_open(
+	          volume,
+	          source,
+	          LIBFVDE_OPEN_READ,
+	          &error );
+#endif
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	result = libfvde_volume_close(
+	          volume,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Clean up
+	 */
+	result = libfvde_volume_free(
+	          &volume,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "volume",
+         volume );
+
+        FVDE_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( volume != NULL )
+	{
+		libfvde_volume_free(
+		 &volume,
+		 NULL );
+	}
+	return( 0 );
+}
 
 /* The main program
  */
@@ -1062,7 +1255,7 @@ int main(
 	{
 		source = argv[ optind ];
 	}
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( FVDE_TEST_FILE_VERBOSE )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( FVDE_TEST_VOLUME_VERBOSE )
 	libfvde_notify_set_verbose(
 	 1 );
 	libfvde_notify_set_stream(
@@ -1101,7 +1294,14 @@ int main(
 
 #endif /* defined( LIBFVDE_HAVE_BFIO ) */
 
-		/* TODO add test for libfvde_volume_close */
+		FVDE_TEST_RUN(
+		 "libfvde_volume_close",
+		 fvde_test_volume_close );
+
+		FVDE_TEST_RUN_WITH_ARGS(
+		 "libfvde_volume_open_close",
+		 fvde_test_volume_open_close,
+		 source );
 
 		/* Initialize test
 		 */
@@ -1122,13 +1322,8 @@ int main(
 	        FVDE_TEST_ASSERT_IS_NULL(
 	         "error",
 	         error );
+		/* TODO: add tests */
 
-/* TODO implement more tests
-		FVDE_TEST_RUN_WITH_ARGS(
-		 "libfvde_volume_open",
-		 fvde_test_volume_open,
-		 volume );
-*/
 
 		/* Clean up
 		 */

@@ -3984,17 +3984,6 @@ int libfvde_encrypted_metadata_read(
 
 		return( -1 );
 	}
-	if( encrypted_metadata_size > (uint64_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid encrypted metadata size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
 	if( encrypted_metadata_size == 0 )
 	{
 		libcerror_error_set(
@@ -4005,6 +3994,17 @@ int libfvde_encrypted_metadata_read(
 		 function );
 
 		goto on_error;
+	}
+	if( encrypted_metadata_size > (uint64_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid encrypted metadata size value exceeds maximum.",
+		 function );
+
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -4033,7 +4033,7 @@ int libfvde_encrypted_metadata_read(
 		goto on_error;
 	}
 	encrypted_data = (uint8_t *) memory_allocate(
-	                              sizeof( uint8_t ) * encrypted_metadata_size );
+	                              sizeof( uint8_t ) * (size_t) encrypted_metadata_size );
 
 	if( encrypted_data == NULL )
 	{
@@ -4049,7 +4049,7 @@ int libfvde_encrypted_metadata_read(
 	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
 	              encrypted_data,
-	              encrypted_metadata_size,
+	              (size_t) encrypted_metadata_size,
 	              error );
 
 	if( read_count != (ssize_t) encrypted_metadata_size )

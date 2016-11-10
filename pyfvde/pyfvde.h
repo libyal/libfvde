@@ -57,5 +57,5 @@ PyMODINIT_FUNC initpyfvde(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYFVDE_H ) */
 

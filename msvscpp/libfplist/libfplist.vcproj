@@ -171,6 +171,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfplist\libfplist_xml_parser.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfplist\libfplist_xml_scanner.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfplist\libfplist_xml_tag.c"
 				>
 			</File>
@@ -238,6 +246,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfplist\libfplist_xml_attribute.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfplist\libfplist_xml_parser.h"
 				>
 			</File>
 			<File

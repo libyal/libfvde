@@ -317,7 +317,7 @@ int libfvde_encryption_context_plist_copy_data(
 	if( memory_copy(
 	     data,
 	     internal_plist->data_decrypted,
-	     internal_plist->data_size ) == NULL )
+	     (size_t) internal_plist->data_size ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -682,6 +682,17 @@ int libfvde_encryption_context_plist_decrypt(
 
 		return( -1 );
 	}
+	if( internal_plist->data_size > (size64_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid plist - data size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
 	if( internal_plist->data_decrypted != NULL )
 	{
 		libcerror_error_set(
@@ -749,7 +760,7 @@ int libfvde_encryption_context_plist_decrypt(
 		goto on_error;
 	}
 	internal_plist->data_decrypted = (uint8_t *) memory_allocate(
-	                                              sizeof( uint8_t ) * ( internal_plist->data_size + 1 ) );
+	                                              sizeof( uint8_t ) * (size_t) ( internal_plist->data_size + 1 ) );
 
 	if( internal_plist->data_decrypted == NULL )
 	{
@@ -762,7 +773,7 @@ int libfvde_encryption_context_plist_decrypt(
 
 		goto on_error;
 	}
-	data_size = internal_plist->data_size;
+	data_size = (size_t) internal_plist->data_size;
 
 	if( data_size > 0 )
 	{

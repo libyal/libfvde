@@ -39,5 +39,5 @@ PyObject *pyfvde_string_new_from_guid(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYFVDE_GUID_H ) */
 

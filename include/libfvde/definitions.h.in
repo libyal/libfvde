@@ -25,11 +25,11 @@
 
 #include <libfvde/types.h>
 
-#define LIBFVDE_VERSION					@VERSION@
+#define LIBFVDE_VERSION				@VERSION@
 
 /* The version string
  */
-#define LIBFVDE_VERSION_STRING				"@VERSION@"
+#define LIBFVDE_VERSION_STRING			"@VERSION@"
 
 /* The file access
  * bit 1        set to 1 for read access
@@ -38,24 +38,24 @@
  */
 enum LIBFVDE_ACCESS_FLAGS
 {
-	LIBFVDE_ACCESS_FLAG_READ			= 0x01,
+	LIBFVDE_ACCESS_FLAG_READ		= 0x01,
 /* Reserved: not supported yet */
-	LIBFVDE_ACCESS_FLAG_WRITE			= 0x02
+	LIBFVDE_ACCESS_FLAG_WRITE		= 0x02
 };
 
 /* The file access macros
  */
-#define LIBFVDE_OPEN_READ				( LIBFVDE_ACCESS_FLAG_READ )
+#define LIBFVDE_OPEN_READ			( LIBFVDE_ACCESS_FLAG_READ )
 /* Reserved: not supported yet */
-#define LIBFVDE_OPEN_WRITE				( LIBFVDE_ACCESS_FLAG_WRITE )
+#define LIBFVDE_OPEN_WRITE			( LIBFVDE_ACCESS_FLAG_WRITE )
 /* Reserved: not supported yet */
-#define LIBFVDE_OPEN_READ_WRITE				( LIBFVDE_ACCESS_FLAG_READ | LIBFVDE_ACCESS_FLAG_WRITE )
+#define LIBFVDE_OPEN_READ_WRITE			( LIBFVDE_ACCESS_FLAG_READ | LIBFVDE_ACCESS_FLAG_WRITE )
 
 /* The encryption methods
  */
 enum LIBFVDE_ENCRYPTION_METHODS
 {
-	LIBFVDE_ENCRYPTION_METHOD_AES_XTS		= 2
+	LIBFVDE_ENCRYPTION_METHOD_AES_XTS	= 2
 };
 
 #endif /* !defined( _LIBFVDE_DEFINITIONS_H ) */

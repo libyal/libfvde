@@ -50,5 +50,5 @@ int libfvde_volume_get_encryption_method(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFVDE_LEGACY_H ) */
 
