@@ -1,7 +1,7 @@
 /*
  * The libuna header wrapper
  *
- * Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2017, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * This software is free software: you can redistribute it and/or modify
