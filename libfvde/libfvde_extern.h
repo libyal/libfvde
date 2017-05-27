@@ -39,9 +39,9 @@
 #include <libfvde/extern.h>
 
 #else
-#define LIBFVDE_EXTERN	extern
+#define LIBFVDE_EXTERN	/* extern */
 
-#endif
+#endif /* !defined( HAVE_LOCAL_LIBFVDE ) */
 
 #endif /* !defined( _LIBFVDE_INTERNAL_EXTERN_H ) */
 

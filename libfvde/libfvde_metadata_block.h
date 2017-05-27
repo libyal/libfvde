@@ -78,7 +78,7 @@ int libfvde_metadata_block_check_for_empty_block(
      size_t data_size,
      libcerror_error_t **error );
 
-int libfvde_metadata_block_read(
+int libfvde_metadata_block_read_data(
      libfvde_metadata_block_t *metadata_block,
      const uint8_t *block_data,
      size_t block_data_size,

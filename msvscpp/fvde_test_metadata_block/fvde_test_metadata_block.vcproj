@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fvde_test_encryption_context_plist"
-	ProjectGUID="{94E70FDE-F0DA-4538-ADCC-7E8473137285}"
-	RootNamespace="fvde_test_encryption_context_plist"
+	Name="fvde_test_metadata_block"
+	ProjectGUID="{A9D01018-7EB4-4528-B3E0-F1291A6966D4}"
+	RootNamespace="fvde_test_metadata_block"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\fvde_test_encryption_context_plist.c"
+				RelativePath="..\..\tests\fvde_test_memory.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\fvde_test_memory.c"
+				RelativePath="..\..\tests\fvde_test_metadata_block.c"
 				>
 			</File>
 		</Filter>

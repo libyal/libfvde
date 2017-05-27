@@ -127,10 +127,16 @@ stamp-h[1-9]
 /fvdetools/fvdeinfo
 /fvdetools/fvdemount
 /fvdetools/fvdewipekey
+/tests/fvde_test_data_area_descriptor
+/tests/fvde_test_encrypted_metadata
 /tests/fvde_test_encryption_context_plist
 /tests/fvde_test_error
-/tests/fvde_test_logical_volume
+/tests/fvde_test_io_handle
+/tests/fvde_test_keyring
+/tests/fvde_test_metadata
+/tests/fvde_test_metadata_block
 /tests/fvde_test_notify
+/tests/fvde_test_sector_data
 /tests/fvde_test_support
 /tests/fvde_test_volume
 /tests/fvde_test_volume_group

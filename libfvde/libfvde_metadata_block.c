@@ -230,16 +230,16 @@ int libfvde_metadata_block_check_for_empty_block(
 	return( 1 );
 }
 
-/* Reads the metadata block
+/* Reads the metadata block data
  * Returns 1 if successful, 0 if block is empty or -1 on error
  */
-int libfvde_metadata_block_read(
+int libfvde_metadata_block_read_data(
      libfvde_metadata_block_t *metadata_block,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	static char *function        = "libfvde_metadata_block_read";
+	static char *function        = "libfvde_metadata_block_read_data";
 	uint32_t block_size          = 0;
 	uint32_t calculated_checksum = 0;
 	uint32_t initial_value       = 0;

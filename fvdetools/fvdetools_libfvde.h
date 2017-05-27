@@ -1,7 +1,7 @@
 /*
  * The internal libfvde header
  *
- * Copyright (C) 2011-2017, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2017, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -28,13 +28,11 @@
 /* If Cygwin libtool DLL support is enabled set LIBFVDE_DLL_IMPORT
  * before including libfvde.h
  */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#if !defined( HAVE_STATIC_EXECUTABLES )
+#if defined( _WIN32 ) && defined( DLL_IMPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
 #define LIBFVDE_DLL_IMPORT
-#endif
 #endif
 
 #include <libfvde.h>
 
-#endif
+#endif /* !defined( _FVDETOOLS_LIBFVDE_H ) */
 

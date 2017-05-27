@@ -1,5 +1,5 @@
 /*
- * The libuna header wrapper
+ * The libbfio header wrapper
  *
  * Copyright (C) 2011-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,42 +19,40 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _FVDE_TEST_LIBUNA_H )
-#define _FVDE_TEST_LIBUNA_H
+#if !defined( _FVDE_TEST_LIBBFIO_H )
+#define _FVDE_TEST_LIBBFIO_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBUNA for local use of libuna
+/* Define HAVE_LOCAL_LIBBFIO for local use of libbfio
  */
-#if defined( HAVE_LOCAL_LIBUNA )
+#if defined( HAVE_LOCAL_LIBBFIO )
 
-#include <libuna_base16_stream.h>
-#include <libuna_base32_stream.h>
-#include <libuna_base64_stream.h>
-#include <libuna_byte_stream.h>
-#include <libuna_unicode_character.h>
-#include <libuna_url_stream.h>
-#include <libuna_utf16_stream.h>
-#include <libuna_utf16_string.h>
-#include <libuna_utf32_stream.h>
-#include <libuna_utf32_string.h>
-#include <libuna_utf7_stream.h>
-#include <libuna_utf8_stream.h>
-#include <libuna_utf8_string.h>
-#include <libuna_types.h>
+#include <libbfio_definitions.h>
+#include <libbfio_file.h>
+#include <libbfio_file_pool.h>
+#include <libbfio_file_range.h>
+#include <libbfio_handle.h>
+#include <libbfio_memory_range.h>
+#include <libbfio_pool.h>
+#include <libbfio_types.h>
 
 #else
 
-/* If libtool DLL support is enabled set LIBUNA_DLL_IMPORT
- * before including libuna.h
+/* If libtool DLL support is enabled set LIBBFIO_DLL_IMPORT
+ * before including libbfio.h
  */
 #if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBUNA_DLL_IMPORT
+#define LIBBFIO_DLL_IMPORT
 #endif
 
-#include <libuna.h>
+#include <libbfio.h>
 
-#endif /* defined( HAVE_LOCAL_LIBUNA ) */
+#if defined( HAVE_MULTI_THREAD_SUPPORT ) && !defined( LIBBFIO_HAVE_MULTI_THREAD_SUPPORT )
+#error Multi-threading support requires libbfio with multi-threading support
+#endif
 
-#endif /* !defined( _FVDE_TEST_LIBUNA_H ) */
+#endif /* defined( HAVE_LOCAL_LIBBFIO ) */
+
+#endif /* !defined( _LIBFVDE_LIBBFIO_H ) */
 

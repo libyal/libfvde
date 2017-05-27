@@ -1025,7 +1025,7 @@ int libfvde_metadata_read(
 
 		goto on_error;
 	}
-	if( libfvde_metadata_block_read(
+	if( libfvde_metadata_block_read_data(
 	     metadata_block,
 	     metadata_block_data,
 	     8192,

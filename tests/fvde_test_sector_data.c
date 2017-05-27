@@ -1,5 +1,5 @@
 /*
- * Library logical_volume type testing program
+ * Library sector_data type test program
  *
  * Copyright (C) 2011-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,6 +33,50 @@
 #include "fvde_test_memory.h"
 #include "fvde_test_unused.h"
 
+#include "../libfvde/libfvde_sector_data.h"
+
+#if defined( __GNUC__ )
+
+/* Tests the libfvde_sector_data_free function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_sector_data_free(
+     void )
+{
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test error cases
+	 */
+	result = libfvde_sector_data_free(
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        FVDE_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+#endif /* defined( __GNUC__ ) */
+
 /* The main program
  */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -47,6 +91,18 @@ int main(
 {
 	FVDE_TEST_UNREFERENCED_PARAMETER( argc )
 	FVDE_TEST_UNREFERENCED_PARAMETER( argv )
+
+#if defined( __GNUC__ )
+
+	/* TODO: add tests for libfvde_sector_data_initialize */
+
+	FVDE_TEST_RUN(
+	 "libfvde_sector_data_free",
+	 fvde_test_sector_data_free );
+
+	/* TODO: add tests for libfvde_sector_data_read */
+
+#endif /* defined( __GNUC__ ) */
 
 	return( EXIT_SUCCESS );
 
