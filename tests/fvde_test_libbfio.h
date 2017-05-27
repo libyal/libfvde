@@ -54,5 +54,5 @@
 
 #endif /* defined( HAVE_LOCAL_LIBBFIO ) */
 
-#endif /* !defined( _LIBFVDE_LIBBFIO_H ) */
+#endif /* !defined( _FVDE_TEST_LIBBFIO_H ) */
 
