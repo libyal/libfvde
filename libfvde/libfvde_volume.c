@@ -1280,8 +1280,8 @@ int libfvde_volume_open_read(
      libcerror_error_t **error )
 {
 	static char *function = "libfvde_volume_open_read";
-	int segment_index     = 0;
 	int result            = 0;
+	int segment_index     = 0;
 
 	if( internal_volume == NULL )
 	{
@@ -1721,7 +1721,7 @@ int libfvde_volume_open_read(
 			     0,
 			     internal_volume->io_handle->logical_volume_offset,
 			     internal_volume->io_handle->logical_volume_size,
-			     0,
+			     LIBFVDE_RANGE_FLAG_ENCRYPTED,
 			     error ) != 1 )
 			{
 				libcerror_error_set(

@@ -29,7 +29,7 @@ Joachim Metz <joachim.metz@gmail.com>
 [preface]
 == License
 ....
-Copyright (C) 2011-2016, Omar Choudary <choudary.omar@gmail.com>,
+Copyright (C) 2011-2017, Omar Choudary <choudary.omar@gmail.com>,
                          Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the 
 terms of the GNU Free Documentation License, Version 1.3 or any later version 
@@ -60,6 +60,7 @@ Additional information about partially compressed volumes.
 | 0.0.10 | J.B. Metz | October 2015 | Additional information about metadata.
 | 0.0.11 | J.B. Metz | June 2016 | Additional information about Core Storage XML plist.
 | 0.0.12 | J.B. Metz | July 2016 | Additional information about metadata.
+| 0.0.13 | J.B. Metz | May 2017 | Additional information about metadata.
 |===
 
 :numbered:
@@ -96,6 +97,8 @@ The following version of programs were used to test the information within this 
 * Mac OS X Mountain Lion (10.8)
 * Mac OS X Mavericks (10.9)
 * Mac OS X Yosemite (10.10)
+* [yellow-background]*TODO: Mac OS X El Capitan (10.11)*
+* [yellow-background]*TODO: macOS Sierra (10.12)*
 
 == Keys
 To encrypt storage media CoreStorage uses different kind of keys.
@@ -357,11 +360,13 @@ Including the metadata block header
 | 12 | 4 | 0xffffffff | Initial value of the CRC-32
 | 16 | 4 | 0xc07e5707 | [yellow-background]*Unknown*
 | 20 | 4 | | [yellow-background]*(Block) serial number*
-| 24 | 4 | | [yellow-background]*(Block) serial number*
+| 24 | 4 | | [yellow-background]*(Block) serial number* +
+[yellow-background]*Secondary (Block) serial number?*
 | 28 | 4 | 0x00012710 | [yellow-background]*Unknown*
 | 32 | 40 | | [yellow-background]*Unknown (Empty values)*
 | 72 | 4 | | [yellow-background]*(Block) serial number or an empty value if not set*
-| 76 | 4 | | [yellow-background]*(Block) serial number or an empty value if not set*
+| 76 | 4 | | [yellow-background]*(Block) serial number or an empty value if not set* +
+[yellow-background]*Secondary (Block) serial number?*
 | 80 | 24 | | [yellow-background]*Unknown (Empty values)*
 | 104 | 4 | 0x0000000c | [yellow-background]*Unknown*
 | 108 | 4 | 0x0000000d | [yellow-background]*Unknown*
@@ -378,7 +383,8 @@ Including the metadata block header
 | 168 | 4 | | [yellow-background]*XML size copy* +
 [yellow-background]*Could this be used for compression similar as for metadata block type 0x0019?*
 | 172 | 4 | | [yellow-background]*Unknown*
-| 176 | 8 | | Physical volume number of blocks +
+| 176 | 8 | | Volume group number of blocks +
+[yellow-background]*Or physical volume number of blocks* +
 [yellow-background]*Or block number of physical volume backup volume header*
 | 184 | 8 | | Number of unknown values?
 | 192 | [yellow-background]*24 x number ?* | | [yellow-background]*Array of unknown values?* +
@@ -765,6 +771,8 @@ Seen: 0 or 1
 | ... | ... | | [yellow-background]*Unknown (Array of entries 2)*
 |===
 
+[yellow-background]*TODO: Unknown array entry1 relates to metadata block header unknown3*
+
 ....
 
 00000040: af 17 90 bf ff ff ff ff  46 ea fe 2b 6d da 4e af   ........ F..+m.N.
@@ -1113,7 +1121,17 @@ The metadata block data is variable in size and consists of:
 [yellow-background]*Where an entry is 12 bytes?*
 |===
 
-[yellow-background]*The array entry is 32 bytes of size?*
+The metadata block data type 0x0017 array entry is 32 bytes in size and 
+consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| 0 | 8 | | [yellow-background]*Unknown (metadata block group)*
+| 8 | 4 | | [yellow-background]*Unknown*
+| 12 | 4 | | [yellow-background]*Unknown (number of blocks in group)*
+| 16 | 8 | | [yellow-background]*Unknown*
+| 24 | 8 | | [yellow-background]*Unknown*
+|===
 
 ....
 Non-system only ?
@@ -2217,7 +2235,7 @@ The data area descriptor is 48 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | | block number
+| 0 | 8 | | physiscal block number
 | 8 | 8 | | number of blocks
 | 16 | 8 | | data type +
 See section: <<data_area_type,Data area type>>
@@ -2260,10 +2278,12 @@ See section: <<data_area_type,Data area type>>
 | 24 | 8 | | [yellow-background]*Unknown (copy number?)* +
 [yellow-background]*Where 0 is the original?*
 | 32 | 8 | | [yellow-background]*Unknown (empty values)*
-| 40 | 8 | | [yellow-background]*Unknown* +
+| 40 | 8 | | [yellow-background]*Unknown (logical volume block number)* +
 0x0000000000000000 (0) => [yellow-background]*Unknown* +
 0xfffffffffffffffe (-2) => [yellow-background]*Unknown (Continuation?)*
 |===
+
+[yellow-background]*TODO: what is the relationship between unknown2 of metadata block entry 0x0305 and 0x0405*
 
 ==== [[data_area_type]]Data area type
 

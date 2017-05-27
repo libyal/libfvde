@@ -912,7 +912,7 @@ int libfvde_io_handle_read_sector(
      int element_data_file_index LIBFVDE_ATTRIBUTE_UNUSED,
      off64_t element_data_offset,
      size64_t element_data_size LIBFVDE_ATTRIBUTE_UNUSED,
-     uint32_t element_data_flags LIBFVDE_ATTRIBUTE_UNUSED,
+     uint32_t element_data_flags,
      uint8_t read_flags LIBFVDE_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
 {
@@ -921,7 +921,6 @@ int libfvde_io_handle_read_sector(
 
 	LIBFVDE_UNREFERENCED_PARAMETER( element_data_file_index );
 	LIBFVDE_UNREFERENCED_PARAMETER( element_data_size );
-	LIBFVDE_UNREFERENCED_PARAMETER( element_data_flags );
 	LIBFVDE_UNREFERENCED_PARAMETER( read_flags );
 
 	if( io_handle == NULL )
@@ -966,6 +965,10 @@ int libfvde_io_handle_read_sector(
 		 function );
 
 		goto on_error;
+	}
+	if( element_data_flags == LIBFVDE_RANGE_FLAG_ENCRYPTED )
+	{
+/* TODO decrypt */
 	}
 	if( libfdata_vector_set_element_value_by_index(
 	     vector,

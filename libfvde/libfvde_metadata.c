@@ -429,7 +429,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 176 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: physical volume number of blocks\t\t: %" PRIu64 "\n",
+		 "%s: volume group number of blocks\t\t: %" PRIu64 "\n",
 		 function,
 		 value_64bit );
 

@@ -26,6 +26,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfvde_data_area_descriptor.h"
 #include "libfvde_encryption_context_plist.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_keyring.h"
@@ -239,6 +240,17 @@ int libfvde_encrypted_metadata_get_volume_master_key(
      libfvde_io_handle_t *io_handle,
      libfvde_encryption_context_plist_t *encryption_context_plist,
      libfvde_keyring_t *keyring,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_get_number_of_data_area_descriptors(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     int *data_area_descriptors,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_get_data_area_descriptor_by_index(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     int data_area_descriptor_index,
+     libfvde_data_area_descriptor_t **data_area_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
