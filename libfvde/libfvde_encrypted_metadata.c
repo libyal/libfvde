@@ -3084,6 +3084,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,
+     uint64_t block_group,
      libcerror_error_t **error )
 {
 	static char *function      = "libfvde_encrypted_metadata_read_type_0x0305";
@@ -3268,10 +3269,18 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 #endif
 			block_data_offset += 40;
 		}
-		/* Use the last entry in the last 0x0305 metadata block
+		/* Use the most recent 0x0305 metadata block
 		 */
-		encrypted_metadata->logical_volume_block_number_0x0305     = block_number;
-		encrypted_metadata->logical_volume_number_of_blocks_0x0305 = number_of_blocks;
+		if( encrypted_metadata->block_group_0x0305 < block_group )
+		{
+			if( number_of_entries == 1 )
+			{
+				encrypted_metadata->logical_volume_block_number_0x0305     = block_number;
+				encrypted_metadata->logical_volume_number_of_blocks_0x0305 = number_of_blocks;
+
+				encrypted_metadata->block_group_0x0305 = block_group;
+			}
+		}
 	}
 	return( 1 );
 }
@@ -3534,6 +3543,7 @@ int libfvde_encrypted_metadata_read_type_0x0405(
      libfvde_io_handle_t *io_handle,
      const uint8_t *block_data,
      size_t block_data_size,
+     uint64_t block_group,
      libcerror_error_t **error )
 {
 	libfvde_data_area_descriptor_t *data_area_descriptor = NULL;
@@ -3772,10 +3782,15 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 			}
 			data_area_descriptor = NULL;
 		}
-		/* Use the last 0x0405 metadata block
+		/* Use the most recent 0x0405 metadata block
 		 */
-		encrypted_metadata->logical_volume_block_number_0x0405     = block_number;
-		encrypted_metadata->logical_volume_number_of_blocks_0x0405 = number_of_blocks;
+		if( encrypted_metadata->block_group_0x0405 < block_group )
+		{
+			encrypted_metadata->logical_volume_block_number_0x0405     = block_number;
+			encrypted_metadata->logical_volume_number_of_blocks_0x0405 = number_of_blocks;
+
+			encrypted_metadata->block_group_0x0405 = block_group;
+		}
 	}
 	return( 1 );
 
@@ -3796,6 +3811,7 @@ int libfvde_encrypted_metadata_read_type_0x0505(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,
+     uint64_t block_group,
      libcerror_error_t **error )
 {
 	static char *function      = "libfvde_encrypted_metadata_read_type_0x0505";
@@ -3925,12 +3941,17 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 #endif
 			block_data_offset += 16;
 		}
-		/* Use the last 0x0505 metadata block
+		/* Use the most recent 0x0505 metadata block
 		 */
-		if( number_of_entries == 1 )
+		if( encrypted_metadata->block_group_0x0505 < block_group )
 		{
-			encrypted_metadata->logical_volume_block_number_0x0505     = block_number;
-			encrypted_metadata->logical_volume_number_of_blocks_0x0505 = number_of_blocks;
+			if( number_of_entries == 1 )
+			{
+				encrypted_metadata->logical_volume_block_number_0x0505     = block_number;
+				encrypted_metadata->logical_volume_number_of_blocks_0x0505 = number_of_blocks;
+
+				encrypted_metadata->block_group_0x0505 = block_group;
+			}
 		}
 	}
 	return( 1 );
@@ -4344,6 +4365,7 @@ int libfvde_encrypted_metadata_read(
 							  encrypted_metadata,
 							  metadata_block->data,
 							  metadata_block->data_size,
+							  metadata_block->group,
 							  error );
 						break;
 
@@ -4362,6 +4384,7 @@ int libfvde_encrypted_metadata_read(
 							  io_handle,
 							  metadata_block->data,
 							  metadata_block->data_size,
+							  metadata_block->group,
 							  error );
 						break;
 
@@ -4370,6 +4393,7 @@ int libfvde_encrypted_metadata_read(
 							  encrypted_metadata,
 							  metadata_block->data,
 							  metadata_block->data_size,
+							  metadata_block->group,
 							  error );
 						break;
 

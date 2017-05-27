@@ -161,6 +161,7 @@ int libfvde_metadata_read_type_0x0011(
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint64_t value_64bit                     = 0;
 	uint32_t value_32bit                     = 0;
+	uint16_t value_16bit                     = 0;
 #endif
 
 	if( metadata == NULL )
@@ -351,13 +352,21 @@ int libfvde_metadata_read_type_0x0011(
 		 function,
 		 value_32bit );
 
-		byte_stream_copy_to_uint32_little_endian(
+		byte_stream_copy_to_uint16_little_endian(
 		 &( block_data[ 116 ] ),
-		 value_32bit );
+		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown13\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown13a\t\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
-		 value_32bit );
+		 value_16bit );
+
+		byte_stream_copy_to_uint16_little_endian(
+		 &( block_data[ 118 ] ),
+		 value_16bit );
+		libcnotify_printf(
+		 "%s: unknown13b\t\t\t\t\t: 0x%04" PRIx16 "\n",
+		 function,
+		 value_16bit );
 
 		byte_stream_copy_to_uint32_little_endian(
 		 &( block_data[ 120 ] ),
@@ -367,13 +376,21 @@ int libfvde_metadata_read_type_0x0011(
 		 function,
 		 value_32bit );
 
-		byte_stream_copy_to_uint32_little_endian(
+		byte_stream_copy_to_uint16_little_endian(
 		 &( block_data[ 124 ] ),
-		 value_32bit );
+		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown15\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown15a\t\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
-		 value_32bit );
+		 value_16bit );
+
+		byte_stream_copy_to_uint16_little_endian(
+		 &( block_data[ 126 ] ),
+		 value_16bit );
+		libcnotify_printf(
+		 "%s: unknown15b\t\t\t\t\t: 0x%04" PRIx16 "\n",
+		 function,
+		 value_16bit );
 
 		byte_stream_copy_to_uint32_little_endian(
 		 &( block_data[ 128 ] ),

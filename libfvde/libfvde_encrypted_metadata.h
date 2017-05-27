@@ -68,6 +68,18 @@ struct libfvde_encrypted_metadata
 	 */
 	uint8_t encryption_context_plist_file_is_set;
 
+	/* The group number of the metadata block 0x0305
+	 */
+	uint64_t block_group_0x0305;
+
+	/* The group number of the metadata block 0x0405
+	 */
+	uint64_t block_group_0x0405;
+
+	/* The group number of the metadata block 0x0505
+	 */
+	uint64_t block_group_0x0505;
+
 	/* The logical volume block number as defined by metadata block 0x0305
 	 */
 	uint64_t logical_volume_block_number_0x0305;
@@ -205,6 +217,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,
+     uint64_t block_group,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read_type_0x0404(
@@ -219,12 +232,14 @@ int libfvde_encrypted_metadata_read_type_0x0405(
      libfvde_io_handle_t *io_handle,
      const uint8_t *block_data,
      size_t block_data_size,
+     uint64_t block_group,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read_type_0x0505(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,
+     uint64_t block_group,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read(
