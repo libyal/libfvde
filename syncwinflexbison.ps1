@@ -1,23 +1,23 @@
 # Script that synchronizes Windows versions of flex and bison.
 #
-# Version: 20160918
+# Version: 20170225
 
-function DownloadFile($Url, $Destination)
+Function DownloadFile($Url, $Destination)
 {
 	$Client = New-Object Net.WebClient
 	${Client}.DownloadFile(${Url}, ${Destination})
 }
 
-function ExtractZip($Filename, $Destination)
+Function ExtractZip($Filename, $Destination)
 {
 	# AppVeyor does not seem to support extraction using "native ZIP" so we use 7z instead.
 	$SevenZip = "C:\Program Files\7-Zip\7z.exe"
 
-	if (-Not (Test-Path ${Destination}))
+	If (-Not (Test-Path ${Destination}))
 	{
 		New-Item -ItemType directory -Path ${Destination} -Force | Out-Null
 	}
-	if (Test-Path ${SevenZip})
+	If (Test-Path ${SevenZip})
 	{
 		# PowerShell will raise NativeCommandError if 7z writes to stdout or stderr
 		# therefore 2>&1 is added and the output is stored in a variable.
@@ -30,31 +30,31 @@ function ExtractZip($Filename, $Destination)
 		$Archive = ${Shell}.NameSpace(${Filename})
 		$Directory = ${Shell}.Namespace(${Destination})
 
-		foreach($FileEntry in ${Archive}.items())
+		ForEach($FileEntry in ${Archive}.items())
 		{
 			${Directory}.CopyHere(${FileEntry})
 		}
 	}
 }
 
-$Filename = "${pwd}\win_flex_bison-2.5.6.zip"
-$Url = "http://downloads.sourceforge.net/project/winflexbison/win_flex_bison-2.5.6.zip"
-$ExtractedPath = "win_flex_bison-2.5.6"
+$Filename = "${pwd}\win_flex_bison-2.5.9.zip"
+$Url = "http://downloads.sourceforge.net/project/winflexbison/win_flex_bison-2.5.9.zip"
+$ExtractedPath = "win_flex_bison-2.5.9"
 $DestinationPath = "..\win_flex_bison"
 
-if (Test-Path ${Filename})
+If (Test-Path ${Filename})
 {
 	Remove-Item -Path ${Filename} -Force
 }
 DownloadFile -Url ${Url} -Destination ${Filename}
 
-if (Test-Path ${ExtractedPath})
+If (Test-Path ${ExtractedPath})
 {
 	Remove-Item -Path ${ExtractedPath} -Force -Recurse
 }
 ExtractZip -Filename ${Filename} -Destination "${pwd}\${ExtractedPath}"
 
-if (Test-Path ${DestinationPath})
+If (Test-Path ${DestinationPath})
 {
 	Remove-Item -Path ${DestinationPath} -Force -Recurse
 }

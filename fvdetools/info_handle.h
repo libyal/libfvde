@@ -60,6 +60,12 @@ struct info_handle
 	int abort;
 };
 
+int fvdetools_system_string_copy_from_64_bit_in_decimal(
+     const system_character_t *string,
+     size_t string_size,
+     uint64_t *value_64bit,
+     libcerror_error_t **error );
+
 int info_handle_initialize(
      info_handle_t **info_handle,
      libcerror_error_t **error );

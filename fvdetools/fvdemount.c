@@ -62,12 +62,14 @@
 
 #endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE ) */
 
-#include "fvdeoutput.h"
+#include "fvdetools_getopt.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
-#include "fvdetools_libcsystem.h"
 #include "fvdetools_libfvde.h"
+#include "fvdetools_output.h"
+#include "fvdetools_signal.h"
+#include "fvdetools_unused.h"
 #include "mount_handle.h"
 
 mount_handle_t *fvdemount_mount_handle = NULL;
@@ -108,12 +110,12 @@ void usage_fprint(
 /* Signal handler for fvdemount
  */
 void fvdemount_signal_handler(
-      libcsystem_signal_t signal LIBCSYSTEM_ATTRIBUTE_UNUSED )
+      fvdetools_signal_t signal FVDETOOLS_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
 	static char *function   = "fvdemount_signal_handler";
 
-	LIBCSYSTEM_UNREFERENCED_PARAMETER( signal )
+	FVDETOOLS_UNREFERENCED_PARAMETER( signal )
 
 	fvdemount_abort = 1;
 
@@ -135,8 +137,13 @@ void fvdemount_signal_handler(
 	}
 	/* Force stdin to close otherwise any function reading it will remain blocked
 	 */
-	if( libcsystem_file_io_close(
+#if defined( WINAPI ) && !defined( __CYGWIN__ )
+	if( _close(
 	     0 ) != 0 )
+#else
+	if( close(
+	     0 ) != 0 )
+#endif
 	{
 		libcnotify_printf(
 		 "%s: unable to close stdin.\n",
@@ -368,16 +375,16 @@ int fvdemount_fuse_readdir(
      const char *path,
      void *buffer,
      fuse_fill_dir_t filler,
-     off_t offset LIBCSYSTEM_ATTRIBUTE_UNUSED,
-     struct fuse_file_info *file_info LIBCSYSTEM_ATTRIBUTE_UNUSED )
+     off_t offset FVDETOOLS_ATTRIBUTE_UNUSED,
+     struct fuse_file_info *file_info FVDETOOLS_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
 	static char *function   = "fvdemount_fuse_readdir";
 	size_t path_length      = 0;
 	int result              = 0;
 
-	LIBCSYSTEM_UNREFERENCED_PARAMETER( offset )
-	LIBCSYSTEM_UNREFERENCED_PARAMETER( file_info )
+	FVDETOOLS_UNREFERENCED_PARAMETER( offset )
+	FVDETOOLS_UNREFERENCED_PARAMETER( file_info )
 
 	if( path == NULL )
 	{
@@ -633,12 +640,12 @@ on_error:
 /* Cleans up when fuse is done
  */
 void fvdemount_fuse_destroy(
-      void *private_data LIBCSYSTEM_ATTRIBUTE_UNUSED )
+      void *private_data FVDETOOLS_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
 	static char *function    = "fvdemount_fuse_destroy";
 
-	LIBCSYSTEM_UNREFERENCED_PARAMETER( private_data )
+	FVDETOOLS_UNREFERENCED_PARAMETER( private_data )
 
 	if( fvdemount_mount_handle != NULL )
 	{
@@ -717,13 +724,13 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-        if( libcsystem_initialize(
+        if( fvdetools_output_initialize(
              _IONBF,
              &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to initialize system values.\n" );
+		 "Unable to initialize output settings.\n" );
 
 		goto on_error;
 	}
@@ -731,7 +738,7 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
-	while( ( option = libcsystem_getopt(
+	while( ( option = fvdetools_getopt(
 	                   argc,
 	                   argv,
 	                   _SYSTEM_STRING( "e:hk:o:p:r:vVX:" ) ) ) != (system_integer_t) -1 )

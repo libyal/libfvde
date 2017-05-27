@@ -10,7 +10,6 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
-	@LIBCSYSTEM_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFVDE_DLL_IMPORT@
 
@@ -80,16 +79,16 @@ fvde_test_logical_volume_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fvde_test_support_SOURCES = \
+	fvde_test_getopt.c fvde_test_getopt.h \
 	fvde_test_libcerror.h \
 	fvde_test_libclocale.h \
-	fvde_test_libcsystem.h \
+	fvde_test_libcnotify.h \
 	fvde_test_libfvde.h \
 	fvde_test_libuna.h \
 	fvde_test_macros.h \
 	fvde_test_support.c
 
 fvde_test_support_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
@@ -98,9 +97,10 @@ fvde_test_support_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fvde_test_volume_SOURCES = \
+	fvde_test_getopt.c fvde_test_getopt.h \
 	fvde_test_libcerror.h \
 	fvde_test_libclocale.h \
-	fvde_test_libcsystem.h \
+	fvde_test_libcnotify.h \
 	fvde_test_libfvde.h \
 	fvde_test_libuna.h \
 	fvde_test_macros.h \
@@ -108,7 +108,6 @@ fvde_test_volume_SOURCES = \
 	fvde_test_volume.c
 
 fvde_test_volume_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \

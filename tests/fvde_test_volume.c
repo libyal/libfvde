@@ -30,9 +30,9 @@
 #include <stdlib.h>
 #endif
 
+#include "fvde_test_getopt.h"
 #include "fvde_test_libcerror.h"
 #include "fvde_test_libclocale.h"
-#include "fvde_test_libcsystem.h"
 #include "fvde_test_libfvde.h"
 #include "fvde_test_libuna.h"
 #include "fvde_test_macros.h"
@@ -1234,7 +1234,7 @@ int main(
 	system_integer_t option    = 0;
 	int result                 = 0;
 
-	while( ( option = libcsystem_getopt(
+	while( ( option = fvde_test_getopt(
 	                   argc,
 	                   argv,
 	                   _SYSTEM_STRING( "" ) ) ) != (system_integer_t) -1 )

@@ -1,6 +1,5 @@
 /*
- * Library for system independent implementation of functionality
- * for programs
+ * The internal libcnotify header
  *
  * Copyright (C) 2011-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -20,35 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _FVDE_TEST_LIBCSYSTEM_H )
-#define _FVDE_TEST_LIBCSYSTEM_H
+#if !defined( _FVDE_TEST_LIBCNOTIFY_H )
+#define _FVDE_TEST_LIBCNOTIFY_H
 
-/* Define HAVE_LOCAL_LIBCSYSTEM for local use of libcsystem
+#include <common.h>
+
+/* Define HAVE_LOCAL_LIBCNOTIFY for local use of libcnotify
  */
-#if defined( HAVE_LOCAL_LIBCSYSTEM )
+#if defined( HAVE_LOCAL_LIBCNOTIFY )
 
-#include <libcsystem_definitions.h>
-#include <libcsystem_file_io.h>
-#include <libcsystem_getopt.h>
-#include <libcsystem_glob.h>
-#include <libcsystem_i18n.h>
-#include <libcsystem_signal.h>
-#include <libcsystem_string.h>
-#include <libcsystem_support.h>
-#include <libcsystem_unused.h>
+#include <libcnotify_definitions.h>
+#include <libcnotify_print.h>
+#include <libcnotify_stream.h>
+#include <libcnotify_verbose.h>
 
 #else
 
-/* If libtool DLL support is enabled set LIBCSYSTEM_DLL_IMPORT
- * before including libcsystem.h
+/* If libtool DLL support is enabled set LIBCNOTIFY_DLL_IMPORT
+ * before including libcnotify.h
  */
 #if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBCSYSTEM_DLL_IMPORT
+#define LIBCNOTIFY_DLL_IMPORT
 #endif
 
-#include <libcsystem.h>
+#include <libcnotify.h>
 
-#endif /* defined( HAVE_LOCAL_LIBCSYSTEM ) */
+#endif /* defined( HAVE_LOCAL_LIBCNOTIFY ) */
 
-#endif /* !defined( _FVDE_TEST_LIBCSYSTEM_H ) */
+#endif /* !defined( _FVDE_TEST_LIBCNOTIFY_H ) */
 

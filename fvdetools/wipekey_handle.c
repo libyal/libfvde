@@ -31,18 +31,19 @@
 
 #include "fvdetools_libbfio.h"
 #include "fvdetools_libcerror.h"
-#include "fvdetools_libcsystem.h"
 #include "fvdetools_libfvde.h"
 #include "fvdetools_libuna.h"
 #include "wipekey_handle.h"
 
 #if !defined( LIBFVDE_HAVE_BFIO )
+
 LIBFVDE_EXTERN \
 int libfvde_encryption_context_plist_read_file_io_handle(
      libfvde_encryption_context_plist_t *plist,
      libbfio_handle_t *file_io_handle,
      libfvde_error_t **error );
-#endif
+
+#endif /* !defined( LIBFVDE_HAVE_BFIO ) */
 
 #define INFO_HANDLE_NOTIFY_STREAM		stdout
 

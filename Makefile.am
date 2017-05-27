@@ -21,7 +21,6 @@ SUBDIRS = \
 	libhmac \
 	libcaes \
 	libfvde \
-	libcsystem \
 	fvdetools \
 	pyfvde \
 	pyfvde-python2 \
@@ -37,13 +36,12 @@ DPKG_FILES = \
 	dpkg/compat \
 	dpkg/control \
 	dpkg/copyright \
-	dpkg/copyright.in \
 	dpkg/rules \
-	dpkg/libfvde.docs \
-	dpkg/libfvde-dev.docs \
-	dpkg/libfvde-python.docs \
-	dpkg/libfvde-python3.docs \
-	dpkg/libfvde-tools.docs \
+	dpkg/libfvde.install \
+	dpkg/libfvde-dev.install \
+	dpkg/libfvde-python.install \
+	dpkg/libfvde-python3.install \
+	dpkg/libfvde-tools.install \
 	dpkg/source/format
 
 GETTEXT_FILES = \
@@ -133,7 +131,6 @@ splint:
 	(cd $(srcdir)/libhmac && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcaes && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfvde && $(MAKE) splint $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/fvdetools && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/pyfvde && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) splint $(AM_MAKEFLAGS))

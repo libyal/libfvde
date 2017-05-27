@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20161110],
+ [20170527],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -106,8 +106,8 @@ AX_LIBCAES_CHECK_ENABLE
 dnl Check for library function support
 AX_LIBFVDE_CHECK_LOCAL
 
-dnl Check for enabling libcsystem for cross-platform C generic system functions
-AX_LIBCSYSTEM_CHECK_ENABLE
+dnl Check for fvdetools function support
+AX_FVDETOOLS_CHECK_LOCAL
 
 dnl Check for libfuse Filesystem in Userspace (FUSE) support
 AX_LIBFUSE_CHECK_ENABLE
@@ -193,7 +193,7 @@ AS_IF(
  ])
 
 AS_IF(
- [test "x$ac_cv_libcsystem" = xyes || test "x$ac_cv_libfuse" != xno],
+ [test "x$ac_cv_libfuse" != xno],
  [AC_SUBST(
   [libfvde_spec_tools_build_requires],
   [BuildRequires:])
@@ -236,7 +236,6 @@ AC_CONFIG_FILES([libfplist/Makefile])
 AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([libcaes/Makefile])
 AC_CONFIG_FILES([libfvde/Makefile])
-AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([fvdetools/Makefile])
 AC_CONFIG_FILES([pyfvde/Makefile])
 AC_CONFIG_FILES([pyfvde-python2/Makefile])
@@ -255,7 +254,6 @@ AC_CONFIG_FILES([libfvde/libfvde_definitions.h])
 dnl Have configure make distribution specific files
 AC_CONFIG_FILES([common/types.h])
 AC_CONFIG_FILES([dpkg/changelog])
-AC_CONFIG_FILES([dpkg/copyright])
 AC_CONFIG_FILES([libfvde/libfvde.rc])
 AC_CONFIG_FILES([libfvde.pc])
 AC_CONFIG_FILES([libfvde.spec])
@@ -287,7 +285,6 @@ Building:
    SHA256 support:                            $ac_cv_libhmac_sha256
    libcaes support:                           $ac_cv_libcaes
    AES support:                               $ac_cv_libcaes_aes
-   libcsystem support:                        $ac_cv_libcsystem
    FUSE support:                              $ac_cv_libfuse
 
 Features:

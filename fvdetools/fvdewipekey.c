@@ -34,12 +34,14 @@
 #include <stdlib.h>
 #endif
 
-#include "fvdeoutput.h"
+#include "fvdetools_getopt.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
-#include "fvdetools_libcsystem.h"
 #include "fvdetools_libfvde.h"
+#include "fvdetools_output.h"
+#include "fvdetools_signal.h"
+#include "fvdetools_unused.h"
 #include "wipekey_handle.h"
 
 wipekey_handle_t *fvdewipekey_wipekey_handle = NULL;
@@ -69,12 +71,12 @@ void usage_fprint(
 /* Signal handler for fvdewipekey
  */
 void fvdewipekey_signal_handler(
-      libcsystem_signal_t signal LIBCSYSTEM_ATTRIBUTE_UNUSED )
+      fvdetools_signal_t signal FVDETOOLS_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
 	static char *function   = "fvdewipekey_signal_handler";
 
-	LIBCSYSTEM_UNREFERENCED_PARAMETER( signal )
+	FVDETOOLS_UNREFERENCED_PARAMETER( signal )
 
 	fvdewipekey_abort = 1;
 
@@ -96,8 +98,13 @@ void fvdewipekey_signal_handler(
 	}
 	/* Force stdin to close otherwise any function reading it will remain blocked
 	 */
-	if( libcsystem_file_io_close(
+#if defined( WINAPI ) && !defined( __CYGWIN__ )
+	if( _close(
 	     0 ) != 0 )
+#else
+	if( close(
+	     0 ) != 0 )
+#endif
 	{
 		libcnotify_printf(
 		 "%s: unable to close stdin.\n",
@@ -137,13 +144,13 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-        if( libcsystem_initialize(
+        if( fvdetools_output_initialize(
              _IONBF,
              &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to initialize system values.\n" );
+		 "Unable to initialize output settings.\n" );
 
 		goto on_error;
 	}
@@ -151,7 +158,7 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
-	while( ( option = libcsystem_getopt(
+	while( ( option = fvdetools_getopt(
 	                   argc,
 	                   argv,
 	                   _SYSTEM_STRING( "hvV" ) ) ) != (system_integer_t) -1 )

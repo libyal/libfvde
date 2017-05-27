@@ -25,14 +25,72 @@
 #include <memory.h>
 #include <types.h>
 
-#include "fvdeoutput.h"
+#include "fvdetools_i18n.h"
 #include "fvdetools_libbfio.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
-#include "fvdetools_libcsystem.h"
 #include "fvdetools_libfvde.h"
 #include "fvdetools_libuna.h"
+#include "fvdetools_output.h"
+
+/* Initializes output settings
+ * Returns 1 if successful or -1 on error
+ */
+int fvdetools_output_initialize(
+     int stdio_mode,
+     libcerror_error_t **error )
+{
+	static char *function = "fvdetools_output_initialize";
+
+	if( ( stdio_mode != _IOFBF )
+	 && ( stdio_mode != _IOLBF )
+	 && ( stdio_mode != _IONBF ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported standard IO mode.",
+		 function );
+
+		return( -1 );
+	}
+#if !defined( __BORLANDC__ )
+	if( setvbuf(
+	     stdout,
+	     NULL,
+	     stdio_mode,
+	     0 ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set IO mode of stdout.",
+		 function );
+
+		return( -1 );
+	}
+	if( setvbuf(
+	     stderr,
+	     NULL,
+	     stdio_mode,
+	     0 ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set IO mode of stderr.",
+		 function );
+
+		return( -1 );
+	}
+#endif /* !defined( __BORLANDC__ ) */
+
+	return( 1 );
+}
 
 /* Prints the copyright information
  */

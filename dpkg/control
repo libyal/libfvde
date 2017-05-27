@@ -1,17 +1,17 @@
 Source: libfvde
-Section: libs
 Priority: extra
 Maintainer: Joachim Metz <joachim.metz@gmail.com>
-Build-Depends: debhelper (>= 7), autotools-dev, zlib1g-dev, libssl-dev, libfuse-dev, python-all-dev, python3-all-dev
+Build-Depends: debhelper (>= 9), dh-autoreconf, pkg-config, zlib1g-dev, libssl-dev, libfuse-dev, python-dev, python3-dev
 Standards-Version: 3.9.5
-Homepage: https://github.com/libyal/libfvde/
+Section: libs
+Homepage: https://github.com/libyal/libfvde
 
 Package: libfvde
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Suggests: libfvde-dbg
 Description: Library to access the FileVault Drive Encryption (FVDE) format
- libfvde is a library to access the FileVault Drive Encryption (FVDE) format
+ libfvde is a library to access the FileVault Drive Encryption (FVDE) format.
 
 Package: libfvde-dbg
 Architecture: any
@@ -33,6 +33,13 @@ Architecture: any
 Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Several tools for reading FileVault Drive Encryption volumes
  Several tools for reading FileVault Drive Encryption volumes.
+
+Package: libfvde-tools-dbg
+Section: debug
+Architecture: any
+Depends: libfvde-tools (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libfvde-tools
+ Debugging symbols for libfvde-tools.
 
 Package: libfvde-python
 Section: python
