@@ -475,7 +475,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown1\t\t\t\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %03d block group\t\t\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
