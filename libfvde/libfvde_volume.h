@@ -84,6 +84,10 @@ struct libfvde_internal_volume
 	 */
 	uint8_t encrypted_root_plist_file_is_set;
 
+	/* Value to indicate the encrypted root plist file is decrypted
+	 */
+	uint8_t encrypted_root_plist_file_is_decrypted;
+
 	/* Value to indicate the volume master key is set
 	 */
 	uint8_t volume_master_key_is_set;

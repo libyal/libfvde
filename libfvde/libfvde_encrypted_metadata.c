@@ -650,7 +650,7 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 				 &( block_data[ block_data_offset ] ),
 				 value_64bit );
 				libcnotify_printf(
-				 "%s: entry1: %03d block unknown3\t: 0x%08" PRIx64 "\n",
+				 "%s: entry1: %03d block unknown3\t\t: 0x%08" PRIx64 "\n",
 				 function,
 				 entry_index,
 				 value_64bit );

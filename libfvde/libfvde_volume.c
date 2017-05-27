@@ -1874,44 +1874,51 @@ int libfvde_volume_open_read_keys_from_encrypted_metadata(
 		}
 		else if( internal_volume->encrypted_root_plist_file_is_set != 0 )
 		{
-			result = libfvde_encryption_context_plist_decrypt(
-			          internal_volume->encrypted_root_plist,
-			          internal_volume->io_handle->key_data,
-			          128,
-			          error );
-
-			if( result == -1 )
+			if( internal_volume->encrypted_root_plist_file_is_decrypted == 0 )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-				 LIBCERROR_ENCRYPTION_ERROR_DECRYPT_FAILED,
-				 "%s: unable to decrypt encrypted root plist.",
-				 function );
+				result = libfvde_encryption_context_plist_decrypt(
+				          internal_volume->encrypted_root_plist,
+				          internal_volume->io_handle->key_data,
+				          128,
+				          error );
 
-				goto on_error;
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+					 LIBCERROR_ENCRYPTION_ERROR_DECRYPT_FAILED,
+					 "%s: unable to decrypt encrypted root plist.",
+					 function );
+
+					goto on_error;
+				}
+				internal_volume->encrypted_root_plist_file_is_decrypted = result;
 			}
-			result = libfvde_encrypted_metadata_get_volume_master_key(
-				  encrypted_metadata,
-				  internal_volume->io_handle,
-				  internal_volume->encrypted_root_plist,
-				  internal_volume->keyring,
-				  error );
-
-			if( result == -1 )
+			if( internal_volume->encrypted_root_plist_file_is_decrypted != 0 )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve volume master key from encrypted metadata.",
-				 function );
+				result = libfvde_encrypted_metadata_get_volume_master_key(
+					  encrypted_metadata,
+					  internal_volume->io_handle,
+					  internal_volume->encrypted_root_plist,
+					  internal_volume->keyring,
+					  error );
 
-				goto on_error;
-			}
-			else if( result != 0 )
-			{
-				internal_volume->volume_master_key_is_set = 1;
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve volume master key from encrypted metadata.",
+					 function );
+
+					goto on_error;
+				}
+				else if( result != 0 )
+				{
+					internal_volume->volume_master_key_is_set = 1;
+				}
 			}
 		}
 /* TODO test */
