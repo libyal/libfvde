@@ -35,7 +35,7 @@
 
 #include "../libfvde/libfvde_metadata.h"
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 /* Tests the libfvde_metadata_initialize function
  * Returns 1 if successful or 0 if not
@@ -339,8 +339,6 @@ int fvde_test_metadata_read(
 	libcerror_error_free(
 	 &error );
 
-	return( 1 );
-
 	/* Clean up
 	 */
 	result = libfvde_metadata_free(
@@ -377,7 +375,7 @@ on_error:
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 /* The main program
  */
@@ -394,7 +392,7 @@ int main(
 	FVDE_TEST_UNREFERENCED_PARAMETER( argc )
 	FVDE_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	FVDE_TEST_RUN(
 	 "libfvde_metadata_initialize",
@@ -412,7 +410,7 @@ int main(
 	 "libfvde_metadata_read",
 	 fvde_test_metadata_read );
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 

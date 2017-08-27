@@ -35,7 +35,7 @@
 
 #include "../libfvde/libfvde_volume_group.h"
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 /* Tests the libfvde_volume_group_initialize function
  * Returns 1 if successful or 0 if not
@@ -72,8 +72,8 @@ int fvde_test_volume_group_initialize(
          "error",
          error );
 
-	result = libfvde_volume_group_free(
-	          &volume_group,
+	result = libfvde_internal_volume_group_free(
+	          (libfvde_internal_volume_group_t **) &volume_group,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -147,8 +147,8 @@ int fvde_test_volume_group_initialize(
 
 			if( volume_group != NULL )
 			{
-				libfvde_volume_group_free(
-				 &volume_group,
+				libfvde_internal_volume_group_free(
+				 (libfvde_internal_volume_group_t **) &volume_group,
 				 NULL );
 			}
 		}
@@ -189,8 +189,8 @@ int fvde_test_volume_group_initialize(
 
 			if( volume_group != NULL )
 			{
-				libfvde_volume_group_free(
-				 &volume_group,
+				libfvde_internal_volume_group_free(
+				 (libfvde_internal_volume_group_t **) &volume_group,
 				 NULL );
 			}
 		}
@@ -225,14 +225,14 @@ on_error:
 	}
 	if( volume_group != NULL )
 	{
-		libfvde_volume_group_free(
-		 &volume_group,
+		libfvde_internal_volume_group_free(
+		 (libfvde_internal_volume_group_t **) &volume_group,
 		 NULL );
 	}
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 /* Tests the libfvde_volume_group_free function
  * Returns 1 if successful or 0 if not
@@ -272,9 +272,9 @@ on_error:
 	return( 0 );
 }
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 /* The main program
  */
@@ -291,13 +291,13 @@ int main(
 	FVDE_TEST_UNREFERENCED_PARAMETER( argc )
 	FVDE_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	FVDE_TEST_RUN(
 	 "libfvde_volume_group_initialize",
 	 fvde_test_volume_group_initialize );
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 	FVDE_TEST_RUN(
 	 "libfvde_volume_group_free",

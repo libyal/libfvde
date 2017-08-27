@@ -420,17 +420,17 @@ int main(
 
 	/* TODO: add tests for libfvde_encryption_context_plist_copy_data */
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	/* TODO: add tests for libfvde_encryption_context_plist_set_data */
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 	/* TODO: add tests for libfvde_encryption_context_plist_read_file_io_handle */
 
 	/* TODO: add tests for libfvde_encryption_context_plist_decrypt */
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	/* TODO: add tests for libfvde_encryption_context_plist_read_xml */
 
@@ -440,7 +440,7 @@ int main(
 
 	/* TODO: add tests for libfvde_encryption_context_plist_get_kek_wrapped_volume_key */
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
