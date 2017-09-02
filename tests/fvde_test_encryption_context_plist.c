@@ -62,13 +62,13 @@ int fvde_test_encryption_context_plist_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "encryption_context_plist",
-         encryption_context_plist );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encryption_context_plist",
+	 encryption_context_plist );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfvde_encryption_context_plist_free(
 	          &encryption_context_plist,
@@ -79,13 +79,13 @@ int fvde_test_encryption_context_plist_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "encryption_context_plist",
-         encryption_context_plist );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encryption_context_plist",
+	 encryption_context_plist );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -98,9 +98,9 @@ int fvde_test_encryption_context_plist_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -116,9 +116,9 @@ int fvde_test_encryption_context_plist_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -250,9 +250,9 @@ int fvde_test_encryption_context_plist_free(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );

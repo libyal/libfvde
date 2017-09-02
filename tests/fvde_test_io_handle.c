@@ -64,13 +64,13 @@ int fvde_test_io_handle_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "io_handle",
-         io_handle );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfvde_io_handle_free(
 	          &io_handle,
@@ -81,13 +81,13 @@ int fvde_test_io_handle_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "io_handle",
-         io_handle );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int fvde_test_io_handle_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int fvde_test_io_handle_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -252,9 +252,9 @@ int fvde_test_io_handle_free(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -291,13 +291,13 @@ int fvde_test_io_handle_clear(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "io_handle",
-         io_handle );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test regular cases
 	 */
@@ -310,9 +310,9 @@ int fvde_test_io_handle_clear(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -325,9 +325,9 @@ int fvde_test_io_handle_clear(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -343,13 +343,13 @@ int fvde_test_io_handle_clear(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "io_handle",
-         io_handle );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 

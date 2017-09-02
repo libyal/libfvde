@@ -64,13 +64,13 @@ int fvde_test_encrypted_metadata_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "encrypted_metadata",
-         encrypted_metadata );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfvde_encrypted_metadata_free(
 	          &encrypted_metadata,
@@ -81,13 +81,13 @@ int fvde_test_encrypted_metadata_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "encrypted_metadata",
-         encrypted_metadata );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int fvde_test_encrypted_metadata_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int fvde_test_encrypted_metadata_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -252,9 +252,9 @@ int fvde_test_encrypted_metadata_free(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -291,13 +291,13 @@ int fvde_test_encrypted_metadata_read(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "encrypted_metadata",
-         encrypted_metadata );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -314,9 +314,9 @@ int fvde_test_encrypted_metadata_read(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -334,9 +334,9 @@ int fvde_test_encrypted_metadata_read(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -352,13 +352,13 @@ int fvde_test_encrypted_metadata_read(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "encrypted_metadata",
-         encrypted_metadata );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 

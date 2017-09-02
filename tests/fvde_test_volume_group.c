@@ -64,13 +64,13 @@ int fvde_test_volume_group_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "volume_group",
-         volume_group );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "volume_group",
+	 volume_group );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfvde_internal_volume_group_free(
 	          (libfvde_internal_volume_group_t **) &volume_group,
@@ -81,13 +81,13 @@ int fvde_test_volume_group_initialize(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "volume_group",
-         volume_group );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "volume_group",
+	 volume_group );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int fvde_test_volume_group_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int fvde_test_volume_group_initialize(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -254,9 +254,9 @@ int fvde_test_volume_group_free(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );

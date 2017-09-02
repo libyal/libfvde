@@ -57,9 +57,9 @@ int fvde_test_sector_data_free(
 	 result,
 	 -1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
