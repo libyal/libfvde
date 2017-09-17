@@ -1,3 +1,7 @@
+dnl Checks for required headers and functions
+dnl
+dnl Version: 20170917
+
 dnl Function to detect if libfvde dependencies are available
 AC_DEFUN([AX_LIBFVDE_CHECK_LOCAL],
   [dnl Check for internationalization functions in libfvde/libfvde_i18n.c
@@ -37,6 +41,17 @@ AC_DEFUN([AX_FVDETOOLS_CHECK_LOCAL],
    [AC_MSG_FAILURE(
      [Missing function: close],
      [1])
+  ])
+
+  dnl Headers included in fvdetools/fvdemount.c
+  AC_CHECK_HEADERS([errno.h])
+
+  AC_HEADER_TIME
+
+  dnl Functions included in fvdetools/fvdemount.c
+  AS_IF(
+    [test "x$ac_cv_enable_winapi" = xno],
+    [AC_CHECK_FUNCS([getegid geteuid time])
   ])
 
   dnl Check if tools should be build as static executables
