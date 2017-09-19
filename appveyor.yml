@@ -38,14 +38,15 @@ environment:
 
 install:
 - cmd: git clone https://github.com/libyal/vstools.git ..\vstools
-- ps: .\syncwinflexbison.ps1
-- ps: Invoke-WebRequest http://www.cygwin.com/setup-x86.exe -OutFile ..\setup-x86.exe
-- cmd: ..\setup-x86.exe -qnNdO -R C:\cygwin -s http://cygwin.mirror.constant.com -l C:\cygwin\var\cache\setup -P bison -P flex
 - cmd: git clone https://github.com/joachimmetz/dokan.git ..\dokan
+- ps: .\syncwinflexbison.ps1
+- ps: .\synczlib.ps1
 - cmd: if [%TARGET%]==[cygwin] (
-    C:\cygwin\setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com -P python2-devel -P python3-devel )
+    C:\cygwin\setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com -P bison -P flex -P zlib-devel -P openssl-devel -P python2-devel -P python3-devel )
 - cmd: if [%TARGET%]==[cygwin64] (
-    C:\cygwin64\setup-x86_64.exe -qgnNdO -l C:\cygwin64\var\cache\setup -R c:\cygwin64 -s http://cygwin.mirror.constant.com -P python2-devel -P python3-devel )
+    C:\cygwin64\setup-x86_64.exe -qgnNdO -l C:\cygwin64\var\cache\setup -R c:\cygwin64 -s http://cygwin.mirror.constant.com -P bison -P flex -P zlib-devel -P openssl-devel -P python2-devel -P python3-devel )
+- cmd: if [%TARGET%]==[mingw] (
+    C:\MinGW\bin\mingw-get install -P libz-dev )
 
 build_script:
 - ps: .\synclibs.ps1

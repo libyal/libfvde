@@ -32,8 +32,10 @@ AC_DEFUN([AX_LIBFVDE_CHECK_LOCAL],
 
 dnl Function to detect if fvdetools dependencies are available
 AC_DEFUN([AX_FVDETOOLS_CHECK_LOCAL],
-  [AC_CHECK_HEADERS([signal.h sys/signal.h unistd.h])
+  [dnl Headers included in fvdetools
+  AC_CHECK_HEADERS([signal.h sys/signal.h unistd.h])
 
+  dnl Functions included in fvdetools
   AC_CHECK_FUNCS([close getopt setvbuf])
 
   AS_IF(
