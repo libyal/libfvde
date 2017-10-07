@@ -61,6 +61,7 @@ Additional information about partially compressed volumes.
 | 0.0.11 | J.B. Metz | June 2016 | Additional information about Core Storage XML plist.
 | 0.0.12 | J.B. Metz | July 2016 | Additional information about metadata.
 | 0.0.13 | J.B. Metz | May 2017 | Additional information about metadata.
+| 0.0.14 | J.B. Metz | October 2017 | Additional information about metadata.
 |===
 
 :numbered:
@@ -1936,7 +1937,7 @@ The array entry is 24 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 8 | | [yellow-background]*Unknown*
 | 8 | 8 | | [yellow-background]*Unknown*
-| 16 | 8 | | [yellow-background]*Unknown*
+| 16 | 8 | | [yellow-background]*Unknown (block group)*
 |===
 
 ....

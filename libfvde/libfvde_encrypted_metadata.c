@@ -675,14 +675,23 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
-				byte_stream_copy_to_uint64_little_endian(
+				byte_stream_copy_to_uint32_little_endian(
 				 &( block_data[ block_data_offset ] ),
-				 value_64bit );
+				 value_32bit );
 				libcnotify_printf(
-				 "%s: entry2: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+				 "%s: entry2: %03d unknown1\t\t: 0x%08" PRIx32 "\n",
 				 function,
 				 entry_index,
-				 value_64bit );
+				 value_32bit );
+
+				byte_stream_copy_to_uint32_little_endian(
+				 &( block_data[ block_data_offset + 4 ] ),
+				 value_32bit );
+				libcnotify_printf(
+				 "%s: entry2: %03d unknown2\t\t: 0x%08" PRIx32 "\n",
+				 function,
+				 entry_index,
+				 value_32bit );
 			}
 #endif
 			block_data_offset += 8;
