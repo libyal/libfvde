@@ -43,6 +43,7 @@
 #include "libfvde_libfvalue.h"
 #include "libfvde_metadata_block.h"
 #include "libfvde_password.h"
+#include "libfvde_segment_descriptor.h"
 
 #include "fvde_metadata.h"
 
@@ -140,7 +141,21 @@ int libfvde_encrypted_metadata_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create date array descriptors array.",
+		 "%s: unable to create data area descriptors array.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcdata_array_initialize(
+	     &( ( *encrypted_metadata )->segment_descriptors ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create segment descriptors array.",
 		 function );
 
 		goto on_error;
@@ -150,6 +165,13 @@ int libfvde_encrypted_metadata_initialize(
 on_error:
 	if( *encrypted_metadata != NULL )
 	{
+		if( ( *encrypted_metadata )->data_area_descriptors != NULL )
+		{
+			libcdata_array_free(
+			 &( ( *encrypted_metadata )->data_area_descriptors ),
+			 NULL,
+			 NULL );
+		}
 		if( ( *encrypted_metadata )->encryption_context_plist != NULL )
 		{
 			libfvde_encryption_context_plist_free(
@@ -199,6 +221,23 @@ int libfvde_encrypted_metadata_free(
 			 function );
 
 			result = -1;
+		}
+		if( ( *encrypted_metadata )->segment_descriptors != NULL )
+		{
+			if( libcdata_array_free(
+			     &( ( *encrypted_metadata )->segment_descriptors ),
+			     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_segment_descriptor_free,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free segment descriptors array.",
+				 function );
+
+				result = -1;
+			}
 		}
 		if( ( *encrypted_metadata )->data_area_descriptors != NULL )
 		{
@@ -3096,16 +3135,18 @@ int libfvde_encrypted_metadata_read_type_0x0305(
      uint64_t block_group,
      libcerror_error_t **error )
 {
-	static char *function      = "libfvde_encrypted_metadata_read_type_0x0305";
-	size_t block_data_offset   = 0;
-	uint32_t block_number      = 0;
-	uint32_t entry_index       = 0;
-	uint32_t number_of_blocks  = 0;
-	uint32_t number_of_entries = 0;
+	libfvde_segment_descriptor_t *segment_descriptor = NULL;
+	static char *function                            = "libfvde_encrypted_metadata_read_type_0x0305";
+	size_t block_data_offset                         = 0;
+	uint32_t block_number                            = 0xffffffffUL;
+	uint32_t entry_index                             = 0;
+	uint32_t number_of_blocks                        = 0;
+	uint32_t number_of_entries                       = 0;
+	int segment_descriptor_index                     = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint64_t value_64bit       = 0;
-	uint32_t value_32bit       = 0;
+	uint64_t value_64bit                             = 0;
+	uint32_t value_32bit                             = 0;
 #endif
 
 	if( encrypted_metadata == NULL )
@@ -3178,6 +3219,25 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 #endif
 	block_data_offset = 8;
 
+	/* Use the most recent 0x0305 metadata block
+	 */
+	if( encrypted_metadata->block_group_0x0305 < block_group )
+	{
+		if( libcdata_array_empty(
+		     encrypted_metadata->segment_descriptors,
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_segment_descriptor_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to empty segment descriptors array.",
+			 function );
+
+			goto on_error;
+		}
+	}
 	if( number_of_entries > 0 )
 	{
 		if( ( (size_t) number_of_entries * 40 ) > ( block_data_size - block_data_offset ) )
@@ -3189,19 +3249,36 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 			 "%s: invalid number of entries value out of bounds.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		for( entry_index = 0;
 		     entry_index < number_of_entries;
 		     entry_index++ )
 		{
+			if( libfvde_segment_descriptor_initialize(
+			     &segment_descriptor,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+				 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+				 "%s: unable to create segment descriptor.",
+				 function );
+
+				goto on_error;
+			}
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 segment_descriptor->logical_block_number );
+
 			byte_stream_copy_to_uint32_little_endian(
 			 &( block_data[ block_data_offset + 16 ] ),
-			 number_of_blocks );
+			 segment_descriptor->number_of_blocks );
 
 			byte_stream_copy_to_uint32_little_endian(
 			 &( block_data[ block_data_offset + 32 ] ),
-			 block_number );
+			 segment_descriptor->physical_block_number );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
@@ -3215,20 +3292,17 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 				 entry_index,
 				 value_64bit );
 
-				byte_stream_copy_to_uint64_little_endian(
-				 &( block_data[ block_data_offset + 8 ] ),
-				 value_64bit );
 				libcnotify_printf(
 				 "%s: entry: %03d logical block number\t: %" PRIi64 "\n",
 				 function,
 				 entry_index,
-				 value_64bit );
+				 segment_descriptor->logical_block_number );
 
 				libcnotify_printf(
 				 "%s: entry: %03d number of blocks\t: %" PRIu32 "\n",
 				 function,
 				 entry_index,
-				 number_of_blocks );
+				 segment_descriptor->number_of_blocks );
 
 				byte_stream_copy_to_uint32_little_endian(
 				 &( block_data[ block_data_offset + 20 ] ),
@@ -3261,7 +3335,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 				 "%s: entry: %03d physical block number\t: %" PRIu32 "\n",
 				 function,
 				 entry_index,
-				 block_number );
+				 segment_descriptor->physical_block_number );
 
 				byte_stream_copy_to_uint32_little_endian(
 				 &( block_data[ block_data_offset + 36 ] ),
@@ -3277,9 +3351,48 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 			}
 #endif
 			block_data_offset += 40;
+
+			if( encrypted_metadata->block_group_0x0305 < block_group )
+			{
+				if( libcdata_array_append_entry(
+				     encrypted_metadata->segment_descriptors,
+				     &segment_descriptor_index,
+				     (intptr_t *) segment_descriptor,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+					 "%s: unable to append segment descriptor to array.",
+					 function );
+
+					goto on_error;
+				}
+				if( block_number > segment_descriptor->physical_block_number )
+				{
+					block_number = segment_descriptor->physical_block_number;
+				}
+				number_of_blocks  += segment_descriptor->number_of_blocks;
+				segment_descriptor = NULL;
+			}
+			else
+			{
+				if( libfvde_segment_descriptor_free(
+				     &segment_descriptor,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free segment descriptor.",
+					 function );
+
+					goto on_error;
+				}
+			}
 		}
-		/* Use the most recent 0x0305 metadata block
-		 */
 		if( encrypted_metadata->block_group_0x0305 < block_group )
 		{
 			if( number_of_entries == 1 )
@@ -3292,6 +3405,15 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 		}
 	}
 	return( 1 );
+
+on_error:
+	if( segment_descriptor != NULL )
+	{
+		libfvde_segment_descriptor_free(
+		 &segment_descriptor,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Reads the encrypted metadata block type 0x00404

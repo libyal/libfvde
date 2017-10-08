@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "data_area_descriptor encrypted_metadata encryption_context_plist error io_handle keyring metadata metadata_block notify sector_data volume volume_group"
+$LibraryTests = "data_area_descriptor encrypted_metadata encryption_context_plist error io_handle keyring metadata metadata_block notify sector_data volume segment_descriptor volume_group"
 $LibraryTestsWithInput = "support volume"
 
 Function GetTestToolDirectory

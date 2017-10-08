@@ -104,6 +104,10 @@ struct libfvde_encrypted_metadata
 	 */
 	uint64_t logical_volume_number_of_blocks_0x0505;
 
+	/* The segment descriptors
+	 */
+	libcdata_array_t *segment_descriptors;
+
 	/* The data area descriptors
 	 */
 	libcdata_array_t *data_area_descriptors;

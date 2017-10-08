@@ -362,7 +362,7 @@ int libfvde_metadata_block_read_data(
 		if( metadata_block->is_lvf_wiped == 0 )
 		{
 			libcnotify_printf(
-			 "%s: checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: checksum\t\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 stored_checksum );
 
@@ -374,11 +374,11 @@ int libfvde_metadata_block_read_data(
 		else
 		{
 			libcnotify_printf(
-			 "%s: signature\t\t\t\t\t: LVFwiped\n",
+			 "%s: signature\t\t\t\t: LVFwiped\n",
 			 function );
 		}
 		libcnotify_printf(
-		 "%s: version\t\t\t\t\t: %" PRIu16 "\n",
+		 "%s: version\t\t\t\t: %" PRIu16 "\n",
 		 function,
 		 version );
 
@@ -401,12 +401,12 @@ int libfvde_metadata_block_read_data(
 		 ( (fvde_metadata_block_header_t *) block_data )->unknown3,
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown3\t\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: unknown3\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 value_64bit );
 
 		libcnotify_printf(
-		 "%s: number\t\t\t\t\t: %" PRIu64 "\n",
+		 "%s: number\t\t\t\t: %" PRIu64 "\n",
 		 function,
 		 metadata_block->number );
 
@@ -414,7 +414,7 @@ int libfvde_metadata_block_read_data(
 		 ( (fvde_metadata_block_header_t *) block_data )->unknown5,
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown5\t\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: unknown5\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 value_64bit );
 
@@ -427,7 +427,7 @@ int libfvde_metadata_block_read_data(
 		 ( (fvde_metadata_block_header_t *) block_data )->unknown6,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown6\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown6\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -435,7 +435,7 @@ int libfvde_metadata_block_read_data(
 		 ( (fvde_metadata_block_header_t *) block_data )->unknown7,
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown7\t\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: unknown7\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 value_64bit );
 

@@ -135,6 +135,7 @@ stamp-h[1-9]
 /tests/fvde_test_metadata_block
 /tests/fvde_test_notify
 /tests/fvde_test_sector_data
+/tests/fvde_test_segment_descriptor
 /tests/fvde_test_support
 /tests/fvde_test_volume
 /tests/fvde_test_volume_group

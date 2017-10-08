@@ -61,6 +61,7 @@ libfvde_la_SOURCES = \
 	libfvde_notify.c libfvde_notify.h \
 	libfvde_password.c libfvde_password.h \
 	libfvde_sector_data.c libfvde_sector_data.h \
+	libfvde_segment_descriptor.c libfvde_segment_descriptor.h \
 	libfvde_support.c libfvde_support.h \
 	libfvde_types.h \
 	libfvde_unused.h \

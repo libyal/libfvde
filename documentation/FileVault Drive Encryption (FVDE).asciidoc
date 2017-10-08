@@ -2670,6 +2670,10 @@ Metadata block data type 0x0405
 * Use the entry where data type is 0x09 or 0x0a and unknown2 is not set
 * Use the last block
 
+=== Determining the logical volume size and offset
+
+Metadata block data type 0x0505, if present, contains the base offset?
+
 === Block type 0x0011
 ....
 checksum                                   : 0x1eef1926
