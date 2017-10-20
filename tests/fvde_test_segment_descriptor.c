@@ -1,5 +1,5 @@
 /*
- * Library data_area_descriptor type test program
+ * Library segment_descriptor type test program
  *
  * Copyright (C) 2011-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,30 +33,30 @@
 #include "fvde_test_memory.h"
 #include "fvde_test_unused.h"
 
-#include "../libfvde/libfvde_data_area_descriptor.h"
+#include "../libfvde/libfvde_segment_descriptor.h"
 
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
-/* Tests the libfvde_data_area_descriptor_initialize function
+/* Tests the libfvde_segment_descriptor_initialize function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_data_area_descriptor_initialize(
+int fvde_test_segment_descriptor_initialize(
      void )
 {
-	libcerror_error_t *error                             = NULL;
-	libfvde_data_area_descriptor_t *data_area_descriptor = NULL;
-	int result                                           = 0;
+	libcerror_error_t *error                         = NULL;
+	libfvde_segment_descriptor_t *segment_descriptor = NULL;
+	int result                                       = 0;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
-	int number_of_malloc_fail_tests                      = 1;
-	int number_of_memset_fail_tests                      = 1;
-	int test_number                                      = 0;
+	int number_of_malloc_fail_tests                  = 1;
+	int number_of_memset_fail_tests                  = 1;
+	int test_number                                  = 0;
 #endif
 
 	/* Test regular cases
 	 */
-	result = libfvde_data_area_descriptor_initialize(
-	          &data_area_descriptor,
+	result = libfvde_segment_descriptor_initialize(
+	          &segment_descriptor,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -65,15 +65,15 @@ int fvde_test_data_area_descriptor_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "data_area_descriptor",
-	 data_area_descriptor );
+	 "segment_descriptor",
+	 segment_descriptor );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	result = libfvde_data_area_descriptor_free(
-	          &data_area_descriptor,
+	result = libfvde_segment_descriptor_free(
+	          &segment_descriptor,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -82,8 +82,8 @@ int fvde_test_data_area_descriptor_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
-	 "data_area_descriptor",
-	 data_area_descriptor );
+	 "segment_descriptor",
+	 segment_descriptor );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -91,7 +91,7 @@ int fvde_test_data_area_descriptor_initialize(
 
 	/* Test error cases
 	 */
-	result = libfvde_data_area_descriptor_initialize(
+	result = libfvde_segment_descriptor_initialize(
 	          NULL,
 	          &error );
 
@@ -107,10 +107,10 @@ int fvde_test_data_area_descriptor_initialize(
 	libcerror_error_free(
 	 &error );
 
-	data_area_descriptor = (libfvde_data_area_descriptor_t *) 0x12345678UL;
+	segment_descriptor = (libfvde_segment_descriptor_t *) 0x12345678UL;
 
-	result = libfvde_data_area_descriptor_initialize(
-	          &data_area_descriptor,
+	result = libfvde_segment_descriptor_initialize(
+	          &segment_descriptor,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -125,7 +125,7 @@ int fvde_test_data_area_descriptor_initialize(
 	libcerror_error_free(
 	 &error );
 
-	data_area_descriptor = NULL;
+	segment_descriptor = NULL;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
 
@@ -133,22 +133,22 @@ int fvde_test_data_area_descriptor_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_data_area_descriptor_initialize with malloc failing
+		/* Test libfvde_segment_descriptor_initialize with malloc failing
 		 */
 		fvde_test_malloc_attempts_before_fail = test_number;
 
-		result = libfvde_data_area_descriptor_initialize(
-		          &data_area_descriptor,
+		result = libfvde_segment_descriptor_initialize(
+		          &segment_descriptor,
 		          &error );
 
 		if( fvde_test_malloc_attempts_before_fail != -1 )
 		{
 			fvde_test_malloc_attempts_before_fail = -1;
 
-			if( data_area_descriptor != NULL )
+			if( segment_descriptor != NULL )
 			{
-				libfvde_data_area_descriptor_free(
-				 &data_area_descriptor,
+				libfvde_segment_descriptor_free(
+				 &segment_descriptor,
 				 NULL );
 			}
 		}
@@ -160,8 +160,8 @@ int fvde_test_data_area_descriptor_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "data_area_descriptor",
-			 data_area_descriptor );
+			 "segment_descriptor",
+			 segment_descriptor );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -175,22 +175,22 @@ int fvde_test_data_area_descriptor_initialize(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_data_area_descriptor_initialize with memset failing
+		/* Test libfvde_segment_descriptor_initialize with memset failing
 		 */
 		fvde_test_memset_attempts_before_fail = test_number;
 
-		result = libfvde_data_area_descriptor_initialize(
-		          &data_area_descriptor,
+		result = libfvde_segment_descriptor_initialize(
+		          &segment_descriptor,
 		          &error );
 
 		if( fvde_test_memset_attempts_before_fail != -1 )
 		{
 			fvde_test_memset_attempts_before_fail = -1;
 
-			if( data_area_descriptor != NULL )
+			if( segment_descriptor != NULL )
 			{
-				libfvde_data_area_descriptor_free(
-				 &data_area_descriptor,
+				libfvde_segment_descriptor_free(
+				 &segment_descriptor,
 				 NULL );
 			}
 		}
@@ -202,8 +202,8 @@ int fvde_test_data_area_descriptor_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "data_area_descriptor",
-			 data_area_descriptor );
+			 "segment_descriptor",
+			 segment_descriptor );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -223,19 +223,19 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
-	if( data_area_descriptor != NULL )
+	if( segment_descriptor != NULL )
 	{
-		libfvde_data_area_descriptor_free(
-		 &data_area_descriptor,
+		libfvde_segment_descriptor_free(
+		 &segment_descriptor,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the libfvde_data_area_descriptor_free function
+/* Tests the libfvde_segment_descriptor_free function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_data_area_descriptor_free(
+int fvde_test_segment_descriptor_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -243,7 +243,7 @@ int fvde_test_data_area_descriptor_free(
 
 	/* Test error cases
 	 */
-	result = libfvde_data_area_descriptor_free(
+	result = libfvde_segment_descriptor_free(
 	          NULL,
 	          &error );
 
@@ -287,15 +287,23 @@ int main(
 	FVDE_TEST_UNREFERENCED_PARAMETER( argc )
 	FVDE_TEST_UNREFERENCED_PARAMETER( argv )
 
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( FVDE_TEST_SEGMENT_DESCRIPTOR_VERBOSE )
+	libfvde_notify_set_verbose(
+	 1 );
+	libfvde_notify_set_stream(
+	 stderr,
+	 NULL );
+#endif
+
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	FVDE_TEST_RUN(
-	 "libfvde_data_area_descriptor_initialize",
-	 fvde_test_data_area_descriptor_initialize );
+	 "libfvde_segment_descriptor_initialize",
+	 fvde_test_segment_descriptor_initialize );
 
 	FVDE_TEST_RUN(
-	 "libfvde_data_area_descriptor_free",
-	 fvde_test_data_area_descriptor_free );
+	 "libfvde_segment_descriptor_free",
+	 fvde_test_segment_descriptor_free );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 

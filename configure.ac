@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20171008],
+ [20171020],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -99,7 +99,7 @@ AX_LIBFPLIST_CHECK_ENABLE
 dnl Check if libfvalue or required headers and functions are available
 AX_LIBFVALUE_CHECK_ENABLE
 
-dnl Check for zlib compression support
+dnl Check if zlib or required headers and functions are available
 AX_ZLIB_CHECK_ENABLE
 AX_ZLIB_CHECK_UNCOMPRESS
 

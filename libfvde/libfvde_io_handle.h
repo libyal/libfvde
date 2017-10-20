@@ -36,6 +36,8 @@
 extern "C" {
 #endif
 
+extern const char *libfvde_core_storage_signature;
+
 typedef struct libfvde_io_handle libfvde_io_handle_t;
 
 struct libfvde_io_handle

@@ -10,6 +10,7 @@ MSVSCPP_FILES = \
 	fvde_test_metadata_block/fvde_test_metadata_block.vcproj \
 	fvde_test_notify/fvde_test_notify.vcproj \
 	fvde_test_sector_data/fvde_test_sector_data.vcproj \
+	fvde_test_segment_descriptor/fvde_test_segment_descriptor.vcproj \
 	fvde_test_support/fvde_test_support.vcproj \
 	fvde_test_volume/fvde_test_volume.vcproj \
 	fvde_test_volume_group/fvde_test_volume_group.vcproj \

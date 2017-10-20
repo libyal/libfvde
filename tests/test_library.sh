@@ -9,7 +9,7 @@ EXIT_IGNORE=77;
 
 LIBRARY_TESTS="data_area_descriptor encrypted_metadata encryption_context_plist error io_handle keyring metadata metadata_block notify sector_data segment_descriptor volume volume_group";
 LIBRARY_TESTS_WITH_INPUT="support volume";
-OPTION_SETS="";
+OPTION_SETS="password";
 
 INPUT_GLOB="*";
 

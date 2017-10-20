@@ -34,6 +34,7 @@ TESTS = \
 
 check_SCRIPTS = \
 	pyfvde_test_support.py \
+	pyfvde_test_volume.py \
 	test_fvdeinfo.sh \
 	test_library.sh \
 	test_python_module.sh \
@@ -53,6 +54,7 @@ check_PROGRAMS = \
 	fvde_test_metadata_block \
 	fvde_test_notify \
 	fvde_test_sector_data \
+	fvde_test_segment_descriptor \
 	fvde_test_support \
 	fvde_test_volume \
 	fvde_test_volume_group
@@ -171,7 +173,20 @@ fvde_test_sector_data_LDADD = \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 
+fvde_test_segment_descriptor_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_segment_descriptor.c \
+	fvde_test_unused.h
+
+fvde_test_segment_descriptor_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
 fvde_test_support_SOURCES = \
+	fvde_test_functions.c fvde_test_functions.h \
 	fvde_test_getopt.c fvde_test_getopt.h \
 	fvde_test_libbfio.h \
 	fvde_test_libcerror.h \
@@ -180,7 +195,8 @@ fvde_test_support_SOURCES = \
 	fvde_test_libfvde.h \
 	fvde_test_libuna.h \
 	fvde_test_macros.h \
-	fvde_test_support.c
+	fvde_test_support.c \
+	fvde_test_unused.h
 
 fvde_test_support_LDADD = \
 	@LIBBFIO_LIBADD@ \
@@ -195,7 +211,9 @@ fvde_test_support_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fvde_test_volume_SOURCES = \
+	fvde_test_functions.c fvde_test_functions.h \
 	fvde_test_getopt.c fvde_test_getopt.h \
+	fvde_test_libbfio.h \
 	fvde_test_libcerror.h \
 	fvde_test_libclocale.h \
 	fvde_test_libcnotify.h \
@@ -203,10 +221,15 @@ fvde_test_volume_SOURCES = \
 	fvde_test_libuna.h \
 	fvde_test_macros.h \
 	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h \
 	fvde_test_volume.c
 
 fvde_test_volume_LDADD = \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
