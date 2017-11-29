@@ -1,6 +1,6 @@
 # Script that synchronizes Windows versions of flex and bison.
 #
-# Version: 20170806
+# Version: 20171120
 
 Function DownloadFile($Url, $Destination)
 {
@@ -37,9 +37,9 @@ Function ExtractZip($Filename, $Destination)
 	}
 }
 
-$Filename = "${pwd}\win_flex_bison-2.5.10.zip"
-$Url = "http://downloads.sourceforge.net/project/winflexbison/win_flex_bison-2.5.10.zip"
-$ExtractedPath = "win_flex_bison-2.5.10"
+$Filename = "${pwd}\win_flex_bison-2.5.11.zip"
+$Url = "http://downloads.sourceforge.net/project/winflexbison/win_flex_bison-2.5.11.zip"
+$ExtractedPath = "win_flex_bison-2.5.11"
 $DestinationPath = "..\win_flex_bison"
 
 If (Test-Path ${Filename})
@@ -53,6 +53,8 @@ If (Test-Path ${ExtractedPath})
 	Remove-Item -Path ${ExtractedPath} -Force -Recurse
 }
 ExtractZip -Filename ${Filename} -Destination "${pwd}\${ExtractedPath}"
+
+Remove-Item -Path ${Filename} -Force
 
 If (Test-Path ${DestinationPath})
 {
