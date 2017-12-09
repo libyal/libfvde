@@ -88,6 +88,8 @@ extern "C" {
 
 #elif defined( WINAPI )
 #define memory_free( buffer ) \
+	( buffer == NULL ) ? \
+	TRUE : \
 	HeapFree( GetProcessHeap(), 0, (LPVOID) buffer )
 
 #elif defined( HAVE_FREE )
