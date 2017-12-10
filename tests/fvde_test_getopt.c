@@ -47,6 +47,10 @@ system_character_t *optarg = NULL;
  */
 system_integer_t optopt = 0;
 
+/* The current argument value, if it has multiple parameterless options.
+ */
+system_character_t *pending_argument = NULL;
+
 /* Get the program options
  * Function for platforms that do not have the getopt function
  * Returns the option character processed, or -1 on error,
@@ -62,25 +66,33 @@ system_integer_t fvde_test_getopt(
 	static char *function              = "fvde_test_getopt";
 	size_t options_string_length       = 0;
 
-	if( optind >= argument_count )
+	if( pending_argument != NULL )
+	{
+		argument_value = pending_argument;
+		pending_argument = NULL;
+	}
+	else if( optind >= argument_count )
 	{
 		return( (system_integer_t) -1 );
 	}
-	argument_value = argument_values[ optind ];
+	else
+	{
+		argument_value = argument_values[ optind ];
 
-	/* Check if the argument value is not an empty string
-	 */
-	if( *argument_value == 0 )
-	{
-		return( (system_integer_t) -1 );
+		/* Check if the argument value is not an empty string
+		 */
+		if( *argument_value == 0 )
+		{
+			return( (system_integer_t) -1 );
+		}
+		/* Check if the first character is a option marker '-'
+		 */
+		if( *argument_value != (system_character_t) '-' )
+		{
+			return( (system_integer_t) -1 );
+		}
+		argument_value++;
 	}
-	/* Check if the first character is a option marker '-'
-	 */
-	if( *argument_value != (system_character_t) '-' )
-	{
-		return( (system_integer_t) -1 );
-	}
-	argument_value++;
 
 	/* Check if long options are provided '--'
 	 */
@@ -132,6 +144,10 @@ system_integer_t fvde_test_getopt(
 		if( *argument_value == (system_character_t) '\0' )
 		{
 			optind++;
+		}
+		else
+		{
+			pending_argument = argument_value;
 		}
 	}
 	/* Check if the argument is right after the option flag with no space in between
