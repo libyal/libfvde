@@ -8,8 +8,8 @@
 .Nm fvdemount
 .Op Fl e Ar filename
 .Op Fl o Ar offset
-.Op Fl p Ar password
-.Op Fl r Ar password
+.Op Fl p Ar password | Fl P
+.Op Fl r Ar password | Fl R
 .Op Fl X Ar extended_options
 .Op Fl hvV
 .Va Ar source
@@ -37,8 +37,12 @@ shows this help
 specify the volume offset
 .It Fl p Ar password
 specify the password
+.It Fl P
+prompt for the password
 .It Fl r Ar password
 specify the recovery password
+.It Fl R
+prompt for the recovery password
 .It Fl v
 verbose output to stderr
 .It Fl V

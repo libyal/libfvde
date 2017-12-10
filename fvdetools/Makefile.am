@@ -27,6 +27,7 @@ bin_PROGRAMS = \
 
 fvdeinfo_SOURCES = \
 	fvdeinfo.c \
+	fvdetools_askpassword.c fvdetools_askpassword.h \
 	fvdetools_getopt.c fvdetools_getopt.h \
 	fvdetools_i18n.h \
 	fvdetools_libbfio.h \
@@ -58,6 +59,7 @@ fvdeinfo_LDADD = \
 
 fvdemount_SOURCES = \
 	fvdemount.c \
+	fvdetools_askpassword.c fvdetools_askpassword.h \
 	fvdetools_getopt.c fvdetools_getopt.h \
 	fvdetools_i18n.h \
 	fvdetools_libbfio.h \

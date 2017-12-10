@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #endif
 
+#include "fvdetools_askpassword.h"
 #include "fvdetools_getopt.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
@@ -60,8 +61,8 @@ void usage_fprint(
 	                 " Drive Encrypted (FVDE) volume\n\n" );
 
 	fprintf( stream, "Usage: fvdeinfo [ -e filename ] [ -k keys ] [ -o offset ]\n"
-	                 "                [ -p password ] [ -r password ] [ -hvV ]\n"
-	                 "                source\n\n" );
+	                 "                [ -p password | -P ] [ -r password | -R ] \n"
+	                 "                [ -hvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file or device\n\n" );
 
@@ -70,7 +71,9 @@ void usage_fprint(
 	fprintf( stream, "\t-k:     the volume master key formatted in base16\n" );
 	fprintf( stream, "\t-o:     specify the volume offset\n" );
 	fprintf( stream, "\t-p:     specify the password\n" );
+	fprintf( stream, "\t-P:     prompt for the password\n" );
 	fprintf( stream, "\t-r:     specify the recovery password\n" );
+	fprintf( stream, "\t-R:     prompt for the recovery password\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
 	fprintf( stream, "\t-V:     print version\n" );
 }
@@ -128,6 +131,8 @@ int main( int argc, char * const argv[] )
 #endif
 {
 	libfvde_error_t *error                                   = NULL;
+	int option_ask_password                                  = 0;
+	int option_ask_recovery_password                         = 0;
 	system_character_t *option_encrypted_root_plist_filename = NULL;
 	system_character_t *option_keys                          = NULL;
 	system_character_t *option_password                      = NULL;
@@ -172,7 +177,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = fvdetools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "e:hk:o:p:r:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "e:hk:o:p:Pr:RvV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -214,8 +219,18 @@ int main( int argc, char * const argv[] )
 
 				break;
 
+			case (system_integer_t) 'P':
+				option_ask_password = 1;
+
+				break;
+
 			case (system_integer_t) 'r':
 				option_recovery_password = optarg;
+
+				break;
+
+			case (system_integer_t) 'R':
+				option_ask_recovery_password = 1;
 
 				break;
 
@@ -276,6 +291,21 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 	}
+	if( option_ask_password )
+	{
+		if( option_password != NULL )
+		{
+			fprintf(
+			 stderr,
+			 "The -p and -P options are mutually exclusive.\n" );
+			option_ask_password = 0;
+			goto on_error;
+		}
+		if( !fvdetools_ask_password( &option_password, "Password:" ) )
+		{
+			goto on_error;
+		}
+	}
 	if( option_password != NULL )
 	{
 		if( info_handle_set_password(
@@ -287,6 +317,21 @@ int main( int argc, char * const argv[] )
 			 stderr,
 			 "Unable to set password.\n" );
 
+			goto on_error;
+		}
+	}
+	if( option_ask_recovery_password )
+	{
+		if( option_recovery_password != NULL )
+		{
+			fprintf(
+			 stderr,
+			 "The -r and -R options are mutually exclusive.\n" );
+			option_ask_recovery_password = 0;
+			goto on_error;
+		}
+		if( !fvdetools_ask_password( &option_recovery_password, "Recovery password:" ) )
+		{
 			goto on_error;
 		}
 	}
@@ -387,6 +432,16 @@ int main( int argc, char * const argv[] )
 	return( EXIT_SUCCESS );
 
 on_error:
+	if( option_ask_password )
+	{
+		fvdetools_free_password(
+		 option_password );
+	}
+	if( option_ask_recovery_password )
+	{
+		fvdetools_free_password(
+		 option_recovery_password );
+	}
 	if( error != NULL )
 	{
 		libcnotify_print_error_backtrace(
