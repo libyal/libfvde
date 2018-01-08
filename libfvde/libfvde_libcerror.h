@@ -1,7 +1,7 @@
 /*
  * The internal libcerror header
  *
- * Copyright (C) 2011-2017, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
