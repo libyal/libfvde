@@ -1131,13 +1131,13 @@ int libfvde_volume_close(
 	}
 	internal_volume = (libfvde_internal_volume_t *) volume;
 
-	if( internal_volume->io_handle == NULL )
+	if( internal_volume->file_io_handle == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
+		 "%s: invalid volume - missing file IO handle.",
 		 function );
 
 		return( -1 );

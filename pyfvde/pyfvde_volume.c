@@ -42,13 +42,15 @@
 #include "pyfvde_volume.h"
 
 #if !defined( LIBFVDE_HAVE_BFIO )
+
 LIBFVDE_EXTERN \
 int libfvde_volume_open_file_io_handle(
      libfvde_volume_t *volume,
      libbfio_handle_t *file_io_handle,
      int access_flags,
      libfvde_error_t **error );
-#endif
+
+#endif /* !defined( LIBFVDE_HAVE_BFIO ) */
 
 PyMethodDef pyfvde_volume_object_methods[] = {
 
@@ -791,6 +793,16 @@ PyObject *pyfvde_volume_open_file_object(
 		 mode );
 
 		return( NULL );
+	}
+	if( pyfvde_volume->file_io_handle != NULL )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: invalid volume - file IO handle already set.",
+		 function );
+
+		goto on_error;
 	}
 	if( pyfvde_file_object_initialize(
 	     &( pyfvde_volume->file_io_handle ),
