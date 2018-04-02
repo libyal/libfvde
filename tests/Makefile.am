@@ -153,13 +153,15 @@ fvde_test_metadata_block_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fvde_test_notify_SOURCES = \
+	fvde_test_libcerror.h \
 	fvde_test_libfvde.h \
 	fvde_test_macros.h \
 	fvde_test_notify.c \
 	fvde_test_unused.h
 
 fvde_test_notify_LDADD = \
-	../libfvde/libfvde.la
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
 
 fvde_test_sector_data_SOURCES = \
 	fvde_test_libcerror.h \
@@ -195,6 +197,7 @@ fvde_test_support_SOURCES = \
 	fvde_test_libfvde.h \
 	fvde_test_libuna.h \
 	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
 	fvde_test_support.c \
 	fvde_test_unused.h
 

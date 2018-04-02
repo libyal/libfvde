@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "fvde_test_libbfio.h"
 #include "fvde_test_libcerror.h"
 
 #if defined( __cplusplus )
@@ -51,6 +52,16 @@ int fvde_test_system_string_copy_from_64_bit_in_decimal(
      const system_character_t *string,
      size_t string_size,
      uint64_t *value_64bit,
+     libcerror_error_t **error );
+
+int fvde_test_open_file_io_handle(
+     libbfio_handle_t **file_io_handle,
+     uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
+
+int fvde_test_close_file_io_handle(
+     libbfio_handle_t **file_io_handle,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

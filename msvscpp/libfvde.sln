@@ -63,6 +63,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fvde_test_notify", "fvde_test_notify\fvde_test_notify.vcproj", "{213AF83E-AB96-43A1-8784-D28A29162CA5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{542112B5-4CA5-4EA9-B28D-0BACEFE72AC9} = {542112B5-4CA5-4EA9-B28D-0BACEFE72AC9}
+		{BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C} = {BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fvde_test_sector_data", "fvde_test_sector_data\fvde_test_sector_data.vcproj", "{C3F8CF07-A6E9-4ACC-B05B-745F8316D686}"
