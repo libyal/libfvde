@@ -1,6 +1,6 @@
 dnl Functions for libfuse
 dnl
-dnl Version: 20180108
+dnl Version: 20180403
 
 dnl Function to detect if libfuse is available
 dnl ac_libfuse_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -150,7 +150,7 @@ AC_DEFUN([AX_LIBFUSE_CHECK_LIB],
     ])
   ])
 
-dnl  Function to detect how to enable libfuse
+dnl Function to detect how to enable libfuse
 AC_DEFUN([AX_LIBFUSE_CHECK_ENABLE],
   [AX_COMMON_ARG_WITH(
     [libfuse],

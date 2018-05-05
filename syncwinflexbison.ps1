@@ -1,9 +1,11 @@
 # Script that synchronizes Windows versions of flex and bison.
 #
-# Version: 20180121
+# Version: 20180405
 
 Function DownloadFile($Url, $Destination)
 {
+	[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+
 	$Client = New-Object Net.WebClient
 	${Client}.DownloadFile(${Url}, ${Destination})
 }
@@ -38,9 +40,9 @@ Function ExtractZip($Filename, $Destination)
 }
 
 $Version = "2.5.14"
-$Filename = "${pwd}\win_flex_bison-${Version}.zip"
-$Url = "http://downloads.sourceforge.net/project/winflexbison/win_flex_bison-${Version}.zip"
-$ExtractedPath = "win_flex_bison-${Version}"
+$Filename = "${pwd}\winflexbison-${Version}.zip"
+$Url = "https://github.com/lexxmark/winflexbison/archive/v${Version}.zip"
+$ExtractedPath = "winflexbison-${Version}"
 $DestinationPath = "..\win_flex_bison"
 
 If (Test-Path ${Filename})
@@ -53,7 +55,7 @@ If (Test-Path ${ExtractedPath})
 {
 	Remove-Item -Path ${ExtractedPath} -Force -Recurse
 }
-ExtractZip -Filename ${Filename} -Destination "${pwd}\${ExtractedPath}"
+ExtractZip -Filename ${Filename} -Destination "${pwd}"
 
 Remove-Item -Path ${Filename} -Force
 
@@ -61,5 +63,7 @@ If (Test-Path ${DestinationPath})
 {
 	Remove-Item -Path ${DestinationPath} -Force -Recurse
 }
-Move-Item ${ExtractedPath} ${DestinationPath}
+Move-Item "${ExtractedPath}\bin\Release" ${DestinationPath}
+
+Remove-Item -Path ${ExtractedPath} -Force -Recurse
 
