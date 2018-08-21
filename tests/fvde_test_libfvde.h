@@ -1,5 +1,5 @@
 /*
- * The internal libfvde header
+ * The libfvde header wrapper
  *
  * Copyright (C) 2011-2018, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -23,13 +23,6 @@
 #define _FVDE_TEST_LIBFVDE_H
 
 #include <common.h>
-
-/* If Cygwin libtool DLL support is enabled and do not want to create static
- * executables set LIBFVDE_DLL_IMPORT before including libfvde.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
-#define LIBFVDE_DLL_IMPORT
-#endif
 
 #include <libfvde.h>
 

@@ -24,14 +24,7 @@
 
 #include <common.h>
 
-/* If Cygwin libtool DLL support is enabled set LIBFVDE_DLL_IMPORT
- * before including libfvde.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBFVDE_DLL_IMPORT
-#endif
-
 #include <libfvde.h>
 
-#endif
+#endif /* !defined( _PYFVDE_LIBFVDE_H ) */
 

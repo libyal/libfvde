@@ -1,5 +1,5 @@
 /*
- * The internal libcnotify header
+ * The libcnotify header wrapper
  *
  * Copyright (C) 2011-2018, Joachim Metz <joachim.metz@gmail.com>
  *

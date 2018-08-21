@@ -29,17 +29,13 @@
  */
 #if !defined( HAVE_LOCAL_LIBFVDE )
 
-/* If libtool DLL support is enabled set LIBFVDE_DLL_EXPORT
- * before including libfvde/extern.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBFVDE_DLL_EXPORT
-#endif
-
 #include <libfvde/extern.h>
 
+#define LIBFVDE_EXTERN_VARIABLE	LIBFVDE_EXTERN
+
 #else
-#define LIBFVDE_EXTERN	/* extern */
+#define LIBFVDE_EXTERN		/* extern */
+#define LIBFVDE_EXTERN_VARIABLE	extern
 
 #endif /* !defined( HAVE_LOCAL_LIBFVDE ) */
 

@@ -113,6 +113,8 @@ int fvde_test_io_handle_initialize(
 	          &io_handle,
 	          &error );
 
+	io_handle = NULL;
+
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -124,8 +126,6 @@ int fvde_test_io_handle_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	io_handle = NULL;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
 
@@ -331,6 +331,36 @@ int fvde_test_io_handle_clear(
 
 	libcerror_error_free(
 	 &error );
+
+#if defined( HAVE_FVDE_TEST_MEMORY )
+
+	/* Test libfvde_io_handle_clear with memset failing
+	 */
+	fvde_test_memset_attempts_before_fail = 0;
+
+	result = libfvde_io_handle_clear(
+	          io_handle,
+	          &error );
+
+	if( fvde_test_memset_attempts_before_fail != -1 )
+	{
+		fvde_test_memset_attempts_before_fail = -1;
+	}
+	else
+	{
+		FVDE_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_FVDE_TEST_MEMORY ) */
 
 	/* Clean up
 	 */

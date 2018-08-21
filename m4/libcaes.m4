@@ -1,6 +1,6 @@
-dnl Functions for libcaes
+dnl Checks for libcaes required headers and functions
 dnl
-dnl Version: 20170904
+dnl Version: 20180812
 
 dnl Function to detect if libcaes is available
 dnl ac_libcaes_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -173,9 +173,6 @@ AC_DEFUN([AX_LIBCAES_CHECK_ENABLE],
     [search for libcaes in includedir and libdir or in the specified DIR, or no if to use local version],
     [auto-detect],
     [DIR])
-
-  dnl Check for Windows crypto API support
-  AX_WINCRYPT_CHECK_LIB
 
   dnl Check for a shared library version
   AX_LIBCAES_CHECK_LIB
