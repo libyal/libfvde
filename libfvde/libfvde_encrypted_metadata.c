@@ -51,8 +51,8 @@
  */
 const uint32_t additional_offset_encrypted_volume_start = 80;
 
-const uint8_t libfvde_encrypted_metadata_wrapped_kek_initialization_vector[ 8 ] = \
-	{ 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6 };
+const uint8_t libfvde_encrypted_metadata_wrapped_kek_initialization_vector[ 8 ] = {
+	0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6, 0xa6 };
 
 /* Creates encrypted metadata
  * Make sure the value encrypted_metadata is referencing, is set to NULL

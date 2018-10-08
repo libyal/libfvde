@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20180821],
+ [20181008],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -176,9 +176,6 @@ AS_IF(
  [AC_SUBST(
   [libfvde_spec_requires],
   [Requires:])
- AC_SUBST(
-  [libfvde_spec_build_requires],
-  [BuildRequires:])
  ])
 
 AS_IF(

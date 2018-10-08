@@ -7,7 +7,7 @@ Analysis of FVDE
 :numbered!:
 [abstract]
 == Summary
-The FileVault Drive Encryption (FVDE) format is used by Apple Mac OS X to
+The FileVault Drive Encryption (FVDE) format is used by Apple Mac OS to
 encrypt volumes. This specification is based on available documentation and was
 enhanced by reverse engineering of the file format.
 
@@ -21,7 +21,7 @@ forensic tooling to be able to process this volume type.
 |===
 | Author(s): | Omar Choudary <choudary.omar@gmail.com> +
 Joachim Metz <joachim.metz@gmail.com>
-| Abstract: | This document contains information about the Mac OS X FileVault Drive Encryption (FVDE) format
+| Abstract: | This document contains information about the Mac OS FileVault Drive Encryption (FVDE) format
 | Classification: | Public
 | Keywords: | FileVault 2, FileVault Drive Encryption, FVDE, Core Storage, CoreStorage
 |===
@@ -29,7 +29,7 @@ Joachim Metz <joachim.metz@gmail.com>
 [preface]
 == License
 ....
-Copyright (C) 2011-2017, Omar Choudary <choudary.omar@gmail.com>,
+Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>,
                          Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
@@ -62,12 +62,13 @@ Additional information about partially compressed volumes.
 | 0.0.12 | J.B. Metz | July 2016 | Additional information about metadata.
 | 0.0.13 | J.B. Metz | May 2017 | Additional information about metadata.
 | 0.0.14 | J.B. Metz | October 2017 | Additional information about metadata.
+| 0.0.15 | J.B. Metz | September 2018 | Textual updates.
 |===
 
 :numbered:
 == Overview
 FileVault Drive Encryption (FVDE) is the volume encryption used by Apple
-Mac OS X as of Lion (10.7).
+Mac OS as of Lion (10.7).
 
 This document was initially written for FVDE, but the structures mentioned are
 also used by the Core Storage (CS) volume management system. CS supports both
@@ -100,6 +101,7 @@ The following version of programs were used to test the information within this 
 * Mac OS X Yosemite (10.10)
 * [yellow-background]*TODO: Mac OS X El Capitan (10.11)*
 * [yellow-background]*TODO: macOS Sierra (10.12)*
+* [yellow-background]*TODO: macOS High Sierra (10.13)*
 
 == Keys
 To encrypt storage media CoreStorage uses different kind of keys.
@@ -156,10 +158,10 @@ KEKWrappedVolumeKeyStruct containing the volume master key.
 
 The number of iterations is stored in the PassphraseWrappedKEKStruct but seems
 to be consistently 41000 for EncryptedRoot.plist.wipekey protected volumes on
-Mac OS X Lion.
+Mac OS X Lion (10.7).
 
 === User key
-For every user on an Mac OS X system with FVDE, FileVault provides for a user
+For every user on an Mac OS system with FVDE, FileVault provides for a user
 password to unlock the encrypted data. The user password is used to determine a
 user key.
 
@@ -1460,7 +1462,7 @@ Dict containing:
 |===
 | Key | Description
 | PassphraseWrappedKEKStruct | Base 64 encoded binary data that contains the password wrapped key encrypted key +
-See section: [yellow-background]*TODO*
+See section: <<passphrase_wrapped_kek_struct,PassphraseWrappedKEKStruct>>
 | WrapVersion |
 | UserType |
 | UserIdent |
@@ -2514,7 +2516,8 @@ Pending => the volume is to be encrypted.
 Consists of a string containing an UUID +
 [yellow-background]*Corresponds to an entry in WrappedVolumeKeys?*
 | PassphraseHint | The passphrase hint
-| PassphraseWrappedKEKStruct |
+| PassphraseWrappedKEKStruct | +
+See section: <<passphrase_wrapped_kek_struct,PassphraseWrappedKEKStruct>>
 | UserFullName | User full name
 | UserIcon | User icon +
 Contains base64 encoded data +
@@ -2529,7 +2532,7 @@ Seen: 0x10010005, 0x10060002
 Seen 1
 |===
 
-==== PassphraseWrappedKEKStruct
+==== [[passphrase_wrapped_kek_struct]]PassphraseWrappedKEKStruct
 The PassphraseWrappedKEKStruct is 284 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2579,7 +2582,8 @@ Seen 1
 |===
 
 ==== [[key_encrypted_key_wrapped_volume_key]]Key encrypted key wrapped volume key
-The Key encrypted key wrapped volume key (KEKWrappedVolumeKeyStruct) is 256
+
+The key encrypted key wrapped volume key (KEKWrappedVolumeKeyStruct) is 256
 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2955,7 +2959,18 @@ https://bitbucket.org/garethl/xtssharp/src/0e6a81a823e9/docs/1619-2007-NIST-Subm
 |===
 | Title: | PKCS #5: Password-Based Cryptography Specification
 | Version: | 2.0
-| URL: | http://tools.ietf.org/html/rfc2898
+| Author(s): | B. Kaliski
+| Date: | September 2000
+| URL: | https://www.ietf.org/rfc/rfc2898.txt
+|===
+
+`[RFC3394]`
+[cols="1,5",options="header"]
+|===
+| Title: | Advanced Encryption Standard (AES) Key Wrap Algorithm
+| Author(s): | J. Schaad, R. Housley
+| Date: | September 2002
+| URL: | https://www.ietf.org/rfc/rfc3394.txt
 |===
 
 `[WIKIPEDIA-PBKDF2]`
