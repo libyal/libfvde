@@ -1,7 +1,7 @@
 /*
  * Mount handle
  *
- * Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -29,8 +29,11 @@
 
 #include "fvdetools_libbfio.h"
 #include "fvdetools_libcerror.h"
+#include "fvdetools_libcpath.h"
 #include "fvdetools_libfvde.h"
 #include "fvdetools_libuna.h"
+#include "mount_file_entry.h"
+#include "mount_file_system.h"
 #include "mount_handle.h"
 
 #if !defined( LIBFVDE_HAVE_BFIO )
@@ -47,15 +50,15 @@ int libfvde_volume_open_file_io_handle(
 /* Copies a string of a decimal value to a 64-bit value
  * Returns 1 if successful or -1 on error
  */
-int fvdetools_system_string_copy_from_64_bit_in_decimal(
+int mount_handle_system_string_copy_from_64_bit_in_decimal(
      const system_character_t *string,
      size_t string_size,
      uint64_t *value_64bit,
      libcerror_error_t **error )
 {
-	static char *function              = "fvdetools_system_string_copy_from_64_bit_in_decimal";
-	size_t string_index                = 0;
+	static char *function              = "mount_handle_system_string_copy_from_64_bit_in_decimal";
 	system_character_t character_value = 0;
+	size_t string_index                = 0;
 	uint8_t maximum_string_index       = 20;
 	int8_t sign                        = 1;
 
@@ -212,35 +215,17 @@ int mount_handle_initialize(
 		 "%s: unable to clear mount handle.",
 		 function );
 
-		memory_free(
-		 *mount_handle );
-
-		*mount_handle = NULL;
-
-		return( -1 );
-	}
-	if( libbfio_file_range_initialize(
-	     &( ( *mount_handle )->input_file_io_handle ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize input file IO handle.",
-		 function );
-
 		goto on_error;
 	}
-	if( libfvde_volume_initialize(
-	     &( ( *mount_handle )->input_volume ),
+	if( mount_file_system_initialize(
+	     &( ( *mount_handle )->file_system ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize input volume.",
+		 "%s: unable to initialize file system.",
 		 function );
 
 		goto on_error;
@@ -250,12 +235,6 @@ int mount_handle_initialize(
 on_error:
 	if( *mount_handle != NULL )
 	{
-		if( ( *mount_handle )->input_file_io_handle != NULL )
-		{
-			libbfio_handle_free(
-			 &( ( *mount_handle )->input_file_io_handle ),
-			 NULL );
-		}
 		memory_free(
 		 *mount_handle );
 
@@ -287,28 +266,29 @@ int mount_handle_free(
 	}
 	if( *mount_handle != NULL )
 	{
-		if( libfvde_volume_free(
-		     &( ( *mount_handle )->input_volume ),
+		if( mount_file_system_free(
+		     &( ( *mount_handle )->file_system ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free input volume.",
+			 "%s: unable to free file system.",
 			 function );
 
 			result = -1;
 		}
-		if( libbfio_handle_free(
-		     &( ( *mount_handle )->input_file_io_handle ),
-		     error ) != 1 )
+		if( memory_set(
+		     ( *mount_handle )->key_data,
+		     0,
+		     16 ) == NULL )
 		{
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free input file IO handle.",
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear key data.",
 			 function );
 
 			result = -1;
@@ -341,23 +321,55 @@ int mount_handle_signal_abort(
 
 		return( -1 );
 	}
-	if( mount_handle->input_volume != NULL )
+	if( mount_file_system_signal_abort(
+	     mount_handle->file_system,
+	     error ) != 1 )
 	{
-		if( libfvde_volume_signal_abort(
-		     mount_handle->input_volume,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to signal input volume to abort.",
-			 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to signal file system to abort.",
+		 function );
 
-			return( -1 );
-		}
+		return( -1 );
 	}
-	mount_handle->abort = 1;
+	return( 1 );
+}
+
+/* Sets the encrypted root plist file path
+ * Returns 1 if successful or -1 on error
+ */
+int mount_handle_set_encrypted_root_plist(
+     mount_handle_t *mount_handle,
+     const system_character_t *string,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_handle_set_encrypted_root_plist";
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid string.",
+		 function );
+
+		return( -1 );
+	}
+	mount_handle->encrypted_root_plist_path = string;
 
 	return( 1 );
 }
@@ -370,12 +382,9 @@ int mount_handle_set_keys(
      const system_character_t *string,
      libcerror_error_t **error )
 {
-	uint8_t key_data[ 16 ];
-
-	static char *function         = "mount_handle_set_keys";
-	size_t volume_master_key_size = 0;
-	size_t string_length          = 0;
-	uint32_t base16_variant       = 0;
+	static char *function   = "mount_handle_set_keys";
+	size_t string_length    = 0;
+	uint32_t base16_variant = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -392,7 +401,7 @@ int mount_handle_set_keys(
 	                 string );
 
 	if( memory_set(
-	     key_data,
+	     mount_handle->key_data,
 	     0,
 	     16 ) == NULL )
 	{
@@ -431,7 +440,7 @@ int mount_handle_set_keys(
 	if( libuna_base16_stream_copy_to_byte_stream(
 	     (uint8_t *) string,
 	     string_length,
-	     key_data,
+	     mount_handle->key_data,
 	     16,
 	     base16_variant,
 	     0,
@@ -446,46 +455,65 @@ int mount_handle_set_keys(
 
 		goto on_error;
 	}
-	volume_master_key_size = 16;
+	mount_handle->key_size = 16;
 
-	if( libfvde_volume_set_keys(
-	     mount_handle->input_volume,
-	     key_data,
-	     volume_master_key_size,
+	return( 1 );
+
+on_error:
+	memory_set(
+	 mount_handle->key_data,
+	 0,
+	 16 );
+
+	mount_handle->key_size = 0;
+
+	return( -1 );
+}
+
+/* Sets the volume offset
+ * Returns 1 if successful or -1 on error
+ */
+int mount_handle_set_offset(
+     mount_handle_t *mount_handle,
+     const system_character_t *string,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_handle_set_offset";
+	size_t string_length  = 0;
+	uint64_t value_64bit  = 0;
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	string_length = system_string_length(
+	                 string );
+
+	if( mount_handle_system_string_copy_from_64_bit_in_decimal(
+	     string,
+	     string_length + 1,
+	     &value_64bit,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set keys.",
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy string to 64-bit decimal.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	if( memory_set(
-	     key_data,
-	     0,
-	     16 ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear key data.",
-		 function );
+	mount_handle->volume_offset = (off64_t) value_64bit;
 
-		goto on_error;
-	}
 	return( 1 );
-
-on_error:
-	memory_set(
-	 key_data,
-	 0,
-	 16 );
-
-	return( -1 );
 }
 
 /* Sets the password
@@ -524,29 +552,9 @@ int mount_handle_set_password(
 	string_length = system_string_length(
 	                 string );
 
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libfvde_volume_set_utf16_password(
-	     mount_handle->input_volume,
-	     (uint16_t *) string,
-	     string_length,
-	     error ) != 1 )
-#else
-	if( libfvde_volume_set_utf8_password(
-	     mount_handle->input_volume,
-	     (uint8_t *) string,
-	     string_length,
-	     error ) != 1 )
-#endif
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set password.",
-		 function );
+	mount_handle->password        = string;
+	mount_handle->password_length = string_length;
 
-		return( -1 );
-	}
 	return( 1 );
 }
 
@@ -586,25 +594,45 @@ int mount_handle_set_recovery_password(
 	string_length = system_string_length(
 	                 string );
 
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libfvde_volume_set_utf16_recovery_password(
-	     mount_handle->input_volume,
-	     (uint16_t *) string,
-	     string_length,
+	mount_handle->recovery_password        = string;
+	mount_handle->recovery_password_length = string_length;
+
+	return( 1 );
+}
+
+/* Sets the path prefix
+ * Returns 1 if successful or -1 on error
+ */
+int mount_handle_set_path_prefix(
+     mount_handle_t *mount_handle,
+     const system_character_t *path_prefix,
+     size_t path_prefix_size,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_handle_set_path_prefix";
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( mount_file_system_set_path_prefix(
+	     mount_handle->file_system,
+	     path_prefix,
+	     path_prefix_size,
 	     error ) != 1 )
-#else
-	if( libfvde_volume_set_utf8_recovery_password(
-	     mount_handle->input_volume,
-	     (uint8_t *) string,
-	     string_length,
-	     error ) != 1 )
-#endif
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set recovery password.",
+		 "%s: unable to set path prefix.",
 		 function );
 
 		return( -1 );
@@ -612,15 +640,19 @@ int mount_handle_set_recovery_password(
 	return( 1 );
 }
 
-/* Reads the encrypted root plist file
- * Returns 1 if successful or -1 on error
+/* Opens the mount handle
+ * Returns 1 if successful, 0 if not or -1 on error
  */
-int mount_handle_read_encrypted_root_plist(
+int mount_handle_open(
      mount_handle_t *mount_handle,
      const system_character_t *filename,
      libcerror_error_t **error )
 {
-	static char *function = "mount_handle_read_encrypted_root_plist";
+	libbfio_handle_t *file_io_handle = NULL;
+	libfvde_volume_t *fvde_volume    = NULL;
+	static char *function            = "mount_handle_open";
+	size_t filename_length           = 0;
+	int result                       = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -633,100 +665,13 @@ int mount_handle_read_encrypted_root_plist(
 
 		return( -1 );
 	}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libfvde_volume_read_encrypted_root_plist_wide(
-	     mount_handle->input_volume,
-	     filename,
-	     error ) != 1 )
-#else
-	if( libfvde_volume_read_encrypted_root_plist(
-	     mount_handle->input_volume,
-	     filename,
-	     error ) != 1 )
-#endif
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read encrypted root plist.",
-		 function );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
-/* Sets the volume offset
- * Returns 1 if successful or -1 on error
- */
-int mount_handle_set_volume_offset(
-     mount_handle_t *mount_handle,
-     const system_character_t *string,
-     libcerror_error_t **error )
-{
-	static char *function = "mount_handle_set_volume_offset";
-	size_t string_length  = 0;
-	uint64_t value_64bit  = 0;
-
-	if( mount_handle == NULL )
+	if( filename == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid mount handle.",
-		 function );
-
-		return( -1 );
-	}
-	string_length = system_string_length(
-	                 string );
-
-	if( fvdetools_system_string_copy_from_64_bit_in_decimal(
-	     string,
-	     string_length + 1,
-	     &value_64bit,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy string to 64-bit decimal.",
-		 function );
-
-		return( -1 );
-	}
-	mount_handle->volume_offset = (off64_t) value_64bit;
-
-	return( 1 );
-}
-
-/*
- * Opens the mount handle
- *
- * @param mount_handle the mount_handle pointer
- * @param filename the device or image filename
- * @param error the libcerror pointer
- * @return 1 if successful, 0 if the keys could not be read or -1 on error
- */
-int mount_handle_open_input(
-     mount_handle_t *mount_handle,
-     const system_character_t *filename,
-     libcerror_error_t **error )
-{
-	static char *function  = "mount_handle_open_input";
-	size_t filename_length = 0;
-	int result             = 0;
-
-	if( mount_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid mount handle.",
+		 "%s: invalid filename.",
 		 function );
 
 		return( -1 );
@@ -734,15 +679,28 @@ int mount_handle_open_input(
 	filename_length = system_string_length(
 	                   filename );
 
+	if( libbfio_file_range_initialize(
+	     &file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize file IO handle.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libbfio_file_range_set_name_wide(
-	     mount_handle->input_file_io_handle,
+	     file_io_handle,
 	     filename,
 	     filename_length,
 	     error ) != 1 )
 #else
 	if( libbfio_file_range_set_name(
-	     mount_handle->input_file_io_handle,
+	     file_io_handle,
 	     filename,
 	     filename_length,
 	     error ) != 1 )
@@ -752,13 +710,13 @@ int mount_handle_open_input(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open set file name.",
+		 "%s: unable to set file range name.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( libbfio_file_range_set(
-	     mount_handle->input_file_io_handle,
+	     file_io_handle,
 	     mount_handle->volume_offset,
 	     0,
 	     error ) != 1 )
@@ -767,14 +725,121 @@ int mount_handle_open_input(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open set volume offset.",
+		 "%s: unable to set file range offset.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	if( libfvde_volume_initialize(
+	     &fvde_volume,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize volume.",
+		 function );
+
+		goto on_error;
+	}
+	if( mount_handle->encrypted_root_plist_path != NULL )
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libfvde_volume_read_encrypted_root_plist_wide(
+		     fvde_volume,
+		     mount_handle->encrypted_root_plist_path,
+		     error ) != 1 )
+#else
+		if( libfvde_volume_read_encrypted_root_plist(
+		     fvde_volume,
+		     mount_handle->encrypted_root_plist_path,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read encrypted root plist.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( mount_handle->key_size > 0 )
+	{
+		if( libfvde_volume_set_keys(
+		     fvde_volume,
+		     mount_handle->key_data,
+		     mount_handle->key_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set keys.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( mount_handle->password != NULL )
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libfvde_volume_set_utf16_password(
+		     fvde_volume,
+		     (uint16_t *) mount_handle->password,
+		     mount_handle->password_length,
+		     error ) != 1 )
+#else
+		if( libfvde_volume_set_utf8_password(
+		     fvde_volume,
+		     (uint8_t *) mount_handle->password,
+		     mount_handle->password_length,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set password.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( mount_handle->recovery_password != NULL )
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libfvde_volume_set_utf16_recovery_password(
+		     fvde_volume,
+		     (uint16_t *) mount_handle->recovery_password,
+		     mount_handle->recovery_password_length,
+		     error ) != 1 )
+#else
+		if( libfvde_volume_set_utf8_recovery_password(
+		     fvde_volume,
+		     (uint8_t *) mount_handle->recovery_password,
+		     mount_handle->recovery_password_length,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set recovery password.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	result = libfvde_volume_open_file_io_handle(
-	          mount_handle->input_volume,
-	          mount_handle->input_file_io_handle,
+	          fvde_volume,
+	          file_io_handle,
 	          LIBFVDE_OPEN_READ,
 	          error );
 
@@ -784,22 +849,73 @@ int mount_handle_open_input(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open input volume.",
+		 "%s: unable to open volume.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	return( result );
+	result = libfvde_volume_is_locked(
+	          fvde_volume,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine if volume is locked.",
+		 function );
+
+		goto on_error;
+	}
+	mount_handle->is_locked = result;
+
+	if( mount_file_system_append_volume(
+	     mount_handle->file_system,
+	     fvde_volume,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+		 "%s: unable to append volume to file system.",
+		 function );
+
+		goto on_error;
+	}
+	mount_handle->file_io_handle = file_io_handle;
+
+	return( 1 );
+
+on_error:
+	if( fvde_volume != NULL )
+	{
+		libfvde_volume_free(
+		 &fvde_volume,
+		 NULL );
+	}
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Closes the mount handle
  * Returns the 0 if succesful or -1 on error
  */
-int mount_handle_close_input(
+int mount_handle_close(
      mount_handle_t *mount_handle,
      libcerror_error_t **error )
 {
-	static char *function = "mount_handle_close_input";
+	libfvde_volume_t *fvde_volume = NULL;
+	static char *function         = "mount_handle_close";
+	int number_of_volumes         = 0;
+	int volume_index              = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -812,142 +928,253 @@ int mount_handle_close_input(
 
 		return( -1 );
 	}
-	if( libfvde_volume_close(
-	     mount_handle->input_volume,
-	     error ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close input volume.",
-		 function );
-
-		return( -1 );
-	}
-	return( 0 );
-}
-
-/* Read a buffer from the input volume
- * Return the number of bytes read if successful or -1 on error
- */
-ssize_t mount_handle_read_buffer(
-         mount_handle_t *mount_handle,
-         uint8_t *buffer,
-         size_t size,
-         libcerror_error_t **error )
-{
-	static char *function = "mount_handle_read_buffer";
-	ssize_t read_count    = 0;
-
-	if( mount_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid mount handle.",
-		 function );
-
-		return( -1 );
-	}
-	read_count = libfvde_volume_read_buffer(
-	              mount_handle->input_volume,
-	              buffer,
-	              size,
-	              error );
-
-	if( read_count == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read buffer from input volume.",
-		 function );
-
-		return( -1 );
-	}
-	return( read_count );
-}
-
-/* Seeks a specific offset from the input volume
- * Return the offset if successful or -1 on error
- */
-off64_t mount_handle_seek_offset(
-         mount_handle_t *mount_handle,
-         off64_t offset,
-         int whence,
-         libcerror_error_t **error )
-{
-	static char *function = "mount_handle_seek_offset";
-
-	if( mount_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid mount handle.",
-		 function );
-
-		return( -1 );
-	}
-	offset = libfvde_volume_seek_offset(
-	          mount_handle->input_volume,
-	          offset,
-	          whence,
-	          error );
-
-	if( offset == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset in input volume.",
-		 function );
-
-		return( -1 );
-	}
-	return( offset );
-}
-
-/* Retrieves the size of the input volume
- * Returns 1 if successful or -1 on error
- */
-int mount_handle_get_size(
-     mount_handle_t *mount_handle,
-     size64_t *size,
-     libcerror_error_t **error )
-{
-	static char *function = "mount_handle_get_size";
-
-	if( mount_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid mount handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfvde_volume_get_logical_volume_size(
-	     mount_handle->input_volume,
-	     size,
+	if( mount_file_system_get_number_of_volumes(
+	     mount_handle->file_system,
+	     &number_of_volumes,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve logical volume size from input volume.",
+		 "%s: unable to retrieve number of volumes.",
+		 function );
+
+		goto on_error;
+	}
+	for( volume_index = number_of_volumes - 1;
+	     volume_index > 0;
+	     volume_index-- )
+	{
+		if( mount_file_system_get_volume_by_index(
+		     mount_handle->file_system,
+		     volume_index,
+		     &fvde_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve volume: %d.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+/* TODO remove fvde_volume from file system */
+
+		if( libfvde_volume_close(
+		     fvde_volume,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close volume: %d.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+		if( libfvde_volume_free(
+		     &fvde_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free volume: %d.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+	}
+	if( libbfio_handle_close(
+	     mount_handle->file_io_handle,
+	     error ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to close file IO handle.",
+		 function );
+
+		goto on_error;
+	}
+	if( libbfio_handle_free(
+	     &( mount_handle->file_io_handle ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free file IO handle.",
+		 function );
+
+		goto on_error;
+	}
+	return( 0 );
+
+on_error:
+	if( fvde_volume != NULL )
+	{
+		libfvde_volume_free(
+		 &fvde_volume,
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Determine if the mount handle is locked
+ * Returns 1 if locked, 0 if not or -1 on error
+ */
+int mount_handle_is_locked(
+     mount_handle_t *mount_handle,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_handle_is_locked";
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
 		 function );
 
 		return( -1 );
 	}
-	return( 1 );
+	return( mount_handle->is_locked );
+}
+
+/* Retrieves a file entry for a specific path
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int mount_handle_get_file_entry_by_path(
+     mount_handle_t *mount_handle,
+     const system_character_t *path,
+     mount_file_entry_t **file_entry,
+     libcerror_error_t **error )
+{
+	libfvde_volume_t *fvde_volume      = NULL;
+	const system_character_t *filename = NULL;
+	static char *function              = "mount_handle_get_file_entry_by_path";
+	size_t filename_length             = 0;
+	size_t path_index                  = 0;
+	size_t path_length                 = 0;
+	int result                         = 0;
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		return( -1 );
+	}
+	path_length = system_string_length(
+	               path );
+
+	if( path_length == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid path length value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( path_length >= 2 )
+	 && ( path[ path_length - 1 ] == LIBCPATH_SEPARATOR ) )
+	{
+		path_length--;
+	}
+	path_index = path_length;
+
+	while( path_index > 0 )
+	{
+		if( path[ path_index ] == LIBCPATH_SEPARATOR )
+		{
+			break;
+		}
+		path_index--;
+	}
+	/* Ignore the name of the root item
+	 */
+	if( path_length == 0 )
+	{
+		filename        = _SYSTEM_STRING( "" );
+		filename_length = 0;
+	}
+	else
+	{
+		filename        = &( path[ path_index + 1 ] );
+		filename_length = path_length - ( path_index + 1 );
+	}
+	result = mount_file_system_get_volume_by_path(
+	          mount_handle->file_system,
+	          path,
+	          path_length,
+	          &fvde_volume,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve volume.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( mount_file_entry_initialize(
+		     file_entry,
+		     mount_handle->file_system,
+		     filename,
+		     filename_length,
+		     fvde_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to initialize file entry.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( result );
+
+on_error:
+	return( -1 );
 }
 

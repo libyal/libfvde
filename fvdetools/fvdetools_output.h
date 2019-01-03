@@ -1,7 +1,7 @@
 /*
  * Common output functions for the fvdetools
  *
- * Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -20,8 +20,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _FVDEOUTPUT_H )
-#define _FVDEOUTPUT_H
+#if !defined( _FVDETOOLS_OUTPUT_H )
+#define _FVDETOOLS_OUTPUT_H
 
 #include <common.h>
 #include <file_stream.h>
@@ -35,14 +35,14 @@ int fvdetools_output_initialize(
      int stdio_mode,
      libcerror_error_t **error );
 
-void fvdeoutput_copyright_fprint(
+void fvdetools_output_copyright_fprint(
       FILE *stream );
 
-void fvdeoutput_version_fprint(
+void fvdetools_output_version_fprint(
       FILE *stream,
       const char *program );
 
-void fvdeoutput_version_detailed_fprint(
+void fvdetools_output_version_detailed_fprint(
       FILE *stream,
       const char *program );
 
@@ -50,5 +50,5 @@ void fvdeoutput_version_detailed_fprint(
 }
 #endif
 
-#endif /* !defined( _FVDEOUTPUT_H ) */
+#endif /* !defined( _FVDETOOLS_OUTPUT_H ) */
 

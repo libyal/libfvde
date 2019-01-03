@@ -61,15 +61,21 @@ fvdemount_SOURCES = \
 	fvdetools_getopt.c fvdetools_getopt.h \
 	fvdetools_i18n.h \
 	fvdetools_libbfio.h \
+	fvdetools_libcdata.h \
 	fvdetools_libcerror.h \
 	fvdetools_libclocale.h \
 	fvdetools_libcnotify.h \
+	fvdetools_libcpath.h \
 	fvdetools_libcsplit.h \
 	fvdetools_libfvde.h \
 	fvdetools_libuna.h \
 	fvdetools_output.c fvdetools_output.h \
 	fvdetools_signal.c fvdetools_signal.h \
 	fvdetools_unused.h \
+	mount_dokan.c mount_dokan.h \
+	mount_file_entry.c mount_file_entry.h \
+	mount_file_system.c mount_file_system.h \
+	mount_fuse.c mount_fuse.h \
 	mount_handle.c mount_handle.h
 
 fvdemount_LDADD = \

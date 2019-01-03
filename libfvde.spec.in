@@ -10,42 +10,44 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 @libfvde_spec_requires@ @ax_libbfio_spec_requires@ @ax_libcaes_spec_requires@ @ax_libcdata_spec_requires@ @ax_libcerror_spec_requires@ @ax_libcfile_spec_requires@ @ax_libclocale_spec_requires@ @ax_libcnotify_spec_requires@ @ax_libcpath_spec_requires@ @ax_libcrypto_spec_requires@ @ax_libcsplit_spec_requires@ @ax_libcthreads_spec_requires@ @ax_libfcache_spec_requires@ @ax_libfdata_spec_requires@ @ax_libfguid_spec_requires@ @ax_libfplist_spec_requires@ @ax_libfvalue_spec_requires@ @ax_libhmac_spec_requires@ @ax_libuna_spec_requires@ @ax_zlib_spec_requires@
 BuildRequires: gcc @ax_libbfio_spec_build_requires@ @ax_libcaes_spec_build_requires@ @ax_libcdata_spec_build_requires@ @ax_libcerror_spec_build_requires@ @ax_libcfile_spec_build_requires@ @ax_libclocale_spec_build_requires@ @ax_libcnotify_spec_build_requires@ @ax_libcpath_spec_build_requires@ @ax_libcrypto_spec_build_requires@ @ax_libcsplit_spec_build_requires@ @ax_libcthreads_spec_build_requires@ @ax_libfcache_spec_build_requires@ @ax_libfdata_spec_build_requires@ @ax_libfguid_spec_build_requires@ @ax_libfplist_spec_build_requires@ @ax_libfvalue_spec_build_requires@ @ax_libhmac_spec_build_requires@ @ax_libuna_spec_build_requires@ @ax_zlib_spec_build_requires@
 
-%description
+%description -n libfvde
 Library to access the FileVault Drive Encryption (FVDE) format
 
-%package devel
+%package -n libfvde-devel
 Summary: Header files and libraries for developing applications for libfvde
 Group: Development/Libraries
 Requires: libfvde = %{version}-%{release}
 
-%description devel
+%description -n libfvde-devel
 Header files and libraries for developing applications for libfvde.
 
-%package python
+%package -n libfvde-python2
+Obsoletes: libfvde-python < %{version}
+Provides: libfvde-python = %{version}
 Summary: Python 2 bindings for libfvde
 Group: System Environment/Libraries
-Requires: libfvde = %{version}-%{release} python
-BuildRequires: python-devel
+Requires: libfvde = %{version}-%{release} python2
+BuildRequires: python2-devel
 
-%description python
+%description -n libfvde-python2
 Python 2 bindings for libfvde
 
-%package python3
+%package -n libfvde-python3
 Summary: Python 3 bindings for libfvde
 Group: System Environment/Libraries
 Requires: libfvde = %{version}-%{release} python3
 BuildRequires: python3-devel
 
-%description python3
+%description -n libfvde-python3
 Python 3 bindings for libfvde
 
-%package tools
+%package -n libfvde-tools
 Summary: Several tools for reading FileVault Drive Encryption volumes
 Group: Applications/System
 Requires: libfvde = %{version}-%{release} @ax_libfuse_spec_requires@
 @libfvde_spec_tools_build_requires@ @ax_libfuse_spec_build_requires@
 
-%description tools
+%description -n libfvde-tools
 Several tools for reading FileVault Drive Encryption volumes
 
 %prep
@@ -66,16 +68,16 @@ rm -rf %{buildroot}
 
 %postun -p /sbin/ldconfig
 
-%files
+%files -n libfvde
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
 %attr(755,root,root) %{_libdir}/*.so.*
 
-%files devel
+%files -n libfvde-devel
 %defattr(644,root,root,755)
 %license COPYING
-%doc AUTHORS README ChangeLog
+%doc AUTHORS README
 %{_libdir}/*.a
 %{_libdir}/*.la
 %{_libdir}/*.so
@@ -83,7 +85,7 @@ rm -rf %{buildroot}
 %{_includedir}/*
 %{_mandir}/man3/*
 
-%files python
+%files -n libfvde-python2
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
@@ -91,7 +93,7 @@ rm -rf %{buildroot}
 %{_libdir}/python2*/site-packages/*.la
 %{_libdir}/python2*/site-packages/*.so
 
-%files python3
+%files -n libfvde-python3
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
@@ -99,7 +101,7 @@ rm -rf %{buildroot}
 %{_libdir}/python3*/site-packages/*.la
 %{_libdir}/python3*/site-packages/*.so
 
-%files tools
+%files -n libfvde-tools
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README

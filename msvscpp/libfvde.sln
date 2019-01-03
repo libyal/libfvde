@@ -176,7 +176,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fvdeinfo", "fvdeinfo\fvdein
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fvdemount", "fvdemount\fvdemount.vcproj", "{E00F6D5D-CA13-4CB1-AC3C-BA96B517FCFD}"
 	ProjectSection(ProjectDependencies) = postProject
-		{85D8065C-DDB9-4B21-8BA7-DDB90CAB4803} = {85D8065C-DDB9-4B21-8BA7-DDB90CAB4803}
 		{41CFAFBF-A1C8-4704-AFEF-31979E6452B9} = {41CFAFBF-A1C8-4704-AFEF-31979E6452B9}
 		{3FFB9C05-1145-45A7-9ADE-5C8D70FBD7CA} = {3FFB9C05-1145-45A7-9ADE-5C8D70FBD7CA}
 		{4C93BDD3-1804-47F3-9B34-F2DE0CAE1AE0} = {4C93BDD3-1804-47F3-9B34-F2DE0CAE1AE0}
@@ -296,8 +295,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcsplit", "libcsplit\libc
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcproj", "{296B7770-E247-4800-B938-AEC6CC82DE2F}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dokan", "dokan\dokan.vcproj", "{85D8065C-DDB9-4B21-8BA7-DDB90CAB4803}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -453,10 +450,6 @@ Global
 		{296B7770-E247-4800-B938-AEC6CC82DE2F}.Release|Win32.Build.0 = Release|Win32
 		{296B7770-E247-4800-B938-AEC6CC82DE2F}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
 		{296B7770-E247-4800-B938-AEC6CC82DE2F}.VSDebug|Win32.Build.0 = VSDebug|Win32
-		{85D8065C-DDB9-4B21-8BA7-DDB90CAB4803}.Release|Win32.ActiveCfg = Release|Win32
-		{85D8065C-DDB9-4B21-8BA7-DDB90CAB4803}.Release|Win32.Build.0 = Release|Win32
-		{85D8065C-DDB9-4B21-8BA7-DDB90CAB4803}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
-		{85D8065C-DDB9-4B21-8BA7-DDB90CAB4803}.VSDebug|Win32.Build.0 = VSDebug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

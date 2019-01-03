@@ -1,7 +1,7 @@
 /*
  * Common output functions for the fvdetools
  *
- * Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -94,7 +94,7 @@ int fvdetools_output_initialize(
 
 /* Prints the copyright information
  */
-void fvdeoutput_copyright_fprint(
+void fvdetools_output_copyright_fprint(
       FILE *stream )
 {
 	if( stream == NULL )
@@ -105,7 +105,7 @@ void fvdeoutput_copyright_fprint(
 	 */
 	fprintf(
 	 stream,
-	 _( "Copyright (C) 2011-2018, %s.\n" ),
+	 _( "Copyright (C) 2011-2019, %s.\n" ),
 	 _( "Omar Choudary, Joachim Metz" ) );
 
 	fprintf(
@@ -126,7 +126,7 @@ void fvdeoutput_copyright_fprint(
 
 /* Prints the version information
  */
-void fvdeoutput_version_fprint(
+void fvdetools_output_version_fprint(
       FILE *stream,
       const char *program )
 {
@@ -147,7 +147,7 @@ void fvdeoutput_version_fprint(
 
 /* Prints the detailed version information
  */
-void fvdeoutput_version_detailed_fprint(
+void fvdetools_output_version_detailed_fprint(
       FILE *stream,
       const char *program )
 {

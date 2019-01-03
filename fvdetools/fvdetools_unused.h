@@ -1,7 +1,7 @@
 /*
- * The unused definition
+ * Definitions to silence compiler warnings about unused function attributes/parameters.
  *
- * Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.

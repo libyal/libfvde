@@ -11,7 +11,7 @@ matrix:
     - TARGET="coverity"
     compiler: clang
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
     addons:
@@ -31,7 +31,7 @@ matrix:
     - TARGET="linux-clang"
     compiler: clang
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc"
@@ -42,7 +42,7 @@ matrix:
     - TARGET="linux-gcc"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc and wide character type (wchar_t) support"
@@ -53,7 +53,7 @@ matrix:
     - TARGET="linux-gcc-wide-character-type"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc without optimization"
@@ -65,7 +65,7 @@ matrix:
     - TARGET="linux-gcc-no-optimization"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc without OpenSSL"
@@ -76,7 +76,7 @@ matrix:
     - TARGET="linux-gcc-no-openssl"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc with OpenSSL EVP"
@@ -87,7 +87,7 @@ matrix:
     - TARGET="linux-gcc-openssl-evp"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc with OpenSSL non-EVP"
@@ -98,7 +98,7 @@ matrix:
     - TARGET="linux-gcc-openssl"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc and Python module"
@@ -109,7 +109,7 @@ matrix:
     - TARGET="linux-gcc-python"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc and Python 2 module"
@@ -121,7 +121,7 @@ matrix:
     - TARGET="linux-gcc-python2"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc and Python 3 module"
@@ -133,7 +133,7 @@ matrix:
     - TARGET="linux-gcc-python3"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc and Python 2 module (setup.py)"
@@ -141,7 +141,7 @@ matrix:
     - TARGET="linux-gcc-python-setup-py"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
     python: 2.7
@@ -150,7 +150,7 @@ matrix:
     - TARGET="linux-gcc-python-setup-py"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
     python: 3.4
@@ -162,7 +162,7 @@ matrix:
     - TARGET="linux-gcc-shared"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc, shared libraries and wide character type (wchar_t) support"
@@ -173,7 +173,7 @@ matrix:
     - TARGET="linux-gcc-shared-wide-character-type"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "Linux with gcc and static executables support"
@@ -184,7 +184,7 @@ matrix:
     - TARGET="linux-gcc-static-executables"
     compiler: gcc
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     group: edge
   - name: "MacOS with clang"
@@ -198,7 +198,6 @@ matrix:
     env:
     - CONFIGURE_OPTIONS=""
     - TARGET="macos-gcc"
-    compiler: clang
     compiler: gcc
     os: osx
     osx_image: xcode8.3
@@ -206,7 +205,6 @@ matrix:
     env:
     - CONFIGURE_OPTIONS="--enable-python"
     - TARGET="macos-gcc-python"
-    compiler: clang
     compiler: gcc
     os: osx
     osx_image: xcode8.3
@@ -215,14 +213,12 @@ matrix:
     - CONFIGURE_OPTIONS="--enable-python2"
     - PYTHON_VERSION=2
     - TARGET="macos-gcc-python2"
-    compiler: clang
     compiler: gcc
     os: osx
     osx_image: xcode8.3
   - name: "MacOS with gcc and Python 2 module (setup.py)"
     env:
     - TARGET="macos-gcc-python-setup-py"
-    compiler: clang
     compiler: gcc
     os: osx
     osx_image: xcode8.3
@@ -230,13 +226,12 @@ matrix:
     env:
     - CONFIGURE_OPTIONS="--disable-dependency-tracking --prefix=/usr/local --enable-python --with-pyprefix"
     - TARGET="macos-gcc-pkgbuild"
-    compiler: clang
     compiler: gcc
     os: osx
     osx_image: xcode8.3
 before_install:
   - if test ${TRAVIS_OS_NAME} = "linux"; then
-      sudo apt-get update && sudo apt-mark hold oracle-java8-installer oracle-java9-installer postgresql-9.2 postgresql-9.3 postgresql-9.4 postgresql-9.5 postgresql-9.6 postgresql-client postgresql-client-common postgresql-common postgresql-contrib-9.2 postgresql-contrib-9.3 postgresql-contrib-9.4 postgresql-contrib-9.5 postgresql-contrib-9.6 postgresql-doc && sudo apt-get --fix-missing -o Dpkg::Options::="--force-confold" upgrade -y --allow-unauthenticated && sudo apt-get install -y autopoint zlib1g-dev libssl-dev libfuse-dev;
+      sudo apt-get update && sudo apt-get --fix-missing -o Dpkg::Options::="--force-confold" upgrade -y --allow-unauthenticated && sudo apt-get install -y autopoint zlib1g-dev libssl-dev libfuse-dev;
     elif test ${TRAVIS_OS_NAME} = "osx"; then
       brew update && brew install gettext gnu-sed && brew link --force gettext;
     fi
@@ -259,7 +254,7 @@ script:
       export PATH=$(echo $PATH | tr ":" "\n" | sed '/\/opt\/python/d' | tr "\n" ":" | sed "s/::/:/g");
     fi
   - if test ${TARGET} = "linux-gcc-python-setup-py" || test ${TARGET} = "macos-gcc-python-setup-py"; then
-      python ./setup.py build;
+      ./configure ${CONFIGURE_OPTIONS} && make > /dev/null && python ./setup.py build;
     elif test ${TARGET} != "coverity"; then
       ./configure ${CONFIGURE_OPTIONS} && make > /dev/null && make check CHECK_WITH_STDERR=1;
       if test $? -ne 0 && test -f tests/test-suite.log; then

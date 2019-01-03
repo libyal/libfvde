@@ -1,7 +1,7 @@
 /*
- * The internal unused definition
+ * Definitions to silence compiler warnings about unused function attributes/parameters.
  *
- * Copyright (C) 2011-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYFVDE_INTERNAL_UNUSED_H )
-#define _PYFVDE_INTERNAL_UNUSED_H
+#if !defined( _PYFVDE_UNUSED_H )
+#define _PYFVDE_UNUSED_H
 
 #include <common.h>
 
@@ -40,5 +40,5 @@
 	/* parameter */
 #endif
 
-#endif /* !defined( _PYFVDE_INTERNAL_UNUSED_H ) */
+#endif /* !defined( _PYFVDE_UNUSED_H ) */
 

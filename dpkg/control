@@ -9,6 +9,8 @@ Homepage: https://github.com/libyal/libfvde
 Package: libfvde
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libfvde1
+Replaces: libfvde1
 Suggests: libfvde-dbg
 Description: Library to access the FileVault Drive Encryption (FVDE) format
  libfvde is a library to access the FileVault Drive Encryption (FVDE) format.
@@ -31,6 +33,8 @@ Package: libfvde-tools
 Section: utils
 Architecture: any
 Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libfvde-utils
+Replaces: libfvde-utils
 Description: Several tools for reading FileVault Drive Encryption volumes
  Several tools for reading FileVault Drive Encryption volumes.
 
@@ -45,6 +49,8 @@ Package: libfvde-python
 Section: python
 Architecture: any
 Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python-libfvde
+Replaces: python-libfvde
 Suggests: libfvde-python-dbg
 Description: Python 2 bindings for libfvde
  Python 2 bindings for libfvde.
@@ -60,6 +66,8 @@ Package: libfvde-python3
 Section: python
 Architecture: any
 Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python3-libfvde
+Replaces: python3-libfvde
 Suggests: libfvde-python3-dbg
 Description: Python 3 bindings for libfvde
  Python 3 bindings for libfvde.

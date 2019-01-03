@@ -1,5 +1,4 @@
 MSVSCPP_FILES = \
-	dokan/dokan.vcproj \
 	fvde_test_data_area_descriptor/fvde_test_data_area_descriptor.vcproj \
 	fvde_test_encrypted_metadata/fvde_test_encrypted_metadata.vcproj \
 	fvde_test_encryption_context_plist/fvde_test_encryption_context_plist.vcproj \

@@ -1,7 +1,7 @@
 /*
  * Decrypts a EncryptedRoot.plist.wipekey file
  *
- * Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -154,7 +154,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	fvdeoutput_version_fprint(
+	fvdetools_output_version_fprint(
 	 stdout,
 	 program );
 
@@ -189,7 +189,7 @@ int main( int argc, char * const argv[] )
 				break;
 
 			case (system_integer_t) 'V':
-				fvdeoutput_copyright_fprint(
+				fvdetools_output_copyright_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );

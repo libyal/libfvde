@@ -58,6 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="..\..\..\dokan\msvscpp\$(ConfigurationName)\dokan.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;"
 				SubSystem="1"
@@ -134,6 +135,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="..\..\..\dokan\msvscpp\$(ConfigurationName)\dokan.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;"
 				GenerateDebugInformation="true"
@@ -192,6 +194,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\fvdetools\mount_dokan.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\mount_file_entry.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\mount_file_system.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\mount_fuse.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\fvdetools\mount_handle.c"
 				>
 			</File>
@@ -214,6 +232,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\fvdetools\fvdetools_libcdata.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\fvdetools\fvdetools_libcerror.h"
 				>
 			</File>
@@ -223,6 +245,10 @@
 			</File>
 			<File
 				RelativePath="..\..\fvdetools\fvdetools_libcnotify.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\fvdetools_libcpath.h"
 				>
 			</File>
 			<File
@@ -247,6 +273,22 @@
 			</File>
 			<File
 				RelativePath="..\..\fvdetools\fvdetools_unused.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\mount_dokan.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\mount_file_entry.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\mount_file_system.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\mount_fuse.h"
 				>
 			</File>
 			<File
