@@ -13,6 +13,14 @@ BuildRequires: gcc @ax_libbfio_spec_build_requires@ @ax_libcaes_spec_build_requi
 %description -n libfvde
 Library to access the FileVault Drive Encryption (FVDE) format
 
+%package -n libfvde-static
+Summary: Library to access the FileVault Drive Encryption (FVDE) format
+Group: Development/Libraries
+Requires: libfvde = %{version}-%{release}
+
+%description -n libfvde-static
+Static library version of libfvde.
+
 %package -n libfvde-devel
 Summary: Header files and libraries for developing applications for libfvde
 Group: Development/Libraries
@@ -74,11 +82,16 @@ rm -rf %{buildroot}
 %doc AUTHORS README
 %attr(755,root,root) %{_libdir}/*.so.*
 
+%files -n libfvde-static
+%defattr(644,root,root,755)
+%license COPYING
+%doc AUTHORS README
+%attr(755,root,root) %{_libdir}/*.a
+
 %files -n libfvde-devel
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
-%{_libdir}/*.a
 %{_libdir}/*.la
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/libfvde.pc
