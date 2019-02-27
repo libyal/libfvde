@@ -4760,15 +4760,8 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 
 			if( result == -1 )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_GENERIC,
-				 "%s: unable to retrieve passphrase wrapped KEK: %d from encryption context plist.",
-				 function,
-				 passphrase_wrapped_kek_index );
-
-				goto on_error;
+				++passphrase_wrapped_kek_index;
+				continue;
 			}
 			else if( result == 0 )
 			{
