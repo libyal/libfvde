@@ -1,11 +1,9 @@
-.Dd August 27, 2017
+.Dd March 16, 2019
 .Dt libfvde 3
 .Os libfvde
 .Sh NAME
 .Nm libfvde.h
 .Nd Library to access the FileVault Drive Encryption (FVDE) format
-.Sh LIBRARY
-.Lb libfvde
 .Sh SYNOPSIS
 .In libfvde.h
 .Pp
@@ -15,27 +13,27 @@ Support functions
 .Ft int
 .Fn libfvde_get_access_flags_read "void"
 .Ft int
-.Fn libfvde_get_codepage "int *codepage, libfvde_error_t **error"
+.Fn libfvde_get_codepage "int *codepage" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_set_codepage "int codepage, libfvde_error_t **error"
+.Fn libfvde_set_codepage "int codepage" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_check_volume_signature "const char *filename, libfvde_error_t **error"
+.Fn libfvde_check_volume_signature "const char *filename" "libfvde_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
-.Fn libfvde_check_volume_signature_wide "const wchar_t *filename, libfvde_error_t **error"
+.Fn libfvde_check_volume_signature_wide "const wchar_t *filename" "libfvde_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libfvde_check_volume_signature_file_io_handle "libbfio_handle_t *file_io_handle, libfvde_error_t **error"
+.Fn libfvde_check_volume_signature_file_io_handle "libbfio_handle_t *file_io_handle" "libfvde_error_t **error"
 .Pp
 Notify functions
 .Ft void
 .Fn libfvde_notify_set_verbose "int verbose"
 .Ft int
-.Fn libfvde_notify_set_stream "FILE *stream, libfvde_error_t **error"
+.Fn libfvde_notify_set_stream "FILE *stream" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_notify_stream_open "const char *filename, libfvde_error_t **error"
+.Fn libfvde_notify_stream_open "const char *filename" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_notify_stream_close "libfvde_error_t **error"
 .Pp
@@ -43,91 +41,91 @@ Error functions
 .Ft void
 .Fn libfvde_error_free "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_error_fprint "libfvde_error_t *error, FILE *stream"
+.Fn libfvde_error_fprint "libfvde_error_t *error" "FILE *stream"
 .Ft int
-.Fn libfvde_error_sprint "libfvde_error_t *error, char *string, size_t size"
+.Fn libfvde_error_sprint "libfvde_error_t *error" "char *string" "size_t size"
 .Ft int
-.Fn libfvde_error_backtrace_fprint "libfvde_error_t *error, FILE *stream"
+.Fn libfvde_error_backtrace_fprint "libfvde_error_t *error" "FILE *stream"
 .Ft int
-.Fn libfvde_error_backtrace_sprint "libfvde_error_t *error, char *string, size_t size"
+.Fn libfvde_error_backtrace_sprint "libfvde_error_t *error" "char *string" "size_t size"
 .Pp
 Volume functions
 .Ft int
-.Fn libfvde_volume_initialize "libfvde_volume_t **volume, libfvde_error_t **error"
+.Fn libfvde_volume_initialize "libfvde_volume_t **volume" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_free "libfvde_volume_t **volume, libfvde_error_t **error"
+.Fn libfvde_volume_free "libfvde_volume_t **volume" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_signal_abort "libfvde_volume_t *volume, libfvde_error_t **error"
+.Fn libfvde_volume_signal_abort "libfvde_volume_t *volume" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_open "libfvde_volume_t *volume, const char *filename, int access_flags, libfvde_error_t **error"
+.Fn libfvde_volume_open "libfvde_volume_t *volume" "const char *filename" "int access_flags" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_close "libfvde_volume_t *volume, libfvde_error_t **error"
+.Fn libfvde_volume_close "libfvde_volume_t *volume" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_is_locked "libfvde_volume_t *volume, libfvde_error_t **error"
+.Fn libfvde_volume_is_locked "libfvde_volume_t *volume" "libfvde_error_t **error"
 .Ft ssize_t
-.Fn libfvde_volume_read_buffer "libfvde_volume_t *volume, void *buffer, size_t buffer_size, libfvde_error_t **error"
+.Fn libfvde_volume_read_buffer "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "libfvde_error_t **error"
 .Ft ssize_t
-.Fn libfvde_volume_read_buffer_at_offset "libfvde_volume_t *volume, void *buffer, size_t buffer_size, off64_t offset, libfvde_error_t **error"
+.Fn libfvde_volume_read_buffer_at_offset "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "off64_t offset" "libfvde_error_t **error"
 .Ft ssize_t
-.Fn libfvde_volume_write_buffer "libfvde_volume_t *volume, void *buffer, size_t buffer_size, libfvde_error_t **error"
+.Fn libfvde_volume_write_buffer "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "libfvde_error_t **error"
 .Ft ssize_t
-.Fn libfvde_volume_write_buffer_at_offset "libfvde_volume_t *volume, const void *buffer, size_t buffer_size, off64_t offset, libfvde_error_t **error"
+.Fn libfvde_volume_write_buffer_at_offset "libfvde_volume_t *volume" "const void *buffer" "size_t buffer_size" "off64_t offset" "libfvde_error_t **error"
 .Ft off64_t
-.Fn libfvde_volume_seek_offset "libfvde_volume_t *volume, off64_t offset, int whence, libfvde_error_t **error"
+.Fn libfvde_volume_seek_offset "libfvde_volume_t *volume" "off64_t offset" "int whence" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_get_offset "libfvde_volume_t *volume, off64_t *offset, libfvde_error_t **error"
+.Fn libfvde_volume_get_offset "libfvde_volume_t *volume" "off64_t *offset" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_get_logical_volume_size "libfvde_volume_t *volume, size64_t *size, libfvde_error_t **error"
+.Fn libfvde_volume_get_logical_volume_size "libfvde_volume_t *volume" "size64_t *size" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_get_logical_volume_encryption_method "libfvde_volume_t *volume, uint32_t *encryption_method, libfvde_error_t **error"
+.Fn libfvde_volume_get_logical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_get_physical_volume_size "libfvde_volume_t *volume, size64_t *size, libfvde_error_t **error"
+.Fn libfvde_volume_get_physical_volume_size "libfvde_volume_t *volume" "size64_t *size" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_get_physical_volume_encryption_method "libfvde_volume_t *volume, uint32_t *encryption_method, libfvde_error_t **error"
+.Fn libfvde_volume_get_physical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_set_keys "libfvde_volume_t *volume, const uint8_t *volume_master_key, size_t volume_master_key_size, libfvde_error_t **error"
+.Fn libfvde_volume_set_keys "libfvde_volume_t *volume" "const uint8_t *volume_master_key" "size_t volume_master_key_size" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_set_utf8_password "libfvde_volume_t *volume, const uint8_t *utf8_string, size_t utf8_string_length, libfvde_error_t **error"
+.Fn libfvde_volume_set_utf8_password "libfvde_volume_t *volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_set_utf16_password "libfvde_volume_t *volume, const uint16_t *utf16_string, size_t utf16_string_length, libfvde_error_t **error"
+.Fn libfvde_volume_set_utf16_password "libfvde_volume_t *volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_set_utf8_recovery_password "libfvde_volume_t *volume, const uint8_t *utf8_string, size_t utf8_string_length, libfvde_error_t **error"
+.Fn libfvde_volume_set_utf8_recovery_password "libfvde_volume_t *volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_set_utf16_recovery_password "libfvde_volume_t *volume, const uint16_t *utf16_string, size_t utf16_string_length, libfvde_error_t **error"
+.Fn libfvde_volume_set_utf16_recovery_password "libfvde_volume_t *volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_read_encrypted_root_plist "libfvde_volume_t *volume, const char *filename, libfvde_error_t **error"
+.Fn libfvde_volume_read_encrypted_root_plist "libfvde_volume_t *volume" "const char *filename" "libfvde_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
-.Fn libfvde_volume_open_wide "libfvde_volume_t *volume, const wchar_t *filename, int access_flags, libfvde_error_t **error"
+.Fn libfvde_volume_open_wide "libfvde_volume_t *volume" "const wchar_t *filename" "int access_flags" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_read_encrypted_root_plist_wide "libfvde_volume_t *volume, const wchar_t *filename, libfvde_error_t **error"
+.Fn libfvde_volume_read_encrypted_root_plist_wide "libfvde_volume_t *volume" "const wchar_t *filename" "libfvde_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libfvde_volume_open_file_io_handle "libfvde_volume_t *volume, libbfio_handle_t *file_io_handle, int access_flags, libfvde_error_t **error"
+.Fn libfvde_volume_open_file_io_handle "libfvde_volume_t *volume" "libbfio_handle_t *file_io_handle" "int access_flags" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_read_encrypted_root_plist_file_io_handle "libfvde_volume_t *volume, libbfio_handle_t *file_io_handle, libfvde_error_t **error"
+.Fn libfvde_volume_read_encrypted_root_plist_file_io_handle "libfvde_volume_t *volume" "libbfio_handle_t *file_io_handle" "libfvde_error_t **error"
 .Pp
 Volume group functions
 .Ft int
-.Fn libfvde_volume_group_free "libfvde_volume_group_t **volume_group, libfvde_error_t **error"
+.Fn libfvde_volume_group_free "libfvde_volume_group_t **volume_group" "libfvde_error_t **error"
 .Pp
 LVF encryption context and EncryptedRoot.plist file functions
 .Ft int
-.Fn libfvde_encryption_context_plist_initialize "libfvde_encryption_context_plist_t **plist, libfvde_error_t **error"
+.Fn libfvde_encryption_context_plist_initialize "libfvde_encryption_context_plist_t **plist" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_encryption_context_plist_free "libfvde_encryption_context_plist_t **plist, libfvde_error_t **error"
+.Fn libfvde_encryption_context_plist_free "libfvde_encryption_context_plist_t **plist" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_encryption_context_plist_get_data_size "libfvde_encryption_context_plist_t *plist, size64_t *data_size, libfvde_error_t **error"
+.Fn libfvde_encryption_context_plist_get_data_size "libfvde_encryption_context_plist_t *plist" "size64_t *data_size" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_encryption_context_plist_copy_data "libfvde_encryption_context_plist_t *plist, uint8_t *data, size_t data_size, libfvde_error_t **error"
+.Fn libfvde_encryption_context_plist_copy_data "libfvde_encryption_context_plist_t *plist" "uint8_t *data" "size_t data_size" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_encryption_context_plist_decrypt "libfvde_encryption_context_plist_t *plist, const uint8_t *key, size_t key_bit_size, libfvde_error_t **error"
+.Fn libfvde_encryption_context_plist_decrypt "libfvde_encryption_context_plist_t *plist" "const uint8_t *key" "size_t key_bit_size" "libfvde_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libfvde_encryption_context_plist_read_file_io_handle "libfvde_encryption_context_plist_t *plist, libbfio_handle_t *file_io_handle, libfvde_error_t **error"
+.Fn libfvde_encryption_context_plist_read_file_io_handle "libfvde_encryption_context_plist_t *plist" "libbfio_handle_t *file_io_handle" "libfvde_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libfvde_get_version
@@ -140,8 +138,8 @@ None
 .Sh FILES
 None
 .Sh NOTES
-libfvde allows to be compiled with wide character support (wchar_t).
-
+libfvde can be compiled with wide character support (wchar_t).
+.sp
 To compile libfvde with wide character support use:
 .Ar ./configure --enable-wide-character-type=yes
  or define:
@@ -149,7 +147,7 @@ To compile libfvde with wide character support use:
  or
 .Ar UNICODE
  during compilation.
-
+.sp
 .Ar LIBFVDE_WIDE_CHARACTER_TYPE
  in libfvde/features.h can be used to determine if libfvde was compiled with wide character support.
 .Sh BUGS
@@ -158,7 +156,7 @@ Please report bugs of any kind on the project issue tracker: https://github.com/
 These man pages are generated from "libfvde.h".
 .Sh COPYRIGHT
 Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>, Joachim Metz <joachim.metz@gmail.com>.
-
+.sp
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .Sh SEE ALSO

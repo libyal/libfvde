@@ -1,5 +1,6 @@
 MSVSCPP_FILES = \
 	fvde_test_data_area_descriptor/fvde_test_data_area_descriptor.vcproj \
+	fvde_test_deflate/fvde_test_deflate.vcproj \
 	fvde_test_encrypted_metadata/fvde_test_encrypted_metadata.vcproj \
 	fvde_test_encryption_context_plist/fvde_test_encryption_context_plist.vcproj \
 	fvde_test_error/fvde_test_error.vcproj \

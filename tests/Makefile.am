@@ -37,6 +37,7 @@ check_SCRIPTS = \
 	pyfvde_test_volume.py \
 	test_fvdeinfo.sh \
 	test_library.sh \
+	test_manpage.sh \
 	test_python_module.sh \
 	test_runner.sh
 
@@ -45,6 +46,7 @@ EXTRA_DIST = \
 
 check_PROGRAMS = \
 	fvde_test_data_area_descriptor \
+	fvde_test_deflate \
 	fvde_test_encrypted_metadata \
 	fvde_test_encryption_context_plist \
 	fvde_test_error \
@@ -68,6 +70,19 @@ fvde_test_data_area_descriptor_SOURCES = \
 	fvde_test_unused.h
 
 fvde_test_data_area_descriptor_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_deflate_SOURCES = \
+	fvde_test_deflate.c \
+	fvde_test_libcerror.h \
+	fvde_test_libcnotify.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_unused.h
+
+fvde_test_deflate_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 
