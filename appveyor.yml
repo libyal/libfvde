@@ -146,10 +146,6 @@ environment:
     CFLAGS: "--coverage"
     LDFLAGS: "--coverage"
 
-matrix:
-  allow_failures:
-  - TARGET: python27-x64
-
 install:
 - cmd: git clone https://github.com/codecov/codecov-bash.git ..\codecov-bash
 - cmd: if [%BUILD_ENVIRONMENT%]==[msbuild] (
@@ -201,6 +197,8 @@ install:
     Else {
       .\builddokan.ps1 -UseLegacyVersion }
     }
+- cmd: if [%BUILD_ENVIRONMENT%]==[python] (
+    "%PYTHON%\\python.exe" -m pip install -U pip setuptools twine wheel )
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin] (
     C:\cygwin\setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com -P bison -P flex -P zlib-devel -P openssl-devel -P python2-devel -P python3-devel )
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin64] (
@@ -238,7 +236,7 @@ build_script:
     msbuild /verbosity:quiet vs2017\libfvde.sln /property:Platform=Win32 /property:PlatformToolset=v141 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" &&
     msbuild /verbosity:quiet vs2017\libfvde.sln /property:Platform=x64 /property:PlatformToolset=v141 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
 - cmd: if [%BUILD_ENVIRONMENT%]==[python] (
-    "%PYTHON%\\python.exe" setup.py bdist_msi )
+    "%PYTHON%\\python.exe" setup.py bdist_msi bdist_wheel )
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin] (
     xcopy /i /q /s C:\projects\libfvde C:\cygwin\home\appveyor\libfvde &&
     C:\cygwin\bin\bash -e -l -c "cd libfvde && ./synclibs.sh --use-head && ./autogen.sh" )
