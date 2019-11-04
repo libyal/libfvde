@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 #
 # Script to build and install Python-bindings.
-# Version: 20191006
+# Version: 20191025
 
 from __future__ import print_function
 
+import copy
 import glob
 import gzip
 import platform
@@ -38,6 +39,10 @@ else:
 
     def run(self):
       """Builds an MSI."""
+      # Make a deepcopy of distribution so the following version changes
+      # only apply to bdist_msi.
+      self.distribution = copy.deepcopy(self.distribution)
+
       # bdist_msi does not support the library version so we add ".1"
       # as a work around.
       self.distribution.metadata.version = "{0:s}.1".format(

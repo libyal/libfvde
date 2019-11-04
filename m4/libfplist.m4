@@ -1,38 +1,40 @@
 dnl Functions for libfplist
 dnl
-dnl Version: 20190919
+dnl Version: 20190308
 
 dnl Function to detect if libfplist is available
 dnl ac_libfplist_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
 AC_DEFUN([AX_LIBFPLIST_CHECK_LIB],
-  [dnl Check if parameters were provided
-  AS_IF(
-    [test "x$ac_cv_with_libfplist" != x && test "x$ac_cv_with_libfplist" != xno && test "x$ac_cv_with_libfplist" != xauto-detect],
-    [AS_IF(
-      [test -d "$ac_cv_with_libfplist"],
-      [CFLAGS="$CFLAGS -I${ac_cv_with_libfplist}/include"
-      LDFLAGS="$LDFLAGS -L${ac_cv_with_libfplist}/lib"],
-      [AC_MSG_WARN([no such directory: $ac_cv_with_libfplist])
-      ])
-    ])
-
-  AS_IF(
-    [test "x$ac_cv_with_libfplist" = xno],
+  [AS_IF(
+    [test "x$ac_cv_enable_shared_libs" = xno || test "x$ac_cv_with_libfplist" = xno],
     [ac_cv_libfplist=no],
-    [dnl Check for a pkg-config file
+    [ac_cv_libfplist=check
+    dnl Check if the directory provided as parameter exists
     AS_IF(
-      [test "x$cross_compiling" != "xyes" && test "x$PKGCONFIG" != "x"],
-      [PKG_CHECK_MODULES(
-        [libfplist],
-        [libfplist >= 20170919],
-        [ac_cv_libfplist=yes],
-        [ac_cv_libfplist=check])
+      [test "x$ac_cv_with_libfplist" != x && test "x$ac_cv_with_libfplist" != xauto-detect],
+      [AS_IF(
+        [test -d "$ac_cv_with_libfplist"],
+        [CFLAGS="$CFLAGS -I${ac_cv_with_libfplist}/include"
+        LDFLAGS="$LDFLAGS -L${ac_cv_with_libfplist}/lib"],
+        [AC_MSG_FAILURE(
+          [no such directory: $ac_cv_with_libfplist],
+          [1])
+        ])
+      ],
+      [dnl Check for a pkg-config file
+      AS_IF(
+        [test "x$cross_compiling" != "xyes" && test "x$PKGCONFIG" != "x"],
+        [PKG_CHECK_MODULES(
+          [libfplist],
+          [libfplist >= 20170919],
+          [ac_cv_libfplist=yes],
+          [ac_cv_libfplist=check])
+        ])
+      AS_IF(
+        [test "x$ac_cv_libfplist" = xyes],
+        [ac_cv_libfplist_CPPFLAGS="$pkg_cv_libfplist_CFLAGS"
+        ac_cv_libfplist_LIBADD="$pkg_cv_libfplist_LIBS"])
       ])
-
-    AS_IF(
-      [test "x$ac_cv_libfplist" = xyes],
-      [ac_cv_libfplist_CPPFLAGS="$pkg_cv_libfplist_CFLAGS"
-      ac_cv_libfplist_LIBADD="$pkg_cv_libfplist_LIBS"])
 
     AS_IF(
       [test "x$ac_cv_libfplist" = xcheck],
