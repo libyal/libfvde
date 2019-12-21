@@ -33,7 +33,6 @@
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
-#include "libfvde_libfcache.h"
 #include "libfvde_libfdata.h"
 #include "libfvde_libfguid.h"
 #include "libfvde_sector_data.h"
@@ -907,7 +906,7 @@ int libfvde_io_handle_read_sector(
      libfvde_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfdata_vector_t *vector,
-     libfcache_cache_t *cache,
+     libfdata_cache_t *cache,
      int element_index,
      int element_data_file_index LIBFVDE_ATTRIBUTE_UNUSED,
      off64_t element_data_offset,
