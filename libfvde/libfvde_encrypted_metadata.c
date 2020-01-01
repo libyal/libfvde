@@ -1,7 +1,7 @@
 /*
  * Encrypted metadata functions
  *
- * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -29,6 +29,7 @@
 
 #include "libfvde_checksum.h"
 #include "libfvde_data_area_descriptor.h"
+#include "libfvde_debug.h"
 #include "libfvde_definitions.h"
 #include "libfvde_encrypted_metadata.h"
 #include "libfvde_encryption_context_plist.h"
@@ -362,13 +363,9 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 	uint32_t number_of_entries2 = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	system_character_t guid_string[ 48 ];
-
-	libfguid_identifier_t *guid = NULL;
 	uint64_t value_64bit        = 0;
 	uint32_t value_32bit        = 0;
 	uint16_t value_16bit        = 0;
-	int result                  = 0;
 #endif
 
 	if( encrypted_metadata == NULL )
@@ -442,78 +439,23 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 		 function,
 		 value_32bit );
 
-		if( libfguid_identifier_initialize(
-		     &guid,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create GUID.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfguid_identifier_copy_from_byte_stream(
-		     guid,
+		if( libfvde_debug_print_guid_value(
+		     function,
+		     "logical volume group identifier\t",
 		     &( block_data[ 8 ] ),
 		     16,
 		     LIBFGUID_ENDIAN_BIG,
+		     LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy byte stream to GUID.",
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print GUID value.",
 			 function );
 
-			goto on_error;
-		}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-		result = libfguid_identifier_copy_to_utf16_string(
-			  guid,
-			  (uint16_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#else
-		result = libfguid_identifier_copy_to_utf8_string(
-			  guid,
-			  (uint8_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#endif
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy GUID to string.",
-			 function );
-
-			goto on_error;
-		}
-		libcnotify_printf(
-		 "%s: logical volume group identifier\t: %" PRIs_SYSTEM "\n",
-		 function,
-		 guid_string );
-
-		if( libfguid_identifier_free(
-		     &guid,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free GUID.",
-			 function );
-
-			goto on_error;
+			return( -1 );
 		}
 		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ 24 ] ),
@@ -744,17 +686,6 @@ int libfvde_encrypted_metadata_read_type_0x0013(
 #endif
 	}
 	return( 1 );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-on_error:
-	if( guid != NULL )
-	{
-		libfguid_identifier_free(
-		 &guid,
-		 NULL );
-	}
-	return( -1 );
-#endif
 }
 
 /* Reads the encrypted metadata block type 0x0014
@@ -773,13 +704,9 @@ int libfvde_encrypted_metadata_read_type_0x0014(
 	uint32_t number_of_entries2 = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	system_character_t guid_string[ 48 ];
-
-	libfguid_identifier_t *guid = NULL;
 	uint64_t value_64bit        = 0;
 	uint32_t value_32bit        = 0;
 	uint16_t value_16bit        = 0;
-	int result                  = 0;
 #endif
 
 	if( encrypted_metadata == NULL )
@@ -853,78 +780,23 @@ int libfvde_encrypted_metadata_read_type_0x0014(
 		 function,
 		 value_32bit );
 
-		if( libfguid_identifier_initialize(
-		     &guid,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create GUID.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfguid_identifier_copy_from_byte_stream(
-		     guid,
+		if( libfvde_debug_print_guid_value(
+		     function,
+		     "logical volume group identifier\t",
 		     &( block_data[ 8 ] ),
 		     16,
 		     LIBFGUID_ENDIAN_BIG,
+		     LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy byte stream to GUID.",
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print GUID value.",
 			 function );
 
-			goto on_error;
-		}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-		result = libfguid_identifier_copy_to_utf16_string(
-			  guid,
-			  (uint16_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#else
-		result = libfguid_identifier_copy_to_utf8_string(
-			  guid,
-			  (uint8_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#endif
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy GUID to string.",
-			 function );
-
-			goto on_error;
-		}
-		libcnotify_printf(
-		 "%s: logical volume group identifier\t: %" PRIs_SYSTEM "\n",
-		 function,
-		 guid_string );
-
-		if( libfguid_identifier_free(
-		     &guid,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free GUID.",
-			 function );
-
-			goto on_error;
+			return( -1 );
 		}
 		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ 24 ] ),
@@ -1146,17 +1018,6 @@ int libfvde_encrypted_metadata_read_type_0x0014(
 #endif
 	}
 	return( 1 );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-on_error:
-	if( guid != NULL )
-	{
-		libfguid_identifier_free(
-		 &guid,
-		 NULL );
-	}
-	return( -1 );
-#endif
 }
 
 /* Reads the encrypted metadata block type 0x0016

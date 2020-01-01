@@ -1,7 +1,7 @@
 /*
  * Debug functions
  *
- * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -29,6 +29,7 @@
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
+#include "libfvde_libfguid.h"
 
 #if defined( HAVE_DEBUG_OUTPUT )
 
@@ -43,6 +44,99 @@ const char *libfvde_debug_print_encryption_method(
 			return( "AES-XTS" );
 	}
 	return( "_UNKNOWN_" );
+}
+
+/* Prints a GUID/UUID value
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_debug_print_guid_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     int byte_order,
+     uint32_t string_format_flags,
+     libcerror_error_t **error )
+{
+        system_character_t guid_string[ 48 ];
+
+        libfguid_identifier_t *guid = NULL;
+	static char *function       = "libfvde_debug_print_guid_value";
+
+	if( libfguid_identifier_initialize(
+	     &guid,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create GUID.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfguid_identifier_copy_from_byte_stream(
+	     guid,
+	     byte_stream,
+	     byte_stream_size,
+	     byte_order,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy byte stream to GUID.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfguid_identifier_copy_to_utf8_string(
+	     guid,
+	     (uint8_t *) guid_string,
+	     48,
+	     string_format_flags,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy GUID to string.",
+		 function );
+
+		goto on_error;
+	}
+	libcnotify_printf(
+	 "%s: %s: %s\n",
+	 function_name,
+	 value_name,
+	 guid_string );
+
+	if( libfguid_identifier_free(
+	     &guid,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free GUID.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( guid != NULL )
+	{
+		libfguid_identifier_free(
+		 &guid,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Prints the read offsets
@@ -121,5 +215,5 @@ int libfvde_debug_print_read_offsets(
 	return( 1 );
 }
 
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 

@@ -1,7 +1,7 @@
 /*
  * Debug functions
  *
- * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -38,11 +38,20 @@ extern "C" {
 const char *libfvde_debug_print_encryption_method(
              uint32_t encryption_method );
 
+int libfvde_debug_print_guid_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     int byte_order,
+     uint32_t string_format_flags,
+     libcerror_error_t **error );
+
 int libfvde_debug_print_read_offsets(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
 #if defined( __cplusplus )
 }

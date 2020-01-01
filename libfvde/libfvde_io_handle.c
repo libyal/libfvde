@@ -1,7 +1,7 @@
 /*
  * Input/Output (IO) handle functions
  *
- * Copyright (C) 2011-2019, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -27,6 +27,7 @@
 #include <types.h>
 
 #include "libfvde_checksum.h"
+#include "libfvde_debug.h"
 #include "libfvde_definitions.h"
 #include "libfvde_encryption.h"
 #include "libfvde_io_handle.h"
@@ -280,13 +281,9 @@ int libfvde_io_handle_read_volume_header(
 	uint16_t block_type          = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	system_character_t guid_string[ 48 ];
-
-	libfguid_identifier_t *guid = NULL;
 	uint64_t value_64bit        = 0;
 	uint32_t value_32bit        = 0;
 	uint16_t value_16bit        = 0;
-	int result                  = 0;
 #endif
 
 	if( io_handle == NULL )
@@ -324,7 +321,7 @@ int libfvde_io_handle_read_volume_header(
 		 function,
 		 file_offset );
 
-		goto on_error;
+		return( -1 );
 	}
 	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
@@ -341,7 +338,7 @@ int libfvde_io_handle_read_volume_header(
 		 "%s: unable to read volume header data.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -428,7 +425,7 @@ int libfvde_io_handle_read_volume_header(
 		 "%s: unable to copy key data.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( memory_copy(
 	     io_handle->physical_volume_identifier,
@@ -442,7 +439,7 @@ int libfvde_io_handle_read_volume_header(
 		 "%s: unable to copy physical volume identifier.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( memory_copy(
 	     io_handle->logical_volume_group_identifier,
@@ -456,7 +453,7 @@ int libfvde_io_handle_read_volume_header(
 		 "%s: unable to copy logical volume group identifier.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -622,125 +619,41 @@ int libfvde_io_handle_read_volume_header(
 		 128,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 
-		if( libfguid_identifier_initialize(
-		     &guid,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create GUID.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfguid_identifier_copy_from_byte_stream(
-		     guid,
+		if( libfvde_debug_print_guid_value(
+		     function,
+		     "physical volume identifier\t",
 		     io_handle->physical_volume_identifier,
 		     16,
 		     LIBFGUID_ENDIAN_BIG,
+		     LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy byte stream to GUID.",
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print GUID value.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-		result = libfguid_identifier_copy_to_utf16_string(
-			  guid,
-			  (uint16_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#else
-		result = libfguid_identifier_copy_to_utf8_string(
-			  guid,
-			  (uint8_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#endif
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy GUID to string.",
-			 function );
-
-			goto on_error;
-		}
-		libcnotify_printf(
-		 "%s: physical volume identifier\t: %" PRIs_SYSTEM "\n",
-		 function,
-		 guid_string );
-
-		if( libfguid_identifier_copy_from_byte_stream(
-		     guid,
+		if( libfvde_debug_print_guid_value(
+		     function,
+		     "logical volume group identifier\t",
 		     io_handle->logical_volume_group_identifier,
 		     16,
 		     LIBFGUID_ENDIAN_BIG,
+		     LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy byte stream to GUID.",
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print GUID value.",
 			 function );
 
-			goto on_error;
-		}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-		result = libfguid_identifier_copy_to_utf16_string(
-			  guid,
-			  (uint16_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#else
-		result = libfguid_identifier_copy_to_utf8_string(
-			  guid,
-			  (uint8_t *) guid_string,
-			  48,
-			  LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
-			  error );
-#endif
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy GUID to string.",
-			 function );
-
-			goto on_error;
-		}
-		libcnotify_printf(
-		 "%s: logical volume group identifier\t: %" PRIs_SYSTEM "\n",
-		 function,
-		 guid_string );
-
-		if( libfguid_identifier_free(
-		     &guid,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free GUID.",
-			 function );
-
-			goto on_error;
+			return( -1 );
 		}
 		libcnotify_printf(
 		 "%s: unknown8:\n",
@@ -763,7 +676,7 @@ int libfvde_io_handle_read_volume_header(
                  "%s: unsupported core storage signature.",
                  function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( io_handle->version != 1 )
        	{
@@ -775,7 +688,7 @@ int libfvde_io_handle_read_volume_header(
                  function,
 		 io_handle->version );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( io_handle->checksum_algorithm != 1 )
        	{
@@ -787,7 +700,7 @@ int libfvde_io_handle_read_volume_header(
                  function,
 		 io_handle->checksum_algorithm );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( initial_value != 0xffffffffUL )
        	{
@@ -799,7 +712,7 @@ int libfvde_io_handle_read_volume_header(
                  function,
 		 initial_value );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( libfvde_checksum_calculate_weak_crc32(
 	     &calculated_checksum,
@@ -815,7 +728,7 @@ int libfvde_io_handle_read_volume_header(
 		 "%s: unable to calculate weak CRC-32.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( stored_checksum != calculated_checksum )
 	{
@@ -828,7 +741,7 @@ int libfvde_io_handle_read_volume_header(
 		 stored_checksum,
 		 calculated_checksum );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( block_type != 0x0010 )
        	{
@@ -840,7 +753,7 @@ int libfvde_io_handle_read_volume_header(
                  function,
 		 block_type );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( io_handle->physical_volume_encryption_method != 2 )
        	{
@@ -852,7 +765,7 @@ int libfvde_io_handle_read_volume_header(
                  function,
 		 io_handle->physical_volume_encryption_method );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( io_handle->bytes_per_sector == 0 )
        	{
@@ -863,7 +776,7 @@ int libfvde_io_handle_read_volume_header(
                  "%s: invalid bytes per sector value out of bounds.",
                  function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( io_handle->block_size == 0 )
        	{
@@ -874,7 +787,7 @@ int libfvde_io_handle_read_volume_header(
                  "%s: invalid block size value out of bounds.",
                  function );
 
-		goto on_error;
+		return( -1 );
 	}
 	io_handle->sectors_per_block = io_handle->block_size / io_handle->bytes_per_sector;
 
@@ -885,17 +798,6 @@ int libfvde_io_handle_read_volume_header(
 	io_handle->fourth_metadata_offset *= io_handle->block_size;
 
 	return( 1 );
-
-on_error:
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( guid != NULL )
-	{
-		libfguid_identifier_free(
-		 &guid,
-		 NULL );
-	}
-#endif
-	return( -1 );
 }
 
 /* Reads a sector
