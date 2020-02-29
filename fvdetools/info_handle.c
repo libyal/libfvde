@@ -1007,6 +1007,19 @@ int info_handle_volume_fprint(
 	 info_handle->notify_stream,
 	 "\n" );
 
+	if( libfguid_identifier_free(
+	     &guid,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free GUID.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:

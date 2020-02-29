@@ -9,7 +9,7 @@ EXIT_IGNORE=77;
 
 TEST_FUNCTIONS="support";
 TEST_FUNCTIONS_WITH_INPUT="volume";
-OPTION_SETS="password";
+OPTION_SETS="offset password";
 
 TEST_TOOL_DIRECTORY=".";
 INPUT_GLOB="*";
