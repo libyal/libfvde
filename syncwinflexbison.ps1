@@ -1,14 +1,6 @@
 # Script that synchronizes Windows versions of flex and bison.
 #
-# Version: 20190109
-
-Function DownloadFile($Url, $Destination)
-{
-	[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-
-	$Client = New-Object Net.WebClient
-	${Client}.DownloadFile(${Url}, ${Destination})
-}
+# Version: 20200229
 
 Function ExtractZip($Filename, $Destination)
 {
@@ -49,7 +41,7 @@ If (Test-Path ${Filename})
 {
 	Remove-Item -Path ${Filename} -Force
 }
-DownloadFile -Url ${Url} -Destination ${Filename}
+Invoke-WebRequest -Uri ${Url} -OutFile ${Filename}
 
 If (Test-Path ${ExtractedPath})
 {

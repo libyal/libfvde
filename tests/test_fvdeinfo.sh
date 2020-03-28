@@ -9,7 +9,7 @@ EXIT_IGNORE=77;
 
 PROFILES=("fvdeinfo");
 OPTIONS_PER_PROFILE=("");
-OPTION_SETS="offset password";
+OPTION_SETS="offset password recovery_password";
 
 INPUT_GLOB="*";
 
