@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #endif
 
-#include "fvde_test_libcerror.h"
 #include "fvde_test_libfvde.h"
 #include "fvde_test_macros.h"
 #include "fvde_test_unused.h"

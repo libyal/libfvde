@@ -29,19 +29,22 @@
 
 #include "pyfvde.h"
 #include "pyfvde_error.h"
+#include "pyfvde_file_object_io_handle.h"
+#include "pyfvde_libbfio.h"
 #include "pyfvde_libcerror.h"
 #include "pyfvde_libfvde.h"
-#include "pyfvde_file_object_io_handle.h"
 #include "pyfvde_python.h"
 #include "pyfvde_unused.h"
 #include "pyfvde_volume.h"
 
 #if !defined( LIBFVDE_HAVE_BFIO )
+
 LIBFVDE_EXTERN \
 int libfvde_check_volume_signature_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libfvde_error_t **error );
-#endif
+
+#endif /* !defined( LIBFVDE_HAVE_BFIO ) */
 
 /* The pyfvde module methods
  */
@@ -58,24 +61,24 @@ PyMethodDef pyfvde_module_methods[] = {
 	  METH_VARARGS | METH_KEYWORDS,
 	  "check_volume_signature(filename) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a BitLocker Drive Encryption (BDE) volume signature." },
+	  "Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature." },
 
 	{ "check_volume_signature_file_object",
 	  (PyCFunction) pyfvde_check_volume_signature_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "check_volume_signature(file_object) -> Boolean\n"
+	  "check_volume_signature_file_object(file_object) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a BitLocker Drive Encryption (BDE) volume signature using a file-like object." },
+	  "Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature using a file-like object." },
 
 	{ "open",
-	  (PyCFunction) pyfvde_volume_new_open,
+	  (PyCFunction) pyfvde_open_new_volume,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open(filename, mode='r') -> Object\n"
 	  "\n"
 	  "Opens a volume." },
 
 	{ "open_file_object",
-	  (PyCFunction) pyfvde_volume_new_open_file_object,
+	  (PyCFunction) pyfvde_open_new_volume_with_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open_file_object(file_object, mode='r') -> Object\n"
 	  "\n"
@@ -118,7 +121,7 @@ PyObject *pyfvde_get_version(
 	         errors ) );
 }
 
-/* Checks if the volume has a BitLocker Drive Encryption (BDE) volume signature
+/* Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfvde_check_volume_signature(
@@ -126,12 +129,12 @@ PyObject *pyfvde_check_volume_signature(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *string_object      = NULL;
-	libcerror_error_t *error     = NULL;
-	static char *function        = "pyfvde_check_volume_signature";
-	static char *keyword_list[]  = { "filename", NULL };
-	const char *filename_narrow  = NULL;
-	int result                   = 0;
+	PyObject *string_object     = NULL;
+	libcerror_error_t *error    = NULL;
+	const char *filename_narrow = NULL;
+	static char *function       = "pyfvde_check_volume_signature";
+	static char *keyword_list[] = { "filename", NULL };
+	int result                  = 0;
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	const wchar_t *filename_wide = NULL;
@@ -149,7 +152,7 @@ PyObject *pyfvde_check_volume_signature(
 	if( PyArg_ParseTupleAndKeywords(
 	     arguments,
 	     keywords,
-	     "|O",
+	     "O|",
 	     keyword_list,
 	     &string_object ) == 0 )
 	{
@@ -164,8 +167,8 @@ PyObject *pyfvde_check_volume_signature(
 	if( result == -1 )
 	{
 		pyfvde_error_fetch_and_raise(
-	         PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 PyExc_RuntimeError,
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -192,17 +195,17 @@ PyObject *pyfvde_check_volume_signature(
 		{
 			pyfvde_error_fetch_and_raise(
 			 PyExc_RuntimeError,
-			 "%s: unable to convert unicode string to UTF-8.",
+			 "%s: unable to convert Unicode string to UTF-8.",
 			 function );
 
 			return( NULL );
 		}
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -214,7 +217,9 @@ PyObject *pyfvde_check_volume_signature(
 
 		Py_DecRef(
 		 utf8_string_object );
-#endif
+
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
+
 		if( result == -1 )
 		{
 			pyfvde_error_raise(
@@ -244,17 +249,17 @@ PyObject *pyfvde_check_volume_signature(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
 		pyfvde_error_fetch_and_raise(
-	         PyExc_RuntimeError,
+		 PyExc_RuntimeError,
 		 "%s: unable to determine if string object is of type string.",
 		 function );
 
@@ -266,10 +271,10 @@ PyObject *pyfvde_check_volume_signature(
 
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   string_object );
+		                   string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   string_object );
+		                   string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -312,7 +317,7 @@ PyObject *pyfvde_check_volume_signature(
 	return( NULL );
 }
 
-/* Checks if the volume has a BitLocker Drive Encryption (BDE) volume signature using a file-like object
+/* Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature using a file-like object
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfvde_check_volume_signature_file_object(
@@ -320,9 +325,9 @@ PyObject *pyfvde_check_volume_signature_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	libcerror_error_t *error         = NULL;
-	libbfio_handle_t *file_io_handle = NULL;
 	PyObject *file_object            = NULL;
+	libbfio_handle_t *file_io_handle = NULL;
+	libcerror_error_t *error         = NULL;
 	static char *function            = "pyfvde_check_volume_signature_file_object";
 	static char *keyword_list[]      = { "file_object", NULL };
 	int result                       = 0;
@@ -412,6 +417,108 @@ on_error:
 	return( NULL );
 }
 
+/* Creates a new volume object and opens it
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_open_new_volume(
+           PyObject *self PYFVDE_ATTRIBUTE_UNUSED,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	pyfvde_volume_t *pyfvde_volume = NULL;
+	static char *function          = "pyfvde_open_new_volume";
+
+	PYFVDE_UNREFERENCED_PARAMETER( self )
+
+	/* PyObject_New does not invoke tp_init
+	 */
+	pyfvde_volume = PyObject_New(
+	                 struct pyfvde_volume,
+	                 &pyfvde_volume_type_object );
+
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create volume.",
+		 function );
+
+		goto on_error;
+	}
+	if( pyfvde_volume_init(
+	     pyfvde_volume ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pyfvde_volume_open(
+	     pyfvde_volume,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pyfvde_volume );
+
+on_error:
+	if( pyfvde_volume != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pyfvde_volume );
+	}
+	return( NULL );
+}
+
+/* Creates a new volume object and opens it using a file-like object
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_open_new_volume_with_file_object(
+           PyObject *self PYFVDE_ATTRIBUTE_UNUSED,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	pyfvde_volume_t *pyfvde_volume = NULL;
+	static char *function          = "pyfvde_open_new_volume_with_file_object";
+
+	PYFVDE_UNREFERENCED_PARAMETER( self )
+
+	/* PyObject_New does not invoke tp_init
+	 */
+	pyfvde_volume = PyObject_New(
+	                 struct pyfvde_volume,
+	                 &pyfvde_volume_type_object );
+
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create volume.",
+		 function );
+
+		goto on_error;
+	}
+	if( pyfvde_volume_init(
+	     pyfvde_volume ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pyfvde_volume_open_file_object(
+	     pyfvde_volume,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pyfvde_volume );
+
+on_error:
+	if( pyfvde_volume != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pyfvde_volume );
+	}
+	return( NULL );
+}
+
 #if PY_MAJOR_VERSION >= 3
 
 /* The pyfvde module definition
@@ -449,9 +556,8 @@ PyMODINIT_FUNC initpyfvde(
                 void )
 #endif
 {
-	PyObject *module                 = NULL;
-	PyTypeObject *volume_type_object = NULL;
-	PyGILState_STATE gil_state       = 0;
+	PyObject *module           = NULL;
+	PyGILState_STATE gil_state = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	libfvde_notify_set_stream(
@@ -498,12 +604,10 @@ PyMODINIT_FUNC initpyfvde(
 	Py_IncRef(
 	 (PyObject *) &pyfvde_volume_type_object );
 
-	volume_type_object = &pyfvde_volume_type_object;
-
 	PyModule_AddObject(
 	 module,
 	 "volume",
-	 (PyObject *) volume_type_object );
+	 (PyObject *) &pyfvde_volume_type_object );
 
 	PyGILState_Release(
 	 gil_state );

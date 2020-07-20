@@ -1038,27 +1038,6 @@ int libfvde_volume_open_file_io_handle(
 
 		goto on_error;
 	}
-	else if( result == 0 )
-	{
-		if( file_io_handle_opened_in_library != 0 )
-		{
-			file_io_handle_opened_in_library = 0;
-
-			if( libbfio_handle_close(
-			     file_io_handle,
-			     error ) != 0 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-				 "%s: unable to close file IO handle.",
-				 function );
-
-				goto on_error;
-			}
-		}
-	}
 	else
 	{
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )

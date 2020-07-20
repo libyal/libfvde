@@ -1,5 +1,5 @@
 /*
- * Python bindings for libfvde (pyfvde)
+ * Python bindings module for libfvde (pyfvde)
  *
  * Copyright (C) 2011-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -41,6 +41,16 @@ PyObject *pyfvde_check_volume_signature(
            PyObject *keywords );
 
 PyObject *pyfvde_check_volume_signature_file_object(
+           PyObject *self,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfvde_open_new_volume(
+           PyObject *self,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfvde_open_new_volume_with_file_object(
            PyObject *self,
            PyObject *arguments,
            PyObject *keywords );

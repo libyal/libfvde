@@ -53,19 +53,6 @@ struct pyfvde_volume
 extern PyMethodDef pyfvde_volume_object_methods[];
 extern PyTypeObject pyfvde_volume_type_object;
 
-PyObject *pyfvde_volume_new(
-           void );
-
-PyObject *pyfvde_volume_new_open(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyObject *pyfvde_volume_new_open_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
 int pyfvde_volume_init(
      pyfvde_volume_t *pyfvde_volume );
 

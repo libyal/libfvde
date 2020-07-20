@@ -43,6 +43,9 @@ PyObject *pyfvde_datetime_new_from_floatingtime(
 PyObject *pyfvde_datetime_new_from_posix_time(
            uint32_t posix_time );
 
+PyObject *pyfvde_datetime_new_from_posix_time_in_micro_seconds(
+           int64_t posix_time );
+
 #if defined( __cplusplus )
 }
 #endif

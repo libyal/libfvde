@@ -296,93 +296,6 @@ PyTypeObject pyfvde_volume_type_object = {
 	0
 };
 
-/* Creates a new volume object
- * Returns a Python object if successful or NULL on error
- */
-PyObject *pyfvde_volume_new(
-           void )
-{
-	pyfvde_volume_t *pyfvde_volume = NULL;
-	static char *function        = "pyfvde_volume_new";
-
-	pyfvde_volume = PyObject_New(
-	                struct pyfvde_volume,
-	                &pyfvde_volume_type_object );
-
-	if( pyfvde_volume == NULL )
-	{
-		PyErr_Format(
-		 PyExc_MemoryError,
-		 "%s: unable to initialize volume.",
-		 function );
-
-		goto on_error;
-	}
-	if( pyfvde_volume_init(
-	     pyfvde_volume ) != 0 )
-	{
-		PyErr_Format(
-		 PyExc_MemoryError,
-		 "%s: unable to initialize volume.",
-		 function );
-
-		goto on_error;
-	}
-	return( (PyObject *) pyfvde_volume );
-
-on_error:
-	if( pyfvde_volume != NULL )
-	{
-		Py_DecRef(
-		 (PyObject *) pyfvde_volume );
-	}
-	return( NULL );
-}
-
-/* Creates a new volume object and opens it
- * Returns a Python object if successful or NULL on error
- */
-PyObject *pyfvde_volume_new_open(
-           PyObject *self PYFVDE_ATTRIBUTE_UNUSED,
-           PyObject *arguments,
-           PyObject *keywords )
-{
-	PyObject *pyfvde_volume = NULL;
-
-	PYFVDE_UNREFERENCED_PARAMETER( self )
-
-	pyfvde_volume = pyfvde_volume_new();
-
-	pyfvde_volume_open(
-	 (pyfvde_volume_t *) pyfvde_volume,
-	 arguments,
-	 keywords );
-
-	return( pyfvde_volume );
-}
-
-/* Creates a new volume object and opens it
- * Returns a Python object if successful or NULL on error
- */
-PyObject *pyfvde_volume_new_open_file_object(
-           PyObject *self PYFVDE_ATTRIBUTE_UNUSED,
-           PyObject *arguments,
-           PyObject *keywords )
-{
-	PyObject *pyfvde_volume = NULL;
-
-	PYFVDE_UNREFERENCED_PARAMETER( self )
-
-	pyfvde_volume = pyfvde_volume_new();
-
-	pyfvde_volume_open_file_object(
-	 (pyfvde_volume_t *) pyfvde_volume,
-	 arguments,
-	 keywords );
-
-	return( pyfvde_volume );
-}
-
 /* Intializes a volume object
  * Returns 0 if successful or -1 on error
  */
@@ -441,15 +354,6 @@ void pyfvde_volume_free(
 
 		return;
 	}
-	if( pyfvde_volume->volume == NULL )
-	{
-		PyErr_Format(
-		 PyExc_ValueError,
-		 "%s: invalid volume - missing libfvde volume.",
-		 function );
-
-		return;
-	}
 	ob_type = Py_TYPE(
 	           pyfvde_volume );
 
@@ -471,24 +375,27 @@ void pyfvde_volume_free(
 
 		return;
 	}
-	Py_BEGIN_ALLOW_THREADS
-
-	result = libfvde_volume_free(
-	          &( pyfvde_volume->volume ),
-	          &error );
-
-	Py_END_ALLOW_THREADS
-
-	if( result != 1 )
+	if( pyfvde_volume->volume != NULL )
 	{
-		pyfvde_error_raise(
-		 error,
-		 PyExc_MemoryError,
-		 "%s: unable to free libfvde volume.",
-		 function );
+		Py_BEGIN_ALLOW_THREADS
 
-		libcerror_error_free(
-		 &error );
+		result = libfvde_volume_free(
+		          &( pyfvde_volume->volume ),
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyfvde_error_raise(
+			 error,
+			 PyExc_MemoryError,
+			 "%s: unable to free libfvde volume.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+		}
 	}
 	ob_type->tp_free(
 	 (PyObject*) pyfvde_volume );
@@ -791,6 +698,36 @@ PyObject *pyfvde_volume_open_file_object(
 		 "%s: unsupported mode: %s.",
 		 function,
 		 mode );
+
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "read" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing read attribute.",
+		 function );
+
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "seek" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing seek attribute.",
+		 function );
 
 		return( NULL );
 	}
