@@ -113,6 +113,8 @@ int fvde_test_metadata_block_initialize(
 	          &metadata_block,
 	          &error );
 
+	metadata_block = NULL;
+
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -124,8 +126,6 @@ int fvde_test_metadata_block_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	metadata_block = NULL;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
 

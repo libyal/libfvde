@@ -1,5 +1,5 @@
 /*
- * Python object definition of the libfvde volume
+ * Python object wrapper of libfvde_volume_t
  *
  * Copyright (C) 2011-2020, Joachim Metz <joachim.metz@gmail.com>
  *

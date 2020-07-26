@@ -113,6 +113,8 @@ int fvde_test_segment_descriptor_initialize(
 	          &segment_descriptor,
 	          &error );
 
+	segment_descriptor = NULL;
+
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -124,8 +126,6 @@ int fvde_test_segment_descriptor_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	segment_descriptor = NULL;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
 

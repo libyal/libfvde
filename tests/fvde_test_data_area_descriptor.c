@@ -113,6 +113,8 @@ int fvde_test_data_area_descriptor_initialize(
 	          &data_area_descriptor,
 	          &error );
 
+	data_area_descriptor = NULL;
+
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -124,8 +126,6 @@ int fvde_test_data_area_descriptor_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	data_area_descriptor = NULL;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
 

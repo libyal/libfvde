@@ -113,6 +113,8 @@ int fvde_test_keyring_initialize(
 	          &keyring,
 	          &error );
 
+	keyring = NULL;
+
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -124,8 +126,6 @@ int fvde_test_keyring_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	keyring = NULL;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
 

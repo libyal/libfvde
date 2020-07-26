@@ -298,6 +298,8 @@ int fvde_test_volume_initialize(
 	          &volume,
 	          &error );
 
+	volume = NULL;
+
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -309,8 +311,6 @@ int fvde_test_volume_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	volume = NULL;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
 
