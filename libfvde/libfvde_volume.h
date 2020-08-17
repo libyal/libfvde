@@ -213,25 +213,6 @@ ssize_t libfvde_volume_read_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error );
 
-#ifdef TODO_WRITE_SUPPORT
-
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_write_buffer(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error );
-
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_write_buffer_at_offset(
-         libfvde_volume_t *volume,
-         const void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libcerror_error_t **error );
-
-#endif /* TODO_WRITE_SUPPORT */
-
 off64_t libfvde_internal_volume_seek_offset(
          libfvde_internal_volume_t *internal_volume,
          off64_t offset,

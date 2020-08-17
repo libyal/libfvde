@@ -290,31 +290,6 @@ ssize_t libfvde_volume_read_buffer_at_offset(
          off64_t offset,
          libfvde_error_t **error );
 
-#ifdef TODO_WRITE_SUPPORT
-
-/* Writes (media) data at the current offset
- * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
- */
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_write_buffer(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         libfvde_error_t **error );
-
-/* Writes (media) data at a specific offset,
- * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
- */
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_write_buffer_at_offset(
-         libfvde_volume_t *volume,
-         const void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libfvde_error_t **error );
-
-#endif /* TODO_WRITE_SUPPORT */
-
 /* Seeks a certain offset of the data
  * Returns the offset if seek is successful or -1 on error
  */
