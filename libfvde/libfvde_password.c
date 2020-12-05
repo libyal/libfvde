@@ -92,7 +92,7 @@ int libfvde_password_pbkdf2(
 
 		return( -1 );
 	}
-	if( salt_size > (size_t) SSIZE_MAX )
+	if( salt_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 4 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -234,7 +234,8 @@ int libfvde_password_pbkdf2(
 		libcnotify_printf(
 		 "\n" );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	for( block_index = 0;
 	     block_index < number_of_blocks;
 	     block_index++ )

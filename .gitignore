@@ -144,6 +144,7 @@ stamp-h[1-9]
 /tests/fvde_test_support
 /tests/fvde_test_volume
 /tests/fvde_test_volume_group
+/tests/fvde_test_volume_header
 /tests/input
 /tests/tmp*
 

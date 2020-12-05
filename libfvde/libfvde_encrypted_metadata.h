@@ -252,6 +252,10 @@ int libfvde_encrypted_metadata_read(
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
      uint64_t encrypted_metadata_size,
+     const uint8_t *key,
+     size_t key_bit_size,
+     const uint8_t *tweak_key,
+     size_t tweak_key_bit_size,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_get_volume_master_key(

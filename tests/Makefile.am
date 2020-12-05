@@ -60,7 +60,8 @@ check_PROGRAMS = \
 	fvde_test_segment_descriptor \
 	fvde_test_support \
 	fvde_test_volume \
-	fvde_test_volume_group
+	fvde_test_volume_group \
+	fvde_test_volume_header
 
 fvde_test_data_area_descriptor_SOURCES = \
 	fvde_test_data_area_descriptor.c \
@@ -266,6 +267,28 @@ fvde_test_volume_group_SOURCES = \
 	fvde_test_volume_group.c
 
 fvde_test_volume_group_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_volume_header_SOURCES = \
+	fvde_test_functions.c fvde_test_functions.h \
+	fvde_test_libbfio.h \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h \
+	fvde_test_volume_header.c
+
+fvde_test_volume_header_LDADD = \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 

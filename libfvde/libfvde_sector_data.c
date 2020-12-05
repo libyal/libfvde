@@ -56,13 +56,14 @@ int libfvde_sector_data_initialize(
 
 		return( -1 );
 	}
-	if( data_size > (size_t) SSIZE_MAX )
+	if( ( data_size == 0 )
+	 || ( data_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid data size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -288,28 +289,13 @@ int libfvde_sector_data_read(
 		 file_offset );
 	}
 #endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek sector data offset: %" PRIi64 ".",
-		 function,
-		 file_offset );
-
-		return( -1 );
-	}
 	if( io_handle->is_encrypted != 0 )
 	{
-		read_count = libbfio_handle_read_buffer(
+		read_count = libbfio_handle_read_buffer_at_offset(
 			      file_io_handle,
 			      sector_data->encrypted_data,
 			      sector_data->data_size,
+			      file_offset,
 			      error );
 
 		if( read_count != (ssize_t) sector_data->data_size )
@@ -318,8 +304,10 @@ int libfvde_sector_data_read(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read sector data.",
-			 function );
+			 "%s: unable to read encrypted sector data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
 
 			return( -1 );
 		}
@@ -380,10 +368,11 @@ int libfvde_sector_data_read(
 	}
 	else
 	{
-		read_count = libbfio_handle_read_buffer(
+		read_count = libbfio_handle_read_buffer_at_offset(
 			      file_io_handle,
 			      sector_data->data,
 			      sector_data->data_size,
+			      file_offset,
 			      error );
 
 		if( read_count != (ssize_t) sector_data->data_size )
@@ -392,8 +381,10 @@ int libfvde_sector_data_read(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read sector data.",
-			 function );
+			 "%s: unable to read sector data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
 
 			return( -1 );
 		}

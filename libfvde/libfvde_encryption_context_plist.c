@@ -379,13 +379,14 @@ int libfvde_encryption_context_plist_set_data(
 
 		return( -1 );
 	}
-	if( data_size > (size_t) SSIZE_MAX )
+	if( ( data_size == 0 )
+	 || ( data_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid data size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -531,7 +532,7 @@ int libfvde_encryption_context_plist_read_file_io_handle(
 		goto on_error;
 	}
 	if( ( internal_plist->data_size == 0 )
-	 || ( internal_plist->data_size > (size64_t) SSIZE_MAX ) )
+	 || ( internal_plist->data_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -556,21 +557,6 @@ int libfvde_encryption_context_plist_read_file_io_handle(
 
 		goto on_error;
 	}
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     0,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek file header offset: 0.",
-		 function );
-
-		goto on_error;
-	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -580,10 +566,11 @@ int libfvde_encryption_context_plist_read_file_io_handle(
 		 internal_plist->data_size );
 	}
 #endif
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              internal_plist->data_encrypted,
 	              (size_t) internal_plist->data_size,
+	              0,
 	              error );
 
 	if( read_count != (ssize_t) internal_plist->data_size )
@@ -592,7 +579,7 @@ int libfvde_encryption_context_plist_read_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read encrypted plist file.",
+		 "%s: unable to read encrypted plist file at offset: 0 (0x00000000).",
 		 function );
 
 		goto on_error;
@@ -682,7 +669,8 @@ int libfvde_encryption_context_plist_decrypt(
 
 		return( -1 );
 	}
-	if( internal_plist->data_size > (size64_t) ( SSIZE_MAX - 1 ) )
+	if( ( internal_plist->data_size == 0 )
+	 || ( internal_plist->data_size > (size64_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1355,10 +1343,13 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
      size_t *passphrase_wrapped_kek_size,
      libcerror_error_t **error )
 {
-	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
 	libfplist_property_t *array_entry_property                  = NULL;
 	libfplist_property_t *sub_property                          = NULL;
+	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
+	uint8_t *safe_passphrase_wrapped_kek                        = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_passphrase_wrapped_kek";
+	size_t safe_passphrase_wrapped_kek_size                     = 0;
+	int result                                                  = 0;
 
 	if( plist == NULL )
 	{
@@ -1448,12 +1439,14 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		goto on_error;
 	}
-	if( libfplist_property_get_sub_property_by_utf8_name(
-	     array_entry_property,
-	     (uint8_t *) "PassphraseWrappedKEKStruct",
-	     26,
-	     &sub_property,
-	     error ) != 1 )
+	result = libfplist_property_get_sub_property_by_utf8_name(
+	          array_entry_property,
+	          (uint8_t *) "PassphraseWrappedKEKStruct",
+	          26,
+	          &sub_property,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1464,84 +1457,89 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		goto on_error;
 	}
-	if( libfplist_property_get_value_data_size(
-	     sub_property,
-	     passphrase_wrapped_kek_size,
-	     error ) != 1 )
+	else if( result != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve passphrase wrapped kek data size.",
-		 function );
+		if( libfplist_property_get_value_data_size(
+		     sub_property,
+		     &safe_passphrase_wrapped_kek_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve passphrase wrapped kek data size.",
+			 function );
 
-		goto on_error;
-	}
-	if( *passphrase_wrapped_kek_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid passphrase wrapped kek data size value exceeds maximum.",
-		 function );
+			goto on_error;
+		}
+		if( ( safe_passphrase_wrapped_kek_size == 0 )
+		 || ( safe_passphrase_wrapped_kek_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+			 "%s: invalid passphrase wrapped kek data size value exceeds maximum.",
+			 function );
 
-		return( -1 );
-	}
-	*passphrase_wrapped_kek = (uint8_t *) memory_allocate(
-	                                       sizeof( uint8_t ) * *passphrase_wrapped_kek_size );
+			return( -1 );
+		}
+		safe_passphrase_wrapped_kek = (uint8_t *) memory_allocate(
+		                                           sizeof( uint8_t ) * safe_passphrase_wrapped_kek_size );
 
-	if( *passphrase_wrapped_kek == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create passphrase wrapped kek.",
-		 function );
+		if( safe_passphrase_wrapped_kek == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create passphrase wrapped kek.",
+			 function );
 
-		goto on_error;
-	}
-	if( libfplist_property_get_value_data(
-	     sub_property,
-	     *passphrase_wrapped_kek,
-	     *passphrase_wrapped_kek_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve passphrase wrapped kek data.",
-		 function );
+			goto on_error;
+		}
+		if( libfplist_property_get_value_data(
+		     sub_property,
+		     safe_passphrase_wrapped_kek,
+		     safe_passphrase_wrapped_kek_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve passphrase wrapped kek data.",
+			 function );
 
-		goto on_error;
-	}
+			goto on_error;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: passphrase wrapped KEK:\n",
-		 function );
-		libcnotify_print_data(
-		 *passphrase_wrapped_kek,
-		 *passphrase_wrapped_kek_size,
-		 0 );
-	}
-#endif
-	if( libfplist_property_free(
-	     &sub_property,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free PassphraseWrappedKEKStruct property.",
-		 function );
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: passphrase wrapped KEK:\n",
+			 function );
+			libcnotify_print_data(
+			 safe_passphrase_wrapped_kek,
+			 safe_passphrase_wrapped_kek_size,
+			 0 );
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-		goto on_error;
+		if( libfplist_property_free(
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free PassphraseWrappedKEKStruct property.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	if( libfplist_property_free(
 	     &array_entry_property,
@@ -1557,7 +1555,12 @@ int libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
 
 		goto on_error;
 	}
-	return( 1 );
+	if( result != 0 )
+	{
+		*passphrase_wrapped_kek      = safe_passphrase_wrapped_kek;
+		*passphrase_wrapped_kek_size = safe_passphrase_wrapped_kek_size;
+	}
+	return( result );
 
 on_error:
 	if( sub_property != NULL )
@@ -1572,15 +1575,11 @@ on_error:
 		 &array_entry_property,
 		 NULL );
 	}
-	if( *passphrase_wrapped_kek != NULL )
+	if( safe_passphrase_wrapped_kek != NULL )
 	{
 		memory_free(
-		 *passphrase_wrapped_kek );
-
-		*passphrase_wrapped_kek = NULL;
+		 safe_passphrase_wrapped_kek );
 	}
-	*passphrase_wrapped_kek_size = 0;
-
 	return( -1 );
 }
 
@@ -1593,10 +1592,12 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
      size_t *kek_wrapped_volume_key_size,
      libcerror_error_t **error )
 {
-	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
 	libfplist_property_t *array_entry_property                  = NULL;
 	libfplist_property_t *sub_property                          = NULL;
+	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
+	uint8_t *safe_kek_wrapped_volume_key                        = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_kek_wrapped_volume_key";
+	size_t safe_kek_wrapped_volume_key_size                     = 0;
 
 	if( plist == NULL )
 	{
@@ -1688,7 +1689,7 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 	}
 	if( libfplist_property_get_value_data_size(
 	     sub_property,
-	     kek_wrapped_volume_key_size,
+	     &safe_kek_wrapped_volume_key_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1700,7 +1701,8 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		goto on_error;
 	}
-	if( *kek_wrapped_volume_key_size > (size_t) SSIZE_MAX )
+	if( ( safe_kek_wrapped_volume_key_size == 0 )
+	 || ( safe_kek_wrapped_volume_key_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1711,10 +1713,10 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		return( -1 );
 	}
-	*kek_wrapped_volume_key = (uint8_t *) memory_allocate(
-	                                       sizeof( uint8_t ) * *kek_wrapped_volume_key_size );
+	safe_kek_wrapped_volume_key = (uint8_t *) memory_allocate(
+	                                           sizeof( uint8_t ) * safe_kek_wrapped_volume_key_size );
 
-	if( *kek_wrapped_volume_key == NULL )
+	if( safe_kek_wrapped_volume_key == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -1727,8 +1729,8 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 	}
 	if( libfplist_property_get_value_data(
 	     sub_property,
-	     *kek_wrapped_volume_key,
-	     *kek_wrapped_volume_key_size,
+	     safe_kek_wrapped_volume_key,
+	     safe_kek_wrapped_volume_key_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1747,11 +1749,12 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 		 "%s: KEK wrapped volume key:\n",
 		 function );
 		libcnotify_print_data(
-		 *kek_wrapped_volume_key,
-		 *kek_wrapped_volume_key_size,
+		 safe_kek_wrapped_volume_key,
+		 safe_kek_wrapped_volume_key_size,
 		 0 );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	if( libfplist_property_free(
 	     &sub_property,
 	     error ) != 1 )
@@ -1778,6 +1781,9 @@ int libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
 
 		goto on_error;
 	}
+	*kek_wrapped_volume_key      = safe_kek_wrapped_volume_key;
+	*kek_wrapped_volume_key_size = safe_kek_wrapped_volume_key_size;
+
 	return( 1 );
 
 on_error:
@@ -1793,15 +1799,11 @@ on_error:
 		 &array_entry_property,
 		 NULL );
 	}
-	if( *kek_wrapped_volume_key != NULL )
+	if( safe_kek_wrapped_volume_key != NULL )
 	{
 		memory_free(
-		 *kek_wrapped_volume_key );
-
-		*kek_wrapped_volume_key = NULL;
+		 safe_kek_wrapped_volume_key );
 	}
-	*kek_wrapped_volume_key_size = 0;
-
 	return( -1 );
 }
 

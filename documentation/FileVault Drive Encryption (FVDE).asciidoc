@@ -7,16 +7,17 @@ Analysis of FVDE
 :numbered!:
 [abstract]
 == Summary
-The FileVault Drive Encryption (FVDE) format is used by Apple Mac OS to
-encrypt volumes. This specification is based on available documentation and was
-enhanced by reverse engineering of the file format.
 
-This document is intended as a working document for the FileVault Drive
-Encryption (FVDE) format specification. Which should allow existing Open Source
-forensic tooling to be able to process this volume type.
+The FileVault Drive Encryption (FVDE) format is used by Apple Mac OS to encrypt
+volumes. This specification is based on available documentation and was enhanced
+by analyzing test data.
+
+This document is intended as a working document of the data format specification
+for the libfvde project.
 
 [preface]
 == Document information
+
 [cols="1,5"]
 |===
 | Author(s): | Omar Choudary <choudary.omar@gmail.com> +
@@ -28,8 +29,9 @@ Joachim Metz <joachim.metz@gmail.com>
 
 [preface]
 == License
+
 ....
-Copyright (C) 2011-2018, Omar Choudary <choudary.omar@gmail.com>,
+Copyright (C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>,
                          Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
@@ -40,6 +42,7 @@ in the section entitled "GNU Free Documentation License".
 
 [preface]
 == Revision history
+
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author(s) | Date | Comments
@@ -63,10 +66,12 @@ Additional information about partially compressed volumes.
 | 0.0.13 | J.B. Metz | May 2017 | Additional information about metadata.
 | 0.0.14 | J.B. Metz | October 2017 | Additional information about metadata.
 | 0.0.15 | J.B. Metz | September 2018 | Textual updates.
+| 0.0.16 | J.B. Metz | December 2020 | Format changes.
 |===
 
 :numbered:
 == Overview
+
 FileVault Drive Encryption (FVDE) is the volume encryption used by Apple
 Mac OS as of Lion (10.7).
 
@@ -93,6 +98,7 @@ Except for UUID/GUID values, which are stored in big-endian
 |===
 
 === Test version
+
 The following version of programs were used to test the information within this document:
 
 * Mac OS X Lion (10.7)
@@ -104,15 +110,18 @@ The following version of programs were used to test the information within this 
 * [yellow-background]*TODO: macOS High Sierra (10.13)*
 
 == Keys
+
 To encrypt storage media CoreStorage uses different kind of keys.
 
 === Volume master key
+
 The Volume Master Key (VMK) is used to encrypt the data on the volume.
 
 The VMK is 128-bit of size and is stored in multiple KEKWrappedVolumeKeyStruct
 structures in the encryption context plist.
 
 === Volume tweak key
+
 The volume tweak is the second key required by AES-XTS to decrypt the data on
 the volume. The volume tweak is 128-bit of size and is determined as follows:
 
@@ -122,20 +131,24 @@ tweak key data.
 
 Then the one-way function SHA256 is applied to the tweak key data, so that only
 the first 128 bits is retained as the volume tweak key:
+
 ....
 volume tweak key = SHA256( tweak key data )
 ....
 
 === EncryptedRoot.plist.wipekey master key
+
 The physical volume identifier (128-bit UUID) of the encrypted volume is used
 to decrypt the EncryptedRoot.plist.wipekey file. This identifier can be found
 in the CS volume header.
 
 === Recovery key
+
 FileVault provides for a recovery password to unlock the encrypted data. The
 recovery password is used to determine a recovery key.
 
 Example recovery password:
+
 ....
 35AJ-AC98-TI1H-N4M3-HDUQ-UQFG
 ....
@@ -161,6 +174,7 @@ to be consistently 41000 for EncryptedRoot.plist.wipekey protected volumes on
 Mac OS X Lion (10.7).
 
 === User key
+
 For every user on an Mac OS system with FVDE, FileVault provides for a user
 password to unlock the encrypted data. The user password is used to determine a
 user key.
@@ -173,11 +187,13 @@ recovery key to obtain the volume master key. However each user has its own
 associated PassphraseWrappedKEKStruct.
 
 == Encryption methods
+
 FileVault Disk Encryption uses the AES-XTS encryption method to encrypt both
 the volume metadata and sector data. FileVault uses different methods to
 encrypt a multi-user system volume and single-user removable media volume.
 
 === AES-XTS
+
 The AES-XTS encryption method uses:
 
 * a primary key (key 1) to encrypt/decrypt the data (the whitened
@@ -207,11 +223,13 @@ The tweak value is the corresponding sector number represented as a 128-bit
 little-endian value. The unit size is the sector size, commonly 512 bytes.
 
 === Encrypted system volume
+
 In an encrypted system volume the EncryptedRoot.plist.wipekey contains the
 volume master key. A pass-phrase or recovery password is used to unlock an
 intermediate key which provides access to the volume master key.
 
 === Encrypted removable media volume
+
 FileVault2 support multiple ways to encrypt a removable media volume, several
 of the know methods are:
 
@@ -220,6 +238,7 @@ of the know methods are:
 * decrypted
 
 ==== With an encryption context
+
 In an encrypted removable media volume with an encryption context the XML
 plist-like data identified as "com.apple.corestorage.lvf.encryption.context"
 stored in the encrypted metadata contains the volume master key. A pass-phrase
@@ -227,13 +246,16 @@ is used to unlock an intermediate key which provides access to the volume
 master key.
 
 ==== Without an encryption context
+
 [yellow-background]*TODO*
 
 ==== Decrypted volume
+
 diskutil cs decryptVolume will decrypt the volume but the data on-disk is still
 encrypted with the [yellow-background]*TODO*.
 
 == Volume header
+
 The volume header is 512 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -293,6 +315,7 @@ checked when the volume header at the start of the volume is corrupt.
 
 === [[checksum_algorithms]]Checksum algorithms
 
+
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
@@ -301,6 +324,7 @@ The CRC-32 calculation does not use the XOR with 0xffffffff before and after the
 |===
 
 == Metadata (section)
+
 The metadata (section) (also referred to CS as disk label) consists of:
 
 * a metadata block type 0x0011
@@ -315,6 +339,7 @@ The metadata (section) (also referred to CS as disk label) consists of:
 The size of the metadata block is defined in the volume header, which commonly is 4 MiB.
 
 === Metadata block header
+
 The metadata block header is 64 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -348,6 +373,7 @@ The block number relative from the start of the metadata or encrypted metadata
 [yellow-background]*The (block) serial number does not always match the value in the volume header.*
 
 === Metadata block data type 0x0011
+
 Metadata block data type 0x0011 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -566,6 +592,7 @@ Is this remnant data?*
 |===
 
 ==== Core Storage XML plist data
+
 The Core Storage XML plist data consists of a single dict containing the
 following keys.
 
@@ -590,6 +617,7 @@ Consist of an array containing strings of UUIDs
 [yellow-background]*Is sequence number 3 the correct one for the LV size?*
 
 == Encrypted metadata (section)
+
 The encrypted metadata is encrypted with:
 
 * the primary key is the the physical volume identifier
@@ -609,11 +637,13 @@ The encrypted metadata consists of:
 [yellow-background]*Seen other trailing data?*
 
 === LVFwiped
+
 Some blocks contain the string "LVFwiped" where the checksum and initial value
 are normally stored. They largely seem to have the block header values set but
 don't contain data.
 
 [yellow-background]*Notes: 10.8 encrypted*
+
 ....
 checksum                               : 0x7746564c
 initial value                          : 0x64657069
@@ -631,6 +661,7 @@ unknown7                               : 0x00000000
 ....
 
 === Metadata block data type 0x0010
+
 ....
 Volume block backup ?
 
@@ -724,6 +755,7 @@ Non-system volume only ?
 ....
 
 ==== XML plist data
+
 The XML plist data consists of a single dict containing the following keys.
 
 [cols="1,1",options="header"]
@@ -744,6 +776,7 @@ Consits of an array containing strings of UUIDs
 [yellow-background]*Same as XML plist data in block 0x0011*
 
 === Metadata block data type 0x0013
+
 Metadata block data type 0x0013 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -906,6 +939,7 @@ relative block numbers?
 ....
 
 === Metadata block data type 0x0014
+
 Metadata block data type 0x0014 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -1034,6 +1068,7 @@ Number of entries:
 ....
 
 === Metadata block data type 0x0016
+
 Metadata block data type 0x0016 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -1122,6 +1157,7 @@ Non-system only ?
 ....
 
 === Metadata block data type 0x0017
+
 Metadata block data type 0x0017 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -1268,6 +1304,7 @@ Non-system only ?
 ....
 
 === Metadata block data type 0x0018
+
 Metadata block data type 0x0018 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -1321,6 +1358,7 @@ The metadata block data is variable in size and consists of:
 ....
 
 === [[metadata_block_0x0019]]Metadata block data type 0x0019
+
 Metadata block data type 0x0019 contains information about the encryption
 context of the logical volume. This block type is used in combination with
 non-system volumes, both encrypted and non-encrypted. On system volumes this
@@ -1419,6 +1457,7 @@ Compressed and segmented XML plist data (successive block 0x0024)
 The XML plist data does not have to be valid.
 
 ==== XML plist data
+
 XML plist main dict containing:
 
 [cols="1,1",options="header"]
@@ -1443,6 +1482,7 @@ Values seen: "Unlocked"
 |===
 
 ===== Encryption context
+
 Dict containing:
 
 [cols="1,1",options="header"]
@@ -1456,6 +1496,7 @@ This array is empty when the logical volume is not pass-phrase/password protecte
 |===
 
 ===== Crypto user
+
 Dict containing:
 
 [cols="1,1",options="header"]
@@ -1475,7 +1516,51 @@ See section: <<passphrase_wrapped_kek_struct,PassphraseWrappedKEKStruct>>
 | EFILoginGraphics |
 |===
 
+
+Notes:
+
+....
+Some user entries do not contain PassphraseWrappedKEKStruct
+
+<dict>
+  <key>ExternalKeyProps</key>
+  <dict>
+    <key>EncryptedBlob</key>
+    <data>
+    AggED8YNUFMrSX/Hz5KRjdN2WKr6tkiq6YWelbJlFjzq
+    ...
+    KYUuxmQh1MZpasdHHq3PLAw=
+    </data>
+    <key>EncryptionAlgorithm</key>
+    <string>iCloud PCS</string>
+    <key>OS User UUID</key>
+    <string>12345678-1234-1234-1234-1234567890ab</string>
+    <key>Version</key>
+    <string>1</string>
+    <key>iCloud User ID</key>
+    <string>email@example.com</string>
+  </dict>
+  <key>KeyEncryptingKeyIdent</key>
+  <string>12345678-1234-1234-1234-1234567890ab</string>
+  <key>KeyWrappedKEKStruct</key>
+  <data>
+  AgAAABgAAABtlTI+StOM45NfgYzpQH7gFnseJyML6nMAAAAAAAAA
+  ...
+  heWm7on1IkAoDcGei2rgGhEKAQAAAA==
+  </data>
+  <key>PassphraseHint</key>
+  <string>Admin Hint</string>
+  <key>UserIdent</key>
+  <string>12345678-1234-1234-1234-1234567890ab</string>
+  <key>UserType</key>
+  <integer>536936456</integer>
+  <key>WrapVersion</key>
+  <integer>1</integer>
+</dict>
+....
+
 ===== Wrapped volume key
+
 Dict containing information about the volume key:
 
 [cols="1,1",options="header"]
@@ -1493,6 +1578,7 @@ See section: <<key_encrypted_key_wrapped_volume_key,Key encrypted key wrapped vo
 |===
 
 ===== Conversion information
+
 Dict containing information about the conversion status:
 
 [cols="1,1",options="header"]
@@ -1646,6 +1732,7 @@ LVFwiped
 ....
 
 === Metadata block data type 0x001a
+
 Metadata block data type 0x001a contains information about the logical volume.
 The block data also contains the lv.familyUUID which is needed to compute the
 tweak key to decrypt encrypted volumes.
@@ -1701,6 +1788,7 @@ xml size
 ....
 
 ==== XML plist data
+
 The XML plist data consists of a single dict containing the following keys.
 
 [cols="1,1",options="header"]
@@ -1727,6 +1815,7 @@ When a 0x0405 metadata block is present the value of
 com.apple.corestorage.lv.size seems to be unreliable.
 
 === Metadata block data type 0x001c
+
 Metadata block data type 0x001c contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -1777,6 +1866,7 @@ Encrypted
 ....
 
 === Metadata block data type 0x001d
+
 Metadata block data type 0x001d contains information about location of the
 logical volume group inside the physical volume.
 
@@ -1831,6 +1921,7 @@ Seen in combination with block 0x0505 where this contained values that did not m
 ....
 
 === Metadata block data type 0x0021
+
 Metadata block data type 0x0021 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -1865,6 +1956,7 @@ number of blocks
 ....
 
 === Metadata block data type 0x0022
+
 Metadata block data type 0x0022 contains information about location of the
 logical volume group inside the physical volume. This block type is not used in
 combination with encrypted system volumes.
@@ -1901,6 +1993,7 @@ The array entry is 32 bytes of size and consists of:
 the free space areas? Where 0x001d contains the block extents.*
 
 === [[metadata_block_0x0024]]Metadata block data type 0x0024
+
 Metadata block data type 0x0024 is used to store data that does not fit within
 a single metadata block e.g. the XML plist data in metadata block 0x0019. Where
 the individual metadata blocks are a chain of data segments. Also see:
@@ -1919,6 +2012,7 @@ Including the 16 bytes of the next block number and the data size
 |===
 
 === Metadata block data type 0x0025
+
 Metadata block data type 0x0025 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -1985,6 +2079,7 @@ The array entry is 24 bytes of size and consists of:
 ....
 
 === Metadata block data type 0x0105
+
 Metadata block data type 0x0105 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -2028,6 +2123,7 @@ number of values?
 ....
 
 === Metadata block data type 0x0205
+
 ....
 0000e040: 01 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
 0000e050: 06 00 00 00 00 00 00 00  ff ff ff ff ff ff ff ff   ........ ........
@@ -2054,6 +2150,7 @@ number of values?
 ....
 
 === Metadata block data type 0x0304
+
 Metadata block data type 0x0304 contains information about [yellow-background]*TODO: describe*
 
 The metadata block data is variable in size and consists of:
@@ -2137,6 +2234,7 @@ what is the relationship between 0x304 and 0x0404?
 ....
 
 === Metadata block data type 0x0305
+
 Metadata block data type 0x0305 contains information about the logical volumes.
 
 [yellow-background]*At the moment it is assumed that a logical volume group can
@@ -2228,6 +2326,7 @@ Volume size in bytes
 ....
 
 === Metadata block data type 0x0404
+
 Metadata block data type 0x0404 contains information about data and metadata
 areas of the physical volume.
 
@@ -2243,6 +2342,7 @@ See section: <<data_area_descriptor,Data area descriptor>>
 |===
 
 ==== [[data_area_descriptor]]Data area descriptor
+
 The data area descriptor is 48 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2264,6 +2364,7 @@ Do multiple successive 0x0404 block form a single sequence of extents?
 ....
 
 === Metadata block data type 0x0405
+
 Metadata block data type 0x0405 contains information about data and metadata
 areas of the physical volume.
 
@@ -2279,6 +2380,7 @@ See section: <<data_area_descriptor,Data area descriptor>>
 |===
 
 ==== [[data_area_descriptor]]Data area descriptor
+
 The data area descriptor is 48 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2311,6 +2413,7 @@ See section: <<data_area_type,Data area type>>
 |===
 
 ==== Notes
+
 ....
 libfvde_metadata_block_read: type                                       : 0x0405
 libfvde_metadata_block_read: serial number                              : 0x01d70000
@@ -2350,6 +2453,7 @@ libfvde_metadata_block_read: unknown5                                   : 0x0000
 ....
 
 === Metadata block data type 0x0505
+
 Metadata block data type 0x0505 contains information about location of the
 logical volume data inside the physical volume. This block type is used in
 combination with encrypted system volumes.
@@ -2380,6 +2484,7 @@ Contains the first block number relative from the start of the Core Storage volu
 [yellow-background]*Note that the 0x0505 block can be defined before the 0x001a block.*
 
 === Metadata block data type 0x0605
+
 ....
 Seen in system volume
 
@@ -2399,6 +2504,7 @@ Seen in system volume
 ....
 
 == The encryption context plist
+
 The encryption context plist either the EncryptedRoot.plist.wipekey stored on
 the "Recovery HD" partition of the system disk that also contains the FileVault
 encrypted volume, or the XML plist-like data identified as
@@ -2533,6 +2639,7 @@ Seen 1
 |===
 
 ==== [[passphrase_wrapped_kek_struct]]PassphraseWrappedKEKStruct
+
 The PassphraseWrappedKEKStruct is 284 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2610,6 +2717,7 @@ Contains a <<wrapped_kek,WrappedKEK>>
 |===
 
 === [[wrapped_kek]]WrappedKEK
+
 The WrappedKEK is 24 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2622,6 +2730,7 @@ Once unencrypted it should be: +
 |===
 
 == Notes
+
 The metadata can be seen as having a hierarchical structure, where each
 metadata block is composed of:
 
@@ -2649,6 +2758,7 @@ The size of these parent blocks is defined in the volume header, in the
 "metadata size" field; this is commonly 4 MiB.
 
 === Backup of EncryptedRoot.plist.wipekey?
+
 /System/Library/Caches/com.apple.corestorage/EncryptedRoot.plist.wipekey
 
 === Determining the logical volume size and offset
@@ -2679,6 +2789,7 @@ Metadata block data type 0x0405
 Metadata block data type 0x0505, if present, contains the base offset?
 
 === Block type 0x0011
+
 ....
 checksum                                   : 0x1eef1926
 initial value                              : 0xffffffff
@@ -2739,6 +2850,7 @@ Block type 0x0011 (3rd)
 ....
 
 === Removable volume
+
 ....
 dd if=/dev/zero of=fv2test.raw bs=1024000 count=512
 
@@ -2780,6 +2892,7 @@ will decrypt the volume but the data on-disk is still encrypted with the key dat
 ....
 
 === Core storage
+
 Logical Volume Group
 
 * One or more physical volumes
@@ -2795,6 +2908,7 @@ Your Logical Volume Group already has a Logical Volume
 ....
 
 === Partial encrypted volume
+
 Seen in 10.7 partial encrypted volume
 
 Encrypted volume header:
@@ -2983,6 +3097,7 @@ https://bitbucket.org/garethl/xtssharp/src/0e6a81a823e9/docs/1619-2007-NIST-Subm
 
 [appendix]
 == GNU Free Documentation License
+
 Version 1.3, 3 November 2008
 Copyright © 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
 <http://fsf.org/>
@@ -2991,6 +3106,7 @@ Everyone is permitted to copy and distribute verbatim copies of this license
 document, but changing it is not allowed.
 
 === 0. PREAMBLE
+
 The purpose of this License is to make a manual, textbook, or other functional
 and useful document "free" in the sense of freedom: to assure everyone the
 effective freedom to copy and redistribute it, with or without modifying it,
@@ -3011,6 +3127,7 @@ recommend this License principally for works whose purpose is instruction or
 reference.
 
 === 1. APPLICABILITY AND DEFINITIONS
+
 This License applies to any manual or other work, in any medium, that contains
 a notice placed by the copyright holder saying it can be distributed under the
 terms of this License. Such a notice grants a world-wide, royalty-free license,
@@ -3089,6 +3206,7 @@ disclaiming warranties: any other implication that these Warranty Disclaimers
 may have is void and has no effect on the meaning of this License.
 
 === 2. VERBATIM COPYING
+
 You may copy and distribute the Document in any medium, either commercially or
 noncommercially, provided that this License, the copyright notices, and the
 license notice saying this License applies to the Document are reproduced in
@@ -3102,6 +3220,7 @@ You may also lend copies, under the same conditions stated above, and you may
 publicly display copies.
 
 === 3. COPYING IN QUANTITY
+
 If you publish printed copies (or copies in media that commonly have printed
 covers) of the Document, numbering more than 100, and the Document's license
 notice requires Cover Texts, you must enclose the copies in covers that carry,
@@ -3135,6 +3254,7 @@ well before redistributing any large number of copies, to give them a chance to
 provide you with an updated version of the Document.
 
 === 4. MODIFICATIONS
+
 You may copy and distribute a Modified Version of the Document under the
 conditions of sections 2 and 3 above, provided that you release the Modified
 Version under precisely this License, with the Modified Version filling the
@@ -3227,6 +3347,7 @@ permission to use their names for publicity for or to assert or imply
 endorsement of any Modified Version.
 
 === 5. COMBINING DOCUMENTS
+
 You may combine the Document with other documents released under this License,
 under the terms defined in section 4 above for modified versions, provided that
 you include in the combination all of the Invariant Sections of all of the
@@ -3248,6 +3369,7 @@ combine any sections Entitled "Acknowledgements", and any sections Entitled
 "Dedications". You must delete all sections Entitled "Endorsements".
 
 === 6. COLLECTIONS OF DOCUMENTS
+
 You may make a collection consisting of the Document and other documents
 released under this License, and replace the individual copies of this License
 in the various documents with a single copy that is included in the collection,
@@ -3260,6 +3382,7 @@ into the extracted document, and follow this License in all other respects
 regarding verbatim copying of that document.
 
 === 7. AGGREGATION WITH INDEPENDENT WORKS
+
 A compilation of the Document or its derivatives with other separate and
 independent documents or works, in or on a volume of a storage or distribution
 medium, is called an "aggregate" if the copyright resulting from the
@@ -3276,6 +3399,7 @@ in electronic form. Otherwise they must appear on printed covers that bracket
 the whole aggregate.
 
 === 8. TRANSLATION
+
 Translation is considered a kind of modification, so you may distribute
 translations of the Document under the terms of section 4. Replacing Invariant
 Sections with translations requires special permission from their copyright
@@ -3293,6 +3417,7 @@ If a section in the Document is Entitled "Acknowledgements", "Dedications", or
 typically require changing the actual title.
 
 === 9. TERMINATION
+
 You may not copy, modify, sublicense, or distribute the Document except as
 expressly provided under this License. Any attempt otherwise to copy, modify,
 sublicense, or distribute it is void, and will automatically terminate your
@@ -3316,6 +3441,7 @@ your rights have been terminated and not permanently reinstated, receipt of a
 copy of some or all of the same material does not give you any rights to use it.
 
 === 10. FUTURE REVISIONS OF THIS LICENSE
+
 The Free Software Foundation may publish new, revised versions of the GNU Free
 Documentation License from time to time. Such new versions will be similar in
 spirit to the present version, but may differ in detail to address new problems
@@ -3333,6 +3459,7 @@ License can be used, that proxy's public statement of acceptance of a version
 permanently authorizes you to choose that version for the Document.
 
 === 11. RELICENSING
+
 "Massive Multiauthor Collaboration Site" (or "MMC Site") means any World Wide
 Web server that publishes copyrightable works and also provides prominent
 facilities for anybody to edit those works. A public wiki that anybody can edit

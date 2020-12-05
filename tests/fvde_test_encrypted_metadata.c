@@ -307,6 +307,10 @@ int fvde_test_encrypted_metadata_read(
 	          NULL,
 	          0,
 	          0,
+	          NULL,
+	          0,
+	          NULL,
+	          0,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -326,6 +330,10 @@ int fvde_test_encrypted_metadata_read(
 	          NULL,
 	          NULL,
 	          0,
+	          0,
+	          NULL,
+	          0,
+	          NULL,
 	          0,
 	          &error );
 

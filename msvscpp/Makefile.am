@@ -14,6 +14,7 @@ MSVSCPP_FILES = \
 	fvde_test_support/fvde_test_support.vcproj \
 	fvde_test_volume/fvde_test_volume.vcproj \
 	fvde_test_volume_group/fvde_test_volume_group.vcproj \
+	fvde_test_volume_header/fvde_test_volume_header.vcproj \
 	fvdeinfo/fvdeinfo.vcproj \
 	fvdemount/fvdemount.vcproj \
 	fvdewipekey/fvdewipekey.vcproj \

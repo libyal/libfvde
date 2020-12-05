@@ -39,6 +39,7 @@
 #include "libfvde_libuna.h"
 #include "libfvde_metadata.h"
 #include "libfvde_types.h"
+#include "libfvde_volume_header.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -51,6 +52,10 @@ struct libfvde_internal_volume
 	/* The current (storage media) offset
 	 */
 	off64_t current_offset;
+
+	/* The volume header
+	 */
+	libfvde_volume_header_t *volume_header;
 
 	/* The primary metadata
 	 */
@@ -247,15 +252,15 @@ int libfvde_volume_get_logical_volume_encryption_method(
 LIBFVDE_EXTERN \
 int libfvde_volume_get_logical_volume_identifier(
      libfvde_volume_t *volume,
-     uint8_t *identifier,
-     size_t size,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
 int libfvde_volume_get_logical_volume_group_identifier(
      libfvde_volume_t *volume,
-     uint8_t *group_identifier,
-     size_t size,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
@@ -273,8 +278,8 @@ int libfvde_volume_get_physical_volume_encryption_method(
 LIBFVDE_EXTERN \
 int libfvde_volume_get_physical_volume_identifier(
      libfvde_volume_t *volume,
-     uint8_t *identifier,
-     size_t size,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \

@@ -45,11 +45,11 @@ struct fvde_volume_header
 	 */
 	uint8_t initial_value[ 4 ];
 
-	/* The version
+	/* The format version
 	 * Consists of 2 bytes
 	 * Contains 1
 	 */
-	uint8_t version[ 2 ];
+	uint8_t format_version[ 2 ];
 
 	/* The block type
 	 * Consists of 2 bytes

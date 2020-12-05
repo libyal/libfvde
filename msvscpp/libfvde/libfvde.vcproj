@@ -257,6 +257,10 @@
 				RelativePath="..\..\libfvde\libfvde_volume_group.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_volume_header.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -429,6 +433,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_volume_group.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_volume_header.h"
 				>
 			</File>
 		</Filter>

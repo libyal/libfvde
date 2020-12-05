@@ -3742,7 +3742,8 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 				libcnotify_printf(
 				 "\n" );
 			}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 			block_data_offset += 48;
 
 			if( ( data_area_descriptor->data_type == 0x09 )
@@ -3958,6 +3959,10 @@ int libfvde_encrypted_metadata_read(
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
      uint64_t encrypted_metadata_size,
+     const uint8_t *key,
+     size_t key_bit_size,
+     const uint8_t *tweak_key,
+     size_t tweak_key_bit_size,
      libcerror_error_t **error )
 {
 	uint8_t tweak_value[ 16 ];
@@ -3995,53 +4000,17 @@ int libfvde_encrypted_metadata_read(
 
 		return( -1 );
 	}
-	if( encrypted_metadata_size == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing encrypted metadata size.",
-		 function );
-
-		goto on_error;
-	}
-	if( encrypted_metadata_size > (uint64_t) SSIZE_MAX )
+	if( ( encrypted_metadata_size == 0 )
+	 || ( encrypted_metadata_size > (uint64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid encrypted metadata size value exceeds maximum.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid encrypted metadata size value out of bounds.",
 		 function );
 
 		return( -1 );
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: reading encrypted metadata at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-		 function,
-		 file_offset,
-		 file_offset );
-	}
-#endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek encrypted metadata offset: %" PRIi64 ".",
-		 function,
-		 file_offset );
-
-		goto on_error;
 	}
 	encrypted_data = (uint8_t *) memory_allocate(
 	                              sizeof( uint8_t ) * (size_t) encrypted_metadata_size );
@@ -4057,10 +4026,21 @@ int libfvde_encrypted_metadata_read(
 
 		goto on_error;
 	}
-	read_count = libbfio_handle_read_buffer(
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: reading encrypted metadata at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 file_offset,
+		 file_offset );
+	}
+#endif
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              encrypted_data,
 	              (size_t) encrypted_metadata_size,
+	              file_offset,
 	              error );
 
 	if( read_count != (ssize_t) encrypted_metadata_size )
@@ -4069,8 +4049,10 @@ int libfvde_encrypted_metadata_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read encrypted metadata.",
-		 function );
+		 "%s: unable to read encrypted metadata at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
 
 		goto on_error;
 	}
@@ -4090,10 +4072,10 @@ int libfvde_encrypted_metadata_read(
 	if( libcaes_tweaked_context_set_keys(
 	     xts_context,
 	     LIBCAES_CRYPT_MODE_DECRYPT,
-	     io_handle->key_data,
-	     128,
-	     io_handle->physical_volume_identifier,
-	     128,
+	     key,
+	     key_bit_size,
+	     tweak_key,
+	     tweak_key_bit_size,
 	     error ) == -1 )
 	{
 		libcerror_error_set(

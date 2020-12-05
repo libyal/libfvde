@@ -68,7 +68,8 @@ libfvde_la_SOURCES = \
 	libfvde_types.h \
 	libfvde_unused.h \
 	libfvde_volume.c libfvde_volume.h \
-	libfvde_volume_group.c libfvde_volume_group.h
+	libfvde_volume_group.c libfvde_volume_group.h \
+	libfvde_volume_header.c libfvde_volume_header.h
 
 libfvde_la_LIBADD = \
 	@LIBCERROR_LIBADD@ \

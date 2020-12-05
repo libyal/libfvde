@@ -904,7 +904,6 @@ int libfvde_metadata_read(
 	libfvde_metadata_block_t *metadata_block = NULL;
 	uint8_t *metadata_block_data             = NULL;
 	static char *function                    = "libfvde_metadata_read";
-	size_t metadata_block_data_size          = 0;
 	ssize_t read_count                       = 0;
 
 	if( metadata == NULL )
@@ -940,48 +939,21 @@ int libfvde_metadata_read(
 
 		return( -1 );
 	}
-	if( io_handle->metadata_size == 0 )
+/* TODO a minimal size check */
+	if( ( io_handle->metadata_size == 0 )
+	 || ( io_handle->metadata_size > (uint32_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid IO handle - missing metadata block size.",
+		 "%s: invalid IO handle - metadata size value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
-/* TODO a minimal size check */
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: reading metadata at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-		 function,
-		 file_offset,
-		 file_offset );
-	}
-#endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek metadata offset: %" PRIi64 ".",
-		 function,
-		 file_offset );
-
-		goto on_error;
-	}
-	metadata_block_data_size = (size_t) io_handle->metadata_size;
-
 	metadata_block_data = (uint8_t *) memory_allocate(
-	                                   sizeof( uint8_t ) * metadata_block_data_size );
+	                                   sizeof( uint8_t ) * (size_t) io_handle->metadata_size );
 
 	if( metadata_block_data == NULL )
 	{
@@ -994,20 +966,33 @@ int libfvde_metadata_read(
 
 		goto on_error;
 	}
-	read_count = libbfio_handle_read_buffer(
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: reading metadata at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 file_offset,
+		 file_offset );
+	}
+#endif
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              metadata_block_data,
-	              metadata_block_data_size,
+	              (size_t) io_handle->metadata_size,
+	              file_offset,
 	              error );
 
-	if( read_count != (ssize_t) metadata_block_data_size )
+	if( read_count != (ssize_t) io_handle->metadata_size )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read metadata block data.",
-		 function );
+		 "%s: unable to read metadata block data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
 
 		goto on_error;
 	}
@@ -1053,16 +1038,19 @@ int libfvde_metadata_read(
 		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( ( libcnotify_verbose != 0 )
-	 && ( metadata_block->serial_number != io_handle->serial_number ) )
+	if( libcnotify_verbose != 0 )
 	{
-		libcnotify_printf(
-		 "%s: mismatch in serial number ( 0x%08" PRIx32 " != 0x%08" PRIx32 " ).\n",
-		 function,
-		 metadata_block->serial_number,
-		 io_handle->serial_number );
+		if( metadata_block->serial_number != io_handle->serial_number )
+		{
+			libcnotify_printf(
+			 "%s: mismatch in serial number ( 0x%08" PRIx32 " != 0x%08" PRIx32 " ).\n",
+			 function,
+			 metadata_block->serial_number,
+			 io_handle->serial_number );
+		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	if( libfvde_metadata_read_type_0x0011(
 	     metadata,
 	     io_handle,

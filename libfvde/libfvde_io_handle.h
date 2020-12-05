@@ -41,10 +41,6 @@ typedef struct libfvde_io_handle libfvde_io_handle_t;
 
 struct libfvde_io_handle
 {
-	/* The version
-	 */
-	uint16_t version;
-
 	/* The serial number
 	 */
 	uint32_t serial_number;
@@ -57,33 +53,9 @@ struct libfvde_io_handle
 	 */
 	uint32_t block_size;
 
-	/* The number of sectors per block
-	 */
-	uint32_t sectors_per_block;
-
 	/* The metadata size
 	 */
 	uint32_t metadata_size;
-
-	/* The first metadata offset
-	 */
-	uint64_t first_metadata_offset;
-
-	/* The second metadata offset
-	 */
-	uint64_t second_metadata_offset;
-
-	/* The third metadata offset
-	 */
-	uint64_t third_metadata_offset;
-
-	/* The fourth metadata offset
-	 */
-	uint64_t fourth_metadata_offset;
-
-	/* The checksum algorithm
-	 */
-	uint32_t checksum_algorithm;
 
         /* The logical volume offset
          */
@@ -100,26 +72,6 @@ struct libfvde_io_handle
 	/* The logical volume identifier
 	 */
 	uint8_t logical_volume_identifier[ 16 ];
-
-	/* The logical volume group identifier
-	 */
-	uint8_t logical_volume_group_identifier[ 16 ];
-
-	/* The physical volume size
-	 */
-	uint64_t physical_volume_size;
-
-	/* The encryption method of the physical volume
-	 */
-	uint32_t physical_volume_encryption_method;
-
-	/* The physical volume identifier
-	 */
-	uint8_t physical_volume_identifier[ 16 ];
-
-	/* The key data
-         */
-	uint8_t key_data[ 16 ];
 
 	/* Value to indicate the volume is encrpted
 	 */
@@ -168,12 +120,6 @@ int libfvde_io_handle_free(
 
 int libfvde_io_handle_clear(
      libfvde_io_handle_t *io_handle,
-     libcerror_error_t **error );
-
-int libfvde_io_handle_read_volume_header(
-     libfvde_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     off64_t file_offset,
      libcerror_error_t **error );
 
 int libfvde_io_handle_read_sector(
