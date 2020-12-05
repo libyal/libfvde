@@ -1,4 +1,4 @@
-.Dd March 16, 2019
+.Dd December  5, 2020
 .Dt libfvde 3
 .Os libfvde
 .Sh NAME
@@ -66,10 +66,6 @@ Volume functions
 .Fn libfvde_volume_read_buffer "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "libfvde_error_t **error"
 .Ft ssize_t
 .Fn libfvde_volume_read_buffer_at_offset "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "off64_t offset" "libfvde_error_t **error"
-.Ft ssize_t
-.Fn libfvde_volume_write_buffer "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "libfvde_error_t **error"
-.Ft ssize_t
-.Fn libfvde_volume_write_buffer_at_offset "libfvde_volume_t *volume" "const void *buffer" "size_t buffer_size" "off64_t offset" "libfvde_error_t **error"
 .Ft off64_t
 .Fn libfvde_volume_seek_offset "libfvde_volume_t *volume" "off64_t offset" "int whence" "libfvde_error_t **error"
 .Ft int

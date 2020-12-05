@@ -31,7 +31,11 @@
 
 #include <libfvde/extern.h>
 
+#if defined( __CYGWIN__ ) || defined( __MINGW32__ )
+#define LIBFVDE_EXTERN_VARIABLE	extern
+#else
 #define LIBFVDE_EXTERN_VARIABLE	LIBFVDE_EXTERN
+#endif
 
 #else
 #define LIBFVDE_EXTERN		/* extern */

@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfvde],
- [20200817],
+ [20201205],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
