@@ -1,4 +1,4 @@
-.Dd March 16, 2019
+.Dd December  6, 2020
 .Dt fvdeinfo
 .Os libfvde
 .Sh NAME
@@ -10,7 +10,7 @@
 .Op Fl o Ar offset
 .Op Fl p Ar password
 .Op Fl r Ar password
-.Op Fl hvV
+.Op Fl huvV
 .Ar source
 .Sh DESCRIPTION
 .Nm fvdeinfo
@@ -38,6 +38,8 @@ specify the volume offset
 specify the password
 .It Fl r Ar password
 specify the recovery password
+.It Fl u
+unattended mode (disables user interaction)
 .It Fl v
 verbose output to stderr
 .It Fl V

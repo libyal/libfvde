@@ -191,6 +191,16 @@ int libfvde_volume_open_read_keys_from_encrypted_metadata(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      libcerror_error_t **error );
 
+int libfvde_internal_volume_unlock(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_unlock(
+     libfvde_volume_t *volume,
+     libcerror_error_t **error );
+
 LIBFVDE_EXTERN \
 int libfvde_volume_is_locked(
      libfvde_volume_t *volume,

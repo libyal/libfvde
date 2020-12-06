@@ -26,9 +26,11 @@ bin_PROGRAMS = \
 	fvdewipekey
 
 fvdeinfo_SOURCES = \
+	byte_size_string.c byte_size_string.h \
 	fvdeinfo.c \
 	fvdetools_getopt.c fvdetools_getopt.h \
 	fvdetools_i18n.h \
+	fvdetools_input.c fvdetools_input.h \
 	fvdetools_libbfio.h \
 	fvdetools_libcerror.h \
 	fvdetools_libclocale.h \
@@ -60,6 +62,7 @@ fvdemount_SOURCES = \
 	fvdemount.c \
 	fvdetools_getopt.c fvdetools_getopt.h \
 	fvdetools_i18n.h \
+	fvdetools_input.c fvdetools_input.h \
 	fvdetools_libbfio.h \
 	fvdetools_libcdata.h \
 	fvdetools_libcerror.h \

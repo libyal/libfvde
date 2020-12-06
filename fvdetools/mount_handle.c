@@ -1031,6 +1031,117 @@ on_error:
 	return( -1 );
 }
 
+/* Unlocks an encrypted volume
+ * Returns 1 if the volume is unlocked, 0 if not or -1 on error
+ */
+int mount_handle_input_unlock(
+     mount_handle_t *mount_handle,
+     libcerror_error_t **error )
+{
+	libfvde_volume_t *fvde_volume = NULL;
+	static char *function         = "mount_handle_input_unlock";
+	int result                    = 0;
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( mount_file_system_get_volume_by_index(
+	     mount_handle->file_system,
+	     0,
+	     &fvde_volume,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve volume: 0.",
+		 function );
+
+		return( -1 );
+	}
+	if( mount_handle->password != NULL )
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libfvde_volume_set_utf16_password(
+		     fvde_volume,
+		     (uint16_t *) mount_handle->password,
+		     mount_handle->password_length,
+		     error ) != 1 )
+#else
+		if( libfvde_volume_set_utf8_password(
+		     fvde_volume,
+		     (uint8_t *) mount_handle->password,
+		     mount_handle->password_length,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set password.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( mount_handle->recovery_password != NULL )
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libfvde_volume_set_utf16_recovery_password(
+		     fvde_volume,
+		     (uint16_t *) mount_handle->recovery_password,
+		     mount_handle->recovery_password_length,
+		     error ) != 1 )
+#else
+		if( libfvde_volume_set_utf8_recovery_password(
+		     fvde_volume,
+		     (uint8_t *) mount_handle->recovery_password,
+		     mount_handle->recovery_password_length,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set recovery password.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	result = libfvde_volume_unlock(
+	          fvde_volume,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to unlock volume.",
+		 function );
+
+		return( -1 );
+	}
+	else if( result != 0 )
+	{
+		mount_handle->is_locked = 0;
+	}
+	return( result );
+}
+
 /* Determine if the mount handle is locked
  * Returns 1 if locked, 0 if not or -1 on error
  */

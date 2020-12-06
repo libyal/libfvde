@@ -69,10 +69,6 @@ struct libfvde_io_handle
 	 */
 	uint32_t logical_volume_encryption_method;
 
-	/* The logical volume identifier
-	 */
-	uint8_t logical_volume_identifier[ 16 ];
-
 	/* Value to indicate the volume is encrpted
 	 */
 	uint8_t is_encrypted;

@@ -176,11 +176,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\fvdetools\byte_size_string.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\fvdetools\fvdeinfo.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\fvdetools\fvdetools_getopt.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\fvdetools_input.c"
 				>
 			</File>
 			<File
@@ -202,11 +210,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\fvdetools\byte_size_string.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\fvdetools\fvdetools_getopt.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\fvdetools\fvdetools_i18n.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\fvdetools_input.h"
 				>
 			</File>
 			<File

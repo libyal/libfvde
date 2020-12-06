@@ -35,6 +35,8 @@
 #endif
 
 #include "fvdetools_getopt.h"
+#include "fvdetools_i18n.h"
+#include "fvdetools_input.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
@@ -60,7 +62,7 @@ void usage_fprint(
 	                 " Drive Encrypted (FVDE) volume\n\n" );
 
 	fprintf( stream, "Usage: fvdeinfo [ -e filename ] [ -k keys ] [ -o offset ]\n"
-	                 "                [ -p password ] [ -r password ] [ -hvV ]\n"
+	                 "                [ -p password ] [ -r password ] [ -huvV ]\n"
 	                 "                source\n\n" );
 
 	fprintf( stream, "\tsource: the source file or device\n\n" );
@@ -71,6 +73,7 @@ void usage_fprint(
 	fprintf( stream, "\t-o:     specify the volume offset\n" );
 	fprintf( stream, "\t-p:     specify the password\n" );
 	fprintf( stream, "\t-r:     specify the recovery password\n" );
+	fprintf( stream, "\t-u:     unattended mode (disables user interaction)\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
 	fprintf( stream, "\t-V:     print version\n" );
 }
@@ -127,6 +130,8 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
+	system_character_t password[ 64 ];
+
 	libfvde_error_t *error                                   = NULL;
 	system_character_t *option_encrypted_root_plist_filename = NULL;
 	system_character_t *option_keys                          = NULL;
@@ -136,6 +141,7 @@ int main( int argc, char * const argv[] )
 	system_character_t *source                               = NULL;
 	char *program                                            = "fvdeinfo";
 	system_integer_t option                                  = 0;
+	int interactive_mode                                     = 1;
 	int result                                               = 0;
 	int verbose                                              = 0;
 
@@ -172,7 +178,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = fvdetools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "e:hk:o:p:r:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "e:hk:o:p:r:uvV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -216,6 +222,11 @@ int main( int argc, char * const argv[] )
 
 			case (system_integer_t) 'r':
 				option_recovery_password = optarg;
+
+				break;
+
+			case (system_integer_t) 'u':
+				interactive_mode = 0;
 
 				break;
 
@@ -332,12 +343,10 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 	}
-	result = info_handle_open_input(
-	          fvdeinfo_info_handle,
-	          source,
-	          &error );
-
-	if( result == -1 )
+	if( info_handle_open_input(
+	     fvdeinfo_info_handle,
+	     source,
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
@@ -346,13 +355,70 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	else if( result == 0 )
+	result = info_handle_input_is_locked(
+	          fvdeinfo_info_handle,
+	          &error );
+
+	if( result == -1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to unlock keys.\n" );
+		 "Unable to determine if source volume is locked.\n" );
 
 		goto on_error;
+	}
+	if( ( result != 0 )
+	 && ( interactive_mode != 0 )
+	 && ( option_keys == NULL )
+	 && ( option_password == NULL )
+	 && ( option_recovery_password == NULL ) )
+	{
+		fprintf(
+		 stdout,
+		 "The source volume is locked and a password is needed to unlock it.\n\n" );
+
+		if( fvdetools_prompt_for_password(
+		     stdout,
+		     "Password",
+		     password,
+		     64,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to retrieve password.\n" );
+
+			goto on_error;
+		}
+		if( info_handle_set_password(
+		     fvdeinfo_info_handle,
+		     password,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to set password.\n" );
+
+			goto on_error;
+		}
+		fprintf(
+		 stdout,
+		 "\n\n" );
+
+		if( info_handle_input_unlock(
+		     fvdeinfo_info_handle,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to unlock volume.\n" );
+
+			goto on_error;
+		}
+		memory_set(
+		 password,
+		 0,
+		 64 );
 	}
 	if( info_handle_volume_fprint(
 	     fvdeinfo_info_handle,
@@ -400,6 +466,11 @@ on_error:
 		 &fvdeinfo_info_handle,
 		 NULL );
 	}
+	memory_set(
+	 password,
+	 0,
+	 64 );
+
 	return( EXIT_FAILURE );
 }
 

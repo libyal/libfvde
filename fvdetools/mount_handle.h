@@ -148,6 +148,10 @@ int mount_handle_close(
      mount_handle_t *mount_handle,
      libcerror_error_t **error );
 
+int mount_handle_input_unlock(
+     mount_handle_t *mount_handle,
+     libcerror_error_t **error );
+
 int mount_handle_is_locked(
      mount_handle_t *mount_handle,
      libcerror_error_t **error );

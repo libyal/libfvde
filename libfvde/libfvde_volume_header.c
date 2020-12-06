@@ -319,22 +319,22 @@ int libfvde_volume_header_read_data(
 		 stored_checksum );
 
 		libcnotify_printf(
-		 "%s: initial value\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: initial value\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 initial_value );
 
 		libcnotify_printf(
-		 "%s: format version\t\t\t: %" PRIu16 "\n",
+		 "%s: format version\t\t\t\t: %" PRIu16 "\n",
 		 function,
 		 format_version );
 
 		libcnotify_printf(
-		 "%s: block type\t\t\t: 0x%04" PRIx16 "\n",
+		 "%s: block type\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 block_type );
 
 		libcnotify_printf(
-		 "%s: serial number\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: serial number\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 volume_header->serial_number );
 
@@ -392,7 +392,7 @@ int libfvde_volume_header_read_data(
 		 value_64bit );
 
 		libcnotify_printf(
-		 "%s: physical volume size\t\t: %" PRIu64 "\n",
+		 "%s: physical volume size\t\t\t: %" PRIu64 "\n",
 		 function,
 		 volume_header->physical_volume_size );
 
@@ -405,13 +405,13 @@ int libfvde_volume_header_read_data(
 		 0 );
 
 		libcnotify_printf(
-		 "%s: core storage signature\t\t: %c%c\n",
+		 "%s: core storage signature\t\t\t: %c%c\n",
 		 function,
 		 ( (fvde_volume_header_t *) data )->core_storage_signature[ 0 ],
 		 ( (fvde_volume_header_t *) data )->core_storage_signature[ 1 ] );
 
 		libcnotify_printf(
-		 "%s: checksum algorithm\t\t: %" PRIu32 "\n",
+		 "%s: checksum algorithm\t\t\t: %" PRIu32 "\n",
 		 function,
 		 checksum_algorithm );
 
@@ -424,32 +424,32 @@ int libfvde_volume_header_read_data(
 		 value_16bit );
 
 		libcnotify_printf(
-		 "%s: block size\t\t\t: %" PRIu32 "\n",
+		 "%s: block size\t\t\t\t: %" PRIu32 "\n",
 		 function,
 		 volume_header->block_size );
 
 		libcnotify_printf(
-		 "%s: metadata size\t\t\t: %" PRIu32 "\n",
+		 "%s: metadata size\t\t\t\t: %" PRIu32 "\n",
 		 function,
 		 volume_header->metadata_size );
 
 		libcnotify_printf(
-		 "%s: first metadata block number\t: %" PRIu64 "\n",
+		 "%s: first metadata block number\t\t: %" PRIu64 "\n",
 		 function,
 		 volume_header->first_metadata_offset );
 
 		libcnotify_printf(
-		 "%s: second metadata block number\t: %" PRIu64 "\n",
+		 "%s: second metadata block number\t\t: %" PRIu64 "\n",
 		 function,
 		 volume_header->second_metadata_offset );
 
 		libcnotify_printf(
-		 "%s: third metadata block number\t: %" PRIu64 "\n",
+		 "%s: third metadata block number\t\t: %" PRIu64 "\n",
 		 function,
 		 volume_header->third_metadata_offset );
 
 		libcnotify_printf(
-		 "%s: fourth metadata block number\t: %" PRIu64 "\n",
+		 "%s: fourth metadata block number\t\t: %" PRIu64 "\n",
 		 function,
 		 volume_header->fourth_metadata_offset );
 
@@ -462,7 +462,7 @@ int libfvde_volume_header_read_data(
 		 0 );
 
 		libcnotify_printf(
-		 "%s: encryption method\t\t\t: %" PRIu32 "\n",
+		 "%s: encryption method\t\t\t\t: %" PRIu32 "\n",
 		 function,
 		 volume_header->physical_volume_encryption_method );
 
@@ -476,7 +476,7 @@ int libfvde_volume_header_read_data(
 
 		if( libfvde_debug_print_guid_value(
 		     function,
-		     "physical volume identifier\t",
+		     "physical volume identifier\t\t",
 		     volume_header->physical_volume_identifier,
 		     16,
 		     LIBFGUID_ENDIAN_BIG,

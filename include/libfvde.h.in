@@ -261,6 +261,14 @@ int libfvde_volume_close(
      libfvde_volume_t *volume,
      libfvde_error_t **error );
 
+/* Unlocks the volume
+ * Returns 1 if the volume is unlocked, 0 if not or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_unlock(
+     libfvde_volume_t *volume,
+     libfvde_error_t **error );
+
 /* Determines if the volume is locked
  * Returns 1 if locked, 0 if not or -1 on error
  */
@@ -327,6 +335,28 @@ int libfvde_volume_get_logical_volume_encryption_method(
      uint32_t *encryption_method,
      libfvde_error_t **error );
 
+/* Retrieves the logical volume identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
+/* Retrieves the logical volume group identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_group_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
 /* Retrieves the physical volume size
  * Returns 1 if successful or -1 on error
  */
@@ -345,8 +375,19 @@ int libfvde_volume_get_physical_volume_encryption_method(
      uint32_t *encryption_method,
      libfvde_error_t **error );
 
+/* Retrieves the physical volume identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_get_physical_volume_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
 /* Sets the keys
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -357,7 +398,7 @@ int libfvde_volume_set_keys(
      libfvde_error_t **error );
 
 /* Sets an UTF-8 formatted password
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful, 0 if password is invalid or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -368,7 +409,7 @@ int libfvde_volume_set_utf8_password(
      libfvde_error_t **error );
 
 /* Sets an UTF-16 formatted password
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful, 0 if password is invalid or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -379,7 +420,7 @@ int libfvde_volume_set_utf16_password(
      libfvde_error_t **error );
 
 /* Sets an UTF-8 formatted recovery password
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -390,7 +431,7 @@ int libfvde_volume_set_utf8_recovery_password(
      libfvde_error_t **error );
 
 /* Sets an UTF-16 formatted recovery password
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -401,7 +442,7 @@ int libfvde_volume_set_utf16_recovery_password(
      libfvde_error_t **error );
 
 /* Reads the EncryptedRoot.plist file
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -413,7 +454,7 @@ int libfvde_volume_read_encrypted_root_plist(
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
 /* Reads the EncryptedRoot.plist file
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \
@@ -427,7 +468,7 @@ int libfvde_volume_read_encrypted_root_plist_wide(
 #if defined( LIBFVDE_HAVE_BFIO )
 
 /* Reads the EncryptedRoot.plist file using a Basic File IO (bfio) handle
- * This function needs to be used before one of the open functions
+ * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \

@@ -3,3 +3,6 @@ Acknowledgements: libfvde
 Copyright (C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>
                          Joachim Metz <joachim.metz@gmail.com>
 
+Additional credits go to:
+* Rob Wu <rob@robwu.nl>, for providing the initial version of a cross-platfrom
+  password prompt.

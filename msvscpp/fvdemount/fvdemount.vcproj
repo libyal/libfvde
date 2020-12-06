@@ -186,6 +186,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\fvdetools\fvdetools_input.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\fvdetools\fvdetools_output.c"
 				>
 			</File>
@@ -225,6 +229,10 @@
 			</File>
 			<File
 				RelativePath="..\..\fvdetools\fvdetools_i18n.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\fvdetools\fvdetools_input.h"
 				>
 			</File>
 			<File

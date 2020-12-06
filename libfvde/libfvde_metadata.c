@@ -803,7 +803,7 @@ int libfvde_metadata_read_core_storage_plist(
 				goto on_error;
 			}
 			libcnotify_printf(
-			 "%s: logical volume group identifier\t\t: %s\n",
+			 "%s: logical volume group identifier\t: %s\n",
 			 function,
 			 string );
 
@@ -812,7 +812,8 @@ int libfvde_metadata_read_core_storage_plist(
 
 			string = NULL;
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		if( libfplist_property_free(
 		     &sub_property,
 		     error ) != 1 )

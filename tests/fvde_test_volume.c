@@ -30,6 +30,15 @@
 #include <stdlib.h>
 #endif
 
+#if defined( TIME_WITH_SYS_TIME )
+#include <sys/time.h>
+#include <time.h>
+#elif defined( HAVE_SYS_TIME_H )
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+
 #include "fvde_test_functions.h"
 #include "fvde_test_getopt.h"
 #include "fvde_test_libbfio.h"
@@ -37,9 +46,18 @@
 #include "fvde_test_libfvde.h"
 #include "fvde_test_macros.h"
 #include "fvde_test_memory.h"
-#include "fvde_test_unused.h"
 
 #include "../libfvde/libfvde_volume.h"
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
+#error Unsupported size of wchar_t
+#endif
+
+/* Define to make fvde_test_volume generate verbose output
+#define FVDE_TEST_VOLUME_VERBOSE
+ */
+
+#define FVDE_TEST_VOLUME_READ_BUFFER_SIZE	4096
 
 #if !defined( LIBFVDE_HAVE_BFIO )
 
@@ -56,14 +74,6 @@ int libfvde_volume_open_file_io_handle(
      libfvde_error_t **error );
 
 #endif /* !defined( LIBFVDE_HAVE_BFIO ) */
-
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
-#error Unsupported size of wchar_t
-#endif
-
-/* Define to make fvde_test_volume generate verbose output
-#define FVDE_TEST_VOLUME_VERBOSE
- */
 
 /* Creates and opens a source volume
  * Returns 1 if successful or -1 on error
@@ -891,13 +901,13 @@ int fvde_test_volume_open_file_io_handle(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NOT_NULL(
-         "file_io_handle",
-         file_io_handle );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "file_io_handle",
+	 file_io_handle );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	string_length = system_string_length(
 	                 source );
@@ -920,9 +930,9 @@ int fvde_test_volume_open_file_io_handle(
 	 result,
 	 1 );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfvde_volume_initialize(
 	          &volume,
@@ -1090,12 +1100,12 @@ int fvde_test_volume_open_file_io_handle(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
-         "file_io_handle",
-         file_io_handle );
+	 "file_io_handle",
+	 file_io_handle );
 
-        FVDE_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 
@@ -1381,19 +1391,81 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfvde_volume_read_buffer function
+/* Tests the libfvde_volume_is_locked function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_volume_read_buffer(
+int fvde_test_volume_is_locked(
      libfvde_volume_t *volume )
 {
-	uint8_t buffer[ 16 ];
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfvde_volume_is_locked(
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfvde_volume_is_locked(
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
+
+/* Tests the libfvde_internal_volume_read_buffer_from_file_io_handle function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_internal_volume_read_buffer_from_file_io_handle(
+     libfvde_volume_t *volume )
+{
+	uint8_t buffer[ FVDE_TEST_VOLUME_READ_BUFFER_SIZE ];
 
 	libcerror_error_t *error = NULL;
+	time_t timestamp         = 0;
+	size64_t remaining_size  = 0;
 	size64_t size            = 0;
+	size_t read_size         = 0;
 	ssize_t read_count       = 0;
 	off64_t offset           = 0;
+	off64_t read_offset      = 0;
+	int number_of_tests      = 1024;
+	int random_number        = 0;
 	int result               = 0;
+	int test_number          = 0;
 
 	/* Determine size
 	 */
@@ -1430,23 +1502,30 @@ int fvde_test_volume_read_buffer(
 
 	/* Test regular cases
 	 */
-	if( size > 16 )
+	read_size = FVDE_TEST_VOLUME_READ_BUFFER_SIZE;
+
+	if( size < FVDE_TEST_VOLUME_READ_BUFFER_SIZE )
 	{
-		read_count = libfvde_volume_read_buffer(
-		              volume,
-		              buffer,
-		              16,
-		              &error );
+		read_size = (size_t) size;
+	}
+	read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
+	              (libfvde_internal_volume_t *) volume,
+	              ( (libfvde_internal_volume_t *) volume )->file_io_handle,
+	              buffer,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+	              &error );
 
-		FVDE_TEST_ASSERT_EQUAL_SSIZE(
-		 "read_count",
-		 read_count,
-		 (ssize_t) 16 );
+	FVDE_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) read_size );
 
-		FVDE_TEST_ASSERT_IS_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
+	if( size > 8 )
+	{
 		/* Set offset to size - 8
 		 */
 		offset = libfvde_volume_seek_offset(
@@ -1466,10 +1545,11 @@ int fvde_test_volume_read_buffer(
 
 		/* Read buffer on size boundary
 		 */
-		read_count = libfvde_volume_read_buffer(
-		              volume,
+		read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
+		              (libfvde_internal_volume_t *) volume,
+		              ( (libfvde_internal_volume_t *) volume )->file_io_handle,
 		              buffer,
-		              16,
+		              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 		              &error );
 
 		FVDE_TEST_ASSERT_EQUAL_SSIZE(
@@ -1483,10 +1563,11 @@ int fvde_test_volume_read_buffer(
 
 		/* Read buffer beyond size boundary
 		 */
-		read_count = libfvde_volume_read_buffer(
-		              volume,
+		read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
+		              (libfvde_internal_volume_t *) volume,
+		              ( (libfvde_internal_volume_t *) volume )->file_io_handle,
 		              buffer,
-		              16,
+		              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 		              &error );
 
 		FVDE_TEST_ASSERT_EQUAL_SSIZE(
@@ -1497,30 +1578,142 @@ int fvde_test_volume_read_buffer(
 		FVDE_TEST_ASSERT_IS_NULL(
 		 "error",
 		 error );
+	}
+	/* Stress test read buffer
+	 */
+	timestamp = time(
+	             NULL );
 
-		/* Reset offset to 0
-		 */
-		offset = libfvde_volume_seek_offset(
-		          volume,
-		          0,
-		          SEEK_SET,
-		          &error );
+	srand(
+	 (unsigned int) timestamp );
 
-		FVDE_TEST_ASSERT_EQUAL_INT64(
-		 "offset",
-		 offset,
-		 (int64_t) 0 );
+	offset = libfvde_volume_seek_offset(
+	          volume,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	remaining_size = size;
+
+	for( test_number = 0;
+	     test_number < number_of_tests;
+	     test_number++ )
+	{
+		random_number = rand();
+
+		FVDE_TEST_ASSERT_GREATER_THAN_INT(
+		 "random_number",
+		 random_number,
+		 -1 );
+
+		read_size = (size_t) random_number % FVDE_TEST_VOLUME_READ_BUFFER_SIZE;
+
+#if defined( FVDE_TEST_VOLUME_VERBOSE )
+		fprintf(
+		 stdout,
+		 "libfvde_volume_read_buffer: at offset: %" PRIi64 " (0x%08" PRIx64 ") of size: %" PRIzd "\n",
+		 read_offset,
+		 read_offset,
+		 read_size );
+#endif
+		read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
+		              (libfvde_internal_volume_t *) volume,
+		              ( (libfvde_internal_volume_t *) volume )->file_io_handle,
+		              buffer,
+		              read_size,
+		              &error );
+
+		if( read_size > remaining_size )
+		{
+			read_size = (size_t) remaining_size;
+		}
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) read_size );
 
 		FVDE_TEST_ASSERT_IS_NULL(
 		 "error",
 		 error );
+
+		read_offset += read_count;
+
+		result = libfvde_volume_get_offset(
+		          volume,
+		          &offset,
+		          &error );
+
+		FVDE_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		FVDE_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 read_offset );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		remaining_size -= read_count;
+
+		if( remaining_size == 0 )
+		{
+			offset = libfvde_volume_seek_offset(
+			          volume,
+			          0,
+			          SEEK_SET,
+			          &error );
+
+			FVDE_TEST_ASSERT_EQUAL_INT64(
+			 "offset",
+			 offset,
+			 (int64_t) 0 );
+
+			FVDE_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			read_offset = 0;
+
+			remaining_size = size;
+		}
 	}
+	/* Reset offset to 0
+	 */
+	offset = libfvde_volume_seek_offset(
+	          volume,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	/* Test error cases
 	 */
-	read_count = libfvde_volume_read_buffer(
+	read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
 	              NULL,
+	              ( (libfvde_internal_volume_t *) volume )->file_io_handle,
 	              buffer,
-	              16,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 	              &error );
 
 	FVDE_TEST_ASSERT_EQUAL_SSIZE(
@@ -1535,10 +1728,11 @@ int fvde_test_volume_read_buffer(
 	libcerror_error_free(
 	 &error );
 
-	read_count = libfvde_volume_read_buffer(
-	              volume,
+	read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
+	              (libfvde_internal_volume_t *) volume,
+	              ( (libfvde_internal_volume_t *) volume )->file_io_handle,
 	              NULL,
-	              16,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 	              &error );
 
 	FVDE_TEST_ASSERT_EQUAL_SSIZE(
@@ -1553,8 +1747,9 @@ int fvde_test_volume_read_buffer(
 	libcerror_error_free(
 	 &error );
 
-	read_count = libfvde_volume_read_buffer(
-	              volume,
+	read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
+	              (libfvde_internal_volume_t *) volume,
+	              ( (libfvde_internal_volume_t *) volume )->file_io_handle,
 	              buffer,
 	              (size_t) SSIZE_MAX + 1,
 	              &error );
@@ -1582,18 +1777,412 @@ on_error:
 	return( 0 );
 }
 
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
+
+/* Tests the libfvde_volume_read_buffer function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_volume_read_buffer(
+     libfvde_volume_t *volume )
+{
+	uint8_t buffer[ FVDE_TEST_VOLUME_READ_BUFFER_SIZE ];
+
+	libcerror_error_t *error = NULL;
+	time_t timestamp         = 0;
+	size64_t remaining_size  = 0;
+	size64_t size            = 0;
+	size_t read_size         = 0;
+	ssize_t read_count       = 0;
+	off64_t offset           = 0;
+	off64_t read_offset      = 0;
+	int number_of_tests      = 1024;
+	int random_number        = 0;
+	int result               = 0;
+	int test_number          = 0;
+
+	/* Determine size
+	 */
+	result = libfvde_volume_get_logical_volume_size(
+	          volume,
+	          &size,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Reset offset to 0
+	 */
+	offset = libfvde_volume_seek_offset(
+	          volume,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	read_size = FVDE_TEST_VOLUME_READ_BUFFER_SIZE;
+
+	if( size < FVDE_TEST_VOLUME_READ_BUFFER_SIZE )
+	{
+		read_size = (size_t) size;
+	}
+	read_count = libfvde_volume_read_buffer(
+	              volume,
+	              buffer,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+	              &error );
+
+	FVDE_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) read_size );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	if( size > 8 )
+	{
+		/* Set offset to size - 8
+		 */
+		offset = libfvde_volume_seek_offset(
+		          volume,
+		          -8,
+		          SEEK_END,
+		          &error );
+
+		FVDE_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 (int64_t) size - 8 );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		/* Read buffer on size boundary
+		 */
+		read_count = libfvde_volume_read_buffer(
+		              volume,
+		              buffer,
+		              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+		              &error );
+
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 8 );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		/* Read buffer beyond size boundary
+		 */
+		read_count = libfvde_volume_read_buffer(
+		              volume,
+		              buffer,
+		              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+		              &error );
+
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 0 );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+	}
+	/* Stress test read buffer
+	 */
+	timestamp = time(
+	             NULL );
+
+	srand(
+	 (unsigned int) timestamp );
+
+	offset = libfvde_volume_seek_offset(
+	          volume,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	remaining_size = size;
+
+	for( test_number = 0;
+	     test_number < number_of_tests;
+	     test_number++ )
+	{
+		random_number = rand();
+
+		FVDE_TEST_ASSERT_GREATER_THAN_INT(
+		 "random_number",
+		 random_number,
+		 -1 );
+
+		read_size = (size_t) random_number % FVDE_TEST_VOLUME_READ_BUFFER_SIZE;
+
+#if defined( FVDE_TEST_VOLUME_VERBOSE )
+		fprintf(
+		 stdout,
+		 "libfvde_volume_read_buffer: at offset: %" PRIi64 " (0x%08" PRIx64 ") of size: %" PRIzd "\n",
+		 read_offset,
+		 read_offset,
+		 read_size );
+#endif
+		read_count = libfvde_volume_read_buffer(
+		              volume,
+		              buffer,
+		              read_size,
+		              &error );
+
+		if( read_size > remaining_size )
+		{
+			read_size = (size_t) remaining_size;
+		}
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) read_size );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		read_offset += read_count;
+
+		result = libfvde_volume_get_offset(
+		          volume,
+		          &offset,
+		          &error );
+
+		FVDE_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		FVDE_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 read_offset );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		remaining_size -= read_count;
+
+		if( remaining_size == 0 )
+		{
+			offset = libfvde_volume_seek_offset(
+			          volume,
+			          0,
+			          SEEK_SET,
+			          &error );
+
+			FVDE_TEST_ASSERT_EQUAL_INT64(
+			 "offset",
+			 offset,
+			 (int64_t) 0 );
+
+			FVDE_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			read_offset = 0;
+
+			remaining_size = size;
+		}
+	}
+	/* Reset offset to 0
+	 */
+	offset = libfvde_volume_seek_offset(
+	          volume,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	read_count = libfvde_volume_read_buffer(
+	              NULL,
+	              buffer,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+	              &error );
+
+	FVDE_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libfvde_volume_read_buffer(
+	              volume,
+	              NULL,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+	              &error );
+
+	FVDE_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libfvde_volume_read_buffer(
+	              volume,
+	              buffer,
+	              (size_t) SSIZE_MAX + 1,
+	              &error );
+
+	FVDE_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_FVDE_TEST_RWLOCK )
+
+	/* Test libfvde_volume_read_buffer with pthread_rwlock_wrlock failing in libcthreads_read_write_lock_grab_for_write
+	 */
+	fvde_test_pthread_rwlock_wrlock_attempts_before_fail = 0;
+
+	read_count = libfvde_volume_read_buffer(
+	              volume,
+	              buffer,
+	              FVDE_TEST_PARTITION_READ_BUFFER_SIZE,
+	              &error );
+
+	if( fvde_test_pthread_rwlock_wrlock_attempts_before_fail != -1 )
+	{
+		fvde_test_pthread_rwlock_wrlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Test libfvde_volume_read_buffer with pthread_rwlock_unlock failing in libcthreads_read_write_lock_release_for_write
+	 */
+	fvde_test_pthread_rwlock_unlock_attempts_before_fail = 0;
+
+	read_count = libfvde_volume_read_buffer(
+	              volume,
+	              buffer,
+	              FVDE_TEST_PARTITION_READ_BUFFER_SIZE,
+	              &error );
+
+	if( fvde_test_pthread_rwlock_unlock_attempts_before_fail != -1 )
+	{
+		fvde_test_pthread_rwlock_unlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_FVDE_TEST_RWLOCK ) */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 /* Tests the libfvde_volume_read_buffer_at_offset function
  * Returns 1 if successful or 0 if not
  */
 int fvde_test_volume_read_buffer_at_offset(
      libfvde_volume_t *volume )
 {
-	uint8_t buffer[ 16 ];
+	uint8_t buffer[ FVDE_TEST_VOLUME_READ_BUFFER_SIZE ];
 
 	libcerror_error_t *error = NULL;
+	time_t timestamp         = 0;
+	size64_t remaining_size  = 0;
 	size64_t size            = 0;
+	size_t read_size         = 0;
 	ssize_t read_count       = 0;
+	off64_t offset           = 0;
+	off64_t read_offset      = 0;
+	int number_of_tests      = 1024;
+	int random_number        = 0;
 	int result               = 0;
+	int test_number          = 0;
 
 	/* Determine size
 	 */
@@ -1613,30 +2202,36 @@ int fvde_test_volume_read_buffer_at_offset(
 
 	/* Test regular cases
 	 */
-	if( size > 16 )
+	read_size = FVDE_TEST_VOLUME_READ_BUFFER_SIZE;
+
+	if( size < FVDE_TEST_VOLUME_READ_BUFFER_SIZE )
 	{
-		read_count = libfvde_volume_read_buffer_at_offset(
-		              volume,
-		              buffer,
-		              16,
-		              0,
-		              &error );
+		read_size = (size_t) size;
+	}
+	read_count = libfvde_volume_read_buffer_at_offset(
+	              volume,
+	              buffer,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+	              0,
+	              &error );
 
-		FVDE_TEST_ASSERT_EQUAL_SSIZE(
-		 "read_count",
-		 read_count,
-		 (ssize_t) 16 );
+	FVDE_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) read_size );
 
-		FVDE_TEST_ASSERT_IS_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
+	if( size > 8 )
+	{
 		/* Read buffer on size boundary
 		 */
 		read_count = libfvde_volume_read_buffer_at_offset(
 		              volume,
 		              buffer,
-		              16,
+		              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 		              size - 8,
 		              &error );
 
@@ -1654,7 +2249,7 @@ int fvde_test_volume_read_buffer_at_offset(
 		read_count = libfvde_volume_read_buffer_at_offset(
 		              volume,
 		              buffer,
-		              16,
+		              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 		              size + 8,
 		              &error );
 
@@ -1667,12 +2262,88 @@ int fvde_test_volume_read_buffer_at_offset(
 		 "error",
 		 error );
 	}
+	/* Stress test read buffer
+	 */
+	timestamp = time(
+	             NULL );
+
+	srand(
+	 (unsigned int) timestamp );
+
+	for( test_number = 0;
+	     test_number < number_of_tests;
+	     test_number++ )
+	{
+		random_number = rand();
+
+		FVDE_TEST_ASSERT_GREATER_THAN_INT(
+		 "random_number",
+		 random_number,
+		 -1 );
+
+		if( size > 0 )
+		{
+			read_offset = (off64_t) random_number % size;
+		}
+		read_size = (size_t) random_number % FVDE_TEST_VOLUME_READ_BUFFER_SIZE;
+
+#if defined( FVDE_TEST_VOLUME_VERBOSE )
+		fprintf(
+		 stdout,
+		 "libfvde_volume_read_buffer_at_offset: at offset: %" PRIi64 " (0x%08" PRIx64 ") of size: %" PRIzd "\n",
+		 read_offset,
+		 read_offset,
+		 read_size );
+#endif
+		read_count = libfvde_volume_read_buffer_at_offset(
+		              volume,
+		              buffer,
+		              read_size,
+		              read_offset,
+		              &error );
+
+		remaining_size = size - read_offset;
+
+		if( read_size > remaining_size )
+		{
+			read_size = (size_t) remaining_size;
+		}
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) read_size );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		read_offset += read_count;
+
+		result = libfvde_volume_get_offset(
+		          volume,
+		          &offset,
+		          &error );
+
+		FVDE_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		FVDE_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 read_offset );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+	}
 	/* Test error cases
 	 */
 	read_count = libfvde_volume_read_buffer_at_offset(
 	              NULL,
 	              buffer,
-	              16,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 	              0,
 	              &error );
 
@@ -1691,7 +2362,7 @@ int fvde_test_volume_read_buffer_at_offset(
 	read_count = libfvde_volume_read_buffer_at_offset(
 	              volume,
 	              NULL,
-	              16,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 	              0,
 	              &error );
 
@@ -1729,7 +2400,7 @@ int fvde_test_volume_read_buffer_at_offset(
 	read_count = libfvde_volume_read_buffer_at_offset(
 	              volume,
 	              buffer,
-	              16,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
 	              -1,
 	              &error );
 
@@ -1744,6 +2415,68 @@ int fvde_test_volume_read_buffer_at_offset(
 
 	libcerror_error_free(
 	 &error );
+
+#if defined( HAVE_FVDE_TEST_RWLOCK )
+
+	/* Test libfvde_volume_read_buffer_at_offset with pthread_rwlock_wrlock failing in libcthreads_read_write_lock_grab_for_write
+	 */
+	fvde_test_pthread_rwlock_wrlock_attempts_before_fail = 0;
+
+	read_count = libfvde_volume_read_buffer_at_offset(
+	              volume,
+	              buffer,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+	              0,
+	              &error );
+
+	if( fvde_test_pthread_rwlock_wrlock_attempts_before_fail != -1 )
+	{
+		fvde_test_pthread_rwlock_wrlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Test libfvde_volume_read_buffer_at_offset with pthread_rwlock_unlock failing in libcthreads_read_write_lock_release_for_write
+	 */
+	fvde_test_pthread_rwlock_unlock_attempts_before_fail = 0;
+
+	read_count = libfvde_volume_read_buffer_at_offset(
+	              volume,
+	              buffer,
+	              FVDE_TEST_VOLUME_READ_BUFFER_SIZE,
+	              0,
+	              &error );
+
+	if( fvde_test_pthread_rwlock_unlock_attempts_before_fail != -1 )
+	{
+		fvde_test_pthread_rwlock_unlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		FVDE_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_FVDE_TEST_RWLOCK ) */
 
 	return( 1 );
 
@@ -1918,6 +2651,66 @@ int fvde_test_volume_seek_offset(
 	libcerror_error_free(
 	 &error );
 
+#if defined( HAVE_FVDE_TEST_RWLOCK )
+
+	/* Test libfvde_volume_seek_offset with pthread_rwlock_wrlock failing in libcthreads_read_write_lock_grab_for_write
+	 */
+	fvde_test_pthread_rwlock_wrlock_attempts_before_fail = 0;
+
+	offset = libfvde_volume_seek_offset(
+	          volume,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	if( fvde_test_pthread_rwlock_wrlock_attempts_before_fail != -1 )
+	{
+		fvde_test_pthread_rwlock_wrlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		FVDE_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 (int64_t) offset,
+		 (int64_t) -1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Test libfvde_volume_seek_offset with pthread_rwlock_unlock failing in libcthreads_read_write_lock_release_for_write
+	 */
+	fvde_test_pthread_rwlock_unlock_attempts_before_fail = 0;
+
+	offset = libfvde_volume_seek_offset(
+	          volume,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	if( fvde_test_pthread_rwlock_unlock_attempts_before_fail != -1 )
+	{
+		fvde_test_pthread_rwlock_unlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		FVDE_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 (int64_t) offset,
+		 (int64_t) -1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_FVDE_TEST_RWLOCK ) */
+
 	return( 1 );
 
 on_error:
@@ -1937,7 +2730,6 @@ int fvde_test_volume_get_offset(
 {
 	libcerror_error_t *error = NULL;
 	off64_t offset           = 0;
-	int offset_is_set        = 0;
 	int result               = 0;
 
 	/* Test regular cases
@@ -1947,16 +2739,14 @@ int fvde_test_volume_get_offset(
 	          &offset,
 	          &error );
 
-	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
+	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	offset_is_set = result;
 
 	/* Test error cases
 	 */
@@ -1977,25 +2767,23 @@ int fvde_test_volume_get_offset(
 	libcerror_error_free(
 	 &error );
 
-	if( offset_is_set != 0 )
-	{
-		result = libfvde_volume_get_offset(
-		          volume,
-		          NULL,
-		          &error );
+	result = libfvde_volume_get_offset(
+	          volume,
+	          NULL,
+	          &error );
 
-		FVDE_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FVDE_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -2013,10 +2801,9 @@ on_error:
 int fvde_test_volume_get_logical_volume_size(
      libfvde_volume_t *volume )
 {
-	libcerror_error_t *error       = NULL;
-	size64_t logical_volume_size   = 0;
-	int logical_volume_size_is_set = 0;
-	int result                     = 0;
+	libcerror_error_t *error     = NULL;
+	size64_t logical_volume_size = 0;
+	int result                   = 0;
 
 	/* Test regular cases
 	 */
@@ -2025,16 +2812,14 @@ int fvde_test_volume_get_logical_volume_size(
 	          &logical_volume_size,
 	          &error );
 
-	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
+	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	logical_volume_size_is_set = result;
 
 	/* Test error cases
 	 */
@@ -2055,25 +2840,23 @@ int fvde_test_volume_get_logical_volume_size(
 	libcerror_error_free(
 	 &error );
 
-	if( logical_volume_size_is_set != 0 )
-	{
-		result = libfvde_volume_get_logical_volume_size(
-		          volume,
-		          NULL,
-		          &error );
+	result = libfvde_volume_get_logical_volume_size(
+	          volume,
+	          NULL,
+	          &error );
 
-		FVDE_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FVDE_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -2091,10 +2874,9 @@ on_error:
 int fvde_test_volume_get_logical_volume_encryption_method(
      libfvde_volume_t *volume )
 {
-	libcerror_error_t *error                    = NULL;
-	uint32_t logical_volume_encryption_method   = 0;
-	int logical_volume_encryption_method_is_set = 0;
-	int result                                  = 0;
+	libcerror_error_t *error                  = NULL;
+	uint32_t logical_volume_encryption_method = 0;
+	int result                                = 0;
 
 	/* Test regular cases
 	 */
@@ -2103,16 +2885,14 @@ int fvde_test_volume_get_logical_volume_encryption_method(
 	          &logical_volume_encryption_method,
 	          &error );
 
-	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
+	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	logical_volume_encryption_method_is_set = result;
 
 	/* Test error cases
 	 */
@@ -2133,25 +2913,23 @@ int fvde_test_volume_get_logical_volume_encryption_method(
 	libcerror_error_free(
 	 &error );
 
-	if( logical_volume_encryption_method_is_set != 0 )
-	{
-		result = libfvde_volume_get_logical_volume_encryption_method(
-		          volume,
-		          NULL,
-		          &error );
+	result = libfvde_volume_get_logical_volume_encryption_method(
+	          volume,
+	          NULL,
+	          &error );
 
-		FVDE_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FVDE_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -2169,10 +2947,9 @@ on_error:
 int fvde_test_volume_get_physical_volume_size(
      libfvde_volume_t *volume )
 {
-	libcerror_error_t *error        = NULL;
-	size64_t physical_volume_size   = 0;
-	int physical_volume_size_is_set = 0;
-	int result                      = 0;
+	libcerror_error_t *error      = NULL;
+	size64_t physical_volume_size = 0;
+	int result                    = 0;
 
 	/* Test regular cases
 	 */
@@ -2181,16 +2958,14 @@ int fvde_test_volume_get_physical_volume_size(
 	          &physical_volume_size,
 	          &error );
 
-	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
+	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	physical_volume_size_is_set = result;
 
 	/* Test error cases
 	 */
@@ -2211,25 +2986,23 @@ int fvde_test_volume_get_physical_volume_size(
 	libcerror_error_free(
 	 &error );
 
-	if( physical_volume_size_is_set != 0 )
-	{
-		result = libfvde_volume_get_physical_volume_size(
-		          volume,
-		          NULL,
-		          &error );
+	result = libfvde_volume_get_physical_volume_size(
+	          volume,
+	          NULL,
+	          &error );
 
-		FVDE_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FVDE_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -2247,10 +3020,9 @@ on_error:
 int fvde_test_volume_get_physical_volume_encryption_method(
      libfvde_volume_t *volume )
 {
-	libcerror_error_t *error                     = NULL;
-	uint32_t physical_volume_encryption_method   = 0;
-	int physical_volume_encryption_method_is_set = 0;
-	int result                                   = 0;
+	libcerror_error_t *error                   = NULL;
+	uint32_t physical_volume_encryption_method = 0;
+	int result                                 = 0;
 
 	/* Test regular cases
 	 */
@@ -2259,16 +3031,14 @@ int fvde_test_volume_get_physical_volume_encryption_method(
 	          &physical_volume_encryption_method,
 	          &error );
 
-	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
+	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	physical_volume_encryption_method_is_set = result;
 
 	/* Test error cases
 	 */
@@ -2289,25 +3059,23 @@ int fvde_test_volume_get_physical_volume_encryption_method(
 	libcerror_error_free(
 	 &error );
 
-	if( physical_volume_encryption_method_is_set != 0 )
-	{
-		result = libfvde_volume_get_physical_volume_encryption_method(
-		          volume,
-		          NULL,
-		          &error );
+	result = libfvde_volume_get_physical_volume_encryption_method(
+	          volume,
+	          NULL,
+	          &error );
 
-		FVDE_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FVDE_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -2516,6 +3284,7 @@ int main(
 		 fvde_test_volume_open_close,
 		 source,
 		 option_password );
+
 	}
 	if( result != 0 )
 	{
@@ -2553,7 +3322,19 @@ int main(
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
-		/* TODO: add tests for libfvde_volume_is_locked */
+		FVDE_TEST_RUN_WITH_ARGS(
+		 "libfvde_volume_is_locked",
+		 fvde_test_volume_is_locked,
+		 volume );
+
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
+
+		FVDE_TEST_RUN_WITH_ARGS(
+		 "libfvde_internal_volume_read_buffer_from_file_io_handle",
+		 fvde_test_internal_volume_read_buffer_from_file_io_handle,
+		 volume );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 		FVDE_TEST_RUN_WITH_ARGS(
 		 "libfvde_volume_read_buffer",
@@ -2565,9 +3346,11 @@ int main(
 		 fvde_test_volume_read_buffer_at_offset,
 		 volume );
 
-		/* TODO: add tests for libfvde_volume_write_buffer */
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
-		/* TODO: add tests for libfvde_volume_write_buffer_at_offset */
+		/* TODO: add tests for libfvde_internal_volume_seek_offset */
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 		FVDE_TEST_RUN_WITH_ARGS(
 		 "libfvde_volume_seek_offset",
@@ -2617,7 +3400,11 @@ int main(
 
 		/* TODO: add tests for libfvde_volume_read_encrypted_root_plist */
 
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 		/* TODO: add tests for libfvde_volume_read_encrypted_root_plist_wide */
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 		/* TODO: add tests for libfvde_volume_read_encrypted_root_plist_file_io_handle */
 

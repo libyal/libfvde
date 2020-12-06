@@ -42,6 +42,7 @@
 
 #include "fvdetools_getopt.h"
 #include "fvdetools_i18n.h"
+#include "fvdetools_input.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
@@ -138,6 +139,8 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
+	system_character_t password[ 64 ];
+
 	libfvde_error_t *error                               = NULL;
 	system_character_t *mount_point                      = NULL;
 	system_character_t *option_encrypted_root_plist_path = NULL;
@@ -408,15 +411,69 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( mount_handle_is_locked(
-	     fvdemount_mount_handle,
-	     &error ) != 0 )
+	result = mount_handle_is_locked(
+	          fvdemount_mount_handle,
+	          &error );
+
+	if( result == -1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to unlock source volume\n" );
+		 "Unable to determine if source volume is locked\n" );
 
 		goto on_error;
+	}
+	if( ( result != 0 )
+	 && ( option_keys == NULL )
+	 && ( option_password == NULL )
+	 && ( option_recovery_password == NULL ) )
+	{
+		fprintf(
+		 stdout,
+		 "The source volume is locked and a password is needed to unlock it.\n\n" );
+
+		if( fvdetools_prompt_for_password(
+		     stdout,
+		     "Password",
+		     password,
+		     64,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to retrieve password.\n" );
+
+			goto on_error;
+		}
+		if( mount_handle_set_password(
+		     fvdemount_mount_handle,
+		     password,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to set password.\n" );
+
+			goto on_error;
+		}
+		fprintf(
+		 stdout,
+		 "\n\n" );
+
+		if( mount_handle_input_unlock(
+		     fvdemount_mount_handle,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to unlock volume.\n" );
+
+			goto on_error;
+		}
+		memory_set(
+		 password,
+		 0,
+		 64 );
 	}
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
 	if( option_extended_options != NULL )
@@ -714,6 +771,11 @@ on_error:
 		 &fvdemount_mount_handle,
 		 NULL );
 	}
+	memory_set(
+	 password,
+	 0,
+	 64 );
+
 	return( EXIT_FAILURE );
 }
 

@@ -287,14 +287,6 @@ int main(
 	FVDE_TEST_UNREFERENCED_PARAMETER( argc )
 	FVDE_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( FVDE_TEST_SEGMENT_DESCRIPTOR_VERBOSE )
-	libfvde_notify_set_verbose(
-	 1 );
-	libfvde_notify_set_stream(
-	 stderr,
-	 NULL );
-#endif
-
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	FVDE_TEST_RUN(

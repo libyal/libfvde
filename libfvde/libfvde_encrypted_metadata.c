@@ -4887,7 +4887,8 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 					 16,
 					 0 );
 				}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 				found_key = 1;
 
 				break;

@@ -277,7 +277,6 @@ int fvde_test_encryption_context_plist_get_data_size(
 	libcerror_error_t *error                                     = NULL;
 	libfvde_encryption_context_plist_t *encryption_context_plist = NULL;
 	size64_t data_size                                           = 0;
-	int data_size_is_set                                         = 0;
 	int result                                                   = 0;
 
 	/* Initialize test
@@ -306,16 +305,14 @@ int fvde_test_encryption_context_plist_get_data_size(
 	          &data_size,
 	          &error );
 
-	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
+	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
-
-	data_size_is_set = result;
 
 	/* Test error cases
 	 */
@@ -336,25 +333,23 @@ int fvde_test_encryption_context_plist_get_data_size(
 	libcerror_error_free(
 	 &error );
 
-	if( data_size_is_set != 0 )
-	{
-		result = libfvde_encryption_context_plist_get_data_size(
-		          encryption_context_plist,
-		          NULL,
-		          &error );
+	result = libfvde_encryption_context_plist_get_data_size(
+	          encryption_context_plist,
+	          NULL,
+	          &error );
 
-		FVDE_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FVDE_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	/* Clean up
 	 */
 	result = libfvde_encryption_context_plist_free(

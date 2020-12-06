@@ -429,8 +429,6 @@ int main(
 	 "libfvde_io_handle_clear",
 	 fvde_test_io_handle_clear );
 
-	/* TODO: add tests for libfvde_io_handle_read_volume_header */
-
 	/* TODO: add tests for libfvde_io_handle_read_sector */
 
 	/* TODO: add tests for libfvde_io_handle_read_logical_volume_header */
