@@ -352,7 +352,7 @@ Contains a CRC-32 of bytes 8 to 8192 +
 | 8 | 2 | 1 | Version
 | 10 | 2 | | Block type
 | 12 | 4 | | [yellow-background]*Unknown (serial number)*
-| 16 | 8 | | [yellow-background]*Unknown (block group)*
+| 16 | 8 | | [yellow-background]*Unknown (block group) (transaction number)*
 | 24 | 8 | | [yellow-background]*Unknown* +
 [yellow-background]*Chain block number or 0 if not set ?*
 | 32 | 8 | | Block number +
@@ -429,7 +429,7 @@ consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
-| 0 | 8 | | [yellow-background]*Unknown (metadata block group)*
+| 0 | 8 | | [yellow-background]*Unknown (metadata block group) (transaction number)*
 | 8 | 8 | | [yellow-background]*Unknown*
 | 16 | 8 | | [yellow-background]*Unknown*
 |===
@@ -777,7 +777,7 @@ Consits of an array containing strings of UUIDs
 
 === Metadata block data type 0x0013
 
-Metadata block data type 0x0013 contains information about [yellow-background]*TODO: describe*
+Metadata block data type 0x0013 contains information about [yellow-background]*TODO: describe* (1st fragment of transaction blocks group)
 
 The metadata block data is variable in size and consists of:
 
@@ -793,7 +793,7 @@ Contains a UUID
 0x1f | [yellow-background]*Unknown*
 | 32 | 8 | 1 | [yellow-background]*Unknown
 | 40 | 4 | | [yellow-background]*Unknown
-| 44 | 4 | | [yellow-background]*Unknown
+| 44 | 4 | | [yellow-background]*Unknown (blocks count in this transaction fragment)
 | 48 | 4 | 0x01 | [yellow-background]*Unknown (index1 ?)*
 | 52 | 4 | | [yellow-background]*Unknown (index2 ?)*
 | 56 | 4 | | [yellow-background]*Unknown (number of entries 1)*
@@ -940,7 +940,7 @@ relative block numbers?
 
 === Metadata block data type 0x0014
 
-Metadata block data type 0x0014 contains information about [yellow-background]*TODO: describe*
+Metadata block data type 0x0014 contains information about [yellow-background]*TODO: describe* (2nd fragment of transaction blocks group)
 
 The metadata block data is variable in size and consists of:
 
@@ -956,7 +956,7 @@ Contains a UUID
 0x1f | [yellow-background]*Unknown*
 | 32 | 8 | 1 | [yellow-background]*Unknown
 | 40 | 4 | | [yellow-background]*Unknown
-| 44 | 4 | | [yellow-background]*Unknown
+| 44 | 4 | | [yellow-background]*Unknown (blocks count in this transaction fragment)
 | 48 | 4 | 0x01 | [yellow-background]*Unknown (index1 ?)*
 | 52 | 4 | | [yellow-background]*Unknown (index2 ?)*
 | 56 | 4 | | [yellow-background]*Unknown (number of entries 1)*
