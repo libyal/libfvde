@@ -24,7 +24,7 @@ BEGIN
       VALUE "FileDescription",		"Library to access the FileVault Drive Encryption (FVDE) format\0"
       VALUE "FileVersion",		"@VERSION@" "\0"
       VALUE "InternalName",		"libfvde.dll\0"
-      VALUE "LegalCopyright",		"(C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>, Joachim Metz <joachim.metz@gmail.com>\0"
+      VALUE "LegalCopyright",		"(C) 2011-2021, Omar Choudary <choudary.omar@gmail.com>, Joachim Metz <joachim.metz@gmail.com>\0"
       VALUE "OriginalFilename",		"libfvde.dll\0"
       VALUE "ProductName",		"libfvde\0"
       VALUE "ProductVersion",		"@VERSION@" "\0"

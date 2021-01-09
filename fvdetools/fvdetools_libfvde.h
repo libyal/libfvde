@@ -1,7 +1,7 @@
 /*
  * The libfvde header wrapper
  *
- * Copyright (C) 2011-2020, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2021, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
