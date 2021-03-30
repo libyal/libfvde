@@ -89,19 +89,19 @@ PyMethodDef pyfvde_volume_object_methods[] = {
 	  METH_NOARGS,
 	  "is_locked() -> Boolean\n"
 	  "\n"
-	  "Indicates if the volume is locked." },
+	  "Determines if the volume is locked." },
 
 	{ "read_buffer",
 	  (PyCFunction) pyfvde_volume_read_buffer,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "read_buffer(size) -> String\n"
+	  "read_buffer(size) -> Binary string\n"
 	  "\n"
 	  "Reads a buffer of volume data." },
 
 	{ "read_buffer_at_offset",
 	  (PyCFunction) pyfvde_volume_read_buffer_at_offset,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "read_buffer_at_offset(size, offset) -> String\n"
+	  "read_buffer_at_offset(size, offset) -> Binary string\n"
 	  "\n"
 	  "Reads a buffer of volume data at a specific offset." },
 
@@ -124,7 +124,7 @@ PyMethodDef pyfvde_volume_object_methods[] = {
 	{ "read",
 	  (PyCFunction) pyfvde_volume_read_buffer,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "read(size) -> String\n"
+	  "read(size) -> Binary string\n"
 	  "\n"
 	  "Reads a buffer of volume data." },
 
@@ -302,8 +302,8 @@ PyTypeObject pyfvde_volume_type_object = {
 int pyfvde_volume_init(
      pyfvde_volume_t *pyfvde_volume )
 {
-	static char *function    = "pyfvde_volume_init";
 	libcerror_error_t *error = NULL;
+	static char *function    = "pyfvde_volume_init";
 
 	if( pyfvde_volume == NULL )
 	{
@@ -314,6 +314,8 @@ int pyfvde_volume_init(
 
 		return( -1 );
 	}
+	/* Make sure libfvde volume is set to NULL
+	 */
 	pyfvde_volume->volume         = NULL;
 	pyfvde_volume->file_io_handle = NULL;
 
@@ -340,8 +342,8 @@ int pyfvde_volume_init(
 void pyfvde_volume_free(
       pyfvde_volume_t *pyfvde_volume )
 {
-	libcerror_error_t *error    = NULL;
 	struct _typeobject *ob_type = NULL;
+	libcerror_error_t *error    = NULL;
 	static char *function       = "pyfvde_volume_free";
 	int result                  = 0;
 
@@ -517,7 +519,7 @@ PyObject *pyfvde_volume_open(
 	{
 		pyfvde_error_fetch_and_raise(
 	         PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -533,7 +535,7 @@ PyObject *pyfvde_volume_open(
 
 		result = libfvde_volume_open_wide(
 		          pyfvde_volume->volume,
-	                  filename_wide,
+		          filename_wide,
 		          LIBFVDE_OPEN_READ,
 		          &error );
 
@@ -546,23 +548,23 @@ PyObject *pyfvde_volume_open(
 		{
 			pyfvde_error_fetch_and_raise(
 			 PyExc_RuntimeError,
-			 "%s: unable to convert unicode string to UTF-8.",
+			 "%s: unable to convert Unicode string to UTF-8.",
 			 function );
 
 			return( NULL );
 		}
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libfvde_volume_open(
 		          pyfvde_volume->volume,
-	                  filename_narrow,
+		          filename_narrow,
 		          LIBFVDE_OPEN_READ,
 		          &error );
 
@@ -593,12 +595,12 @@ PyObject *pyfvde_volume_open(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
@@ -615,16 +617,16 @@ PyObject *pyfvde_volume_open(
 
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   string_object );
+		                   string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   string_object );
+		                   string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libfvde_volume_open(
 		          pyfvde_volume->volume,
-	                  filename_narrow,
+		          filename_narrow,
 		          LIBFVDE_OPEN_READ,
 		          &error );
 
@@ -714,7 +716,7 @@ PyObject *pyfvde_volume_open_file_object(
 		 "%s: unsupported file object - missing read attribute.",
 		 function );
 
-		return( NULL );
+		goto on_error;
 	}
 	PyErr_Clear();
 
@@ -729,7 +731,7 @@ PyObject *pyfvde_volume_open_file_object(
 		 "%s: unsupported file object - missing seek attribute.",
 		 function );
 
-		return( NULL );
+		goto on_error;
 	}
 	if( pyfvde_volume->file_io_handle != NULL )
 	{
@@ -852,7 +854,7 @@ PyObject *pyfvde_volume_close(
 		{
 			pyfvde_error_raise(
 			 error,
-			 PyExc_IOError,
+			 PyExc_MemoryError,
 			 "%s: unable to free libbfio file IO handle.",
 			 function );
 
@@ -1460,7 +1462,7 @@ PyObject *pyfvde_volume_set_password(
 	{
 		pyfvde_error_fetch_and_raise(
 	         PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -1507,12 +1509,12 @@ PyObject *pyfvde_volume_set_password(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
@@ -1529,10 +1531,10 @@ PyObject *pyfvde_volume_set_password(
 
 #if PY_MAJOR_VERSION >= 3
 		password_string_narrow = PyBytes_AsString(
-				          string_object );
+		                          string_object );
 #else
 		password_string_narrow = PyString_AsString(
-				          string_object );
+		                          string_object );
 #endif
 		password_string_length = narrow_string_length(
 		                          password_string_narrow );
@@ -1706,7 +1708,7 @@ PyObject *pyfvde_volume_set_recovery_password(
 	{
 		pyfvde_error_fetch_and_raise(
 	         PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -1753,12 +1755,12 @@ PyObject *pyfvde_volume_set_recovery_password(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
@@ -1951,7 +1953,7 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 	{
 		pyfvde_error_fetch_and_raise(
 	         PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -1993,12 +1995,12 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
@@ -2015,10 +2017,10 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   string_object );
+		                   string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   string_object );
+		                   string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
