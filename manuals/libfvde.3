@@ -1,4 +1,4 @@
-.Dd December  5, 2020
+.Dd April 25, 2021
 .Dt libfvde 3
 .Os libfvde
 .Sh NAME
@@ -61,6 +61,8 @@ Volume functions
 .Ft int
 .Fn libfvde_volume_close "libfvde_volume_t *volume" "libfvde_error_t **error"
 .Ft int
+.Fn libfvde_volume_unlock "libfvde_volume_t *volume" "libfvde_error_t **error"
+.Ft int
 .Fn libfvde_volume_is_locked "libfvde_volume_t *volume" "libfvde_error_t **error"
 .Ft ssize_t
 .Fn libfvde_volume_read_buffer "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "libfvde_error_t **error"
@@ -75,9 +77,15 @@ Volume functions
 .Ft int
 .Fn libfvde_volume_get_logical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
 .Ft int
+.Fn libfvde_volume_get_logical_volume_identifier "libfvde_volume_t *volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_get_logical_volume_group_identifier "libfvde_volume_t *volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
+.Ft int
 .Fn libfvde_volume_get_physical_volume_size "libfvde_volume_t *volume" "size64_t *size" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_get_physical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_get_physical_volume_identifier "libfvde_volume_t *volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_set_keys "libfvde_volume_t *volume" "const uint8_t *volume_master_key" "size_t volume_master_key_size" "libfvde_error_t **error"
 .Ft int

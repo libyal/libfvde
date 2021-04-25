@@ -37,19 +37,21 @@ class SupportFunctionsTests(unittest.TestCase):
 
   def test_check_volume_signature_file_object(self):
     """Tests the check_volume_signature_file_object function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    with open(unittest.source, "rb") as file_object:
+    with open(test_source, "rb") as file_object:
       result = pyfvde.check_volume_signature_file_object(file_object)
       self.assertTrue(result)
 
   def test_open(self):
     """Tests the open function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    fvde_volume = pyfvde.open(unittest.source)
+    fvde_volume = pyfvde.open(test_source)
     self.assertIsNotNone(fvde_volume)
 
     fvde_volume.close()
@@ -58,17 +60,18 @@ class SupportFunctionsTests(unittest.TestCase):
       pyfvde.open(None)
 
     with self.assertRaises(ValueError):
-      pyfvde.open(unittest.source, mode="w")
+      pyfvde.open(test_source, mode="w")
 
   def test_open_file_object(self):
     """Tests the open_file_object function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    if not os.path.isfile(unittest.source):
+    if not os.path.isfile(test_source):
       raise unittest.SkipTest("source not a regular file")
 
-    with open(unittest.source, "rb") as file_object:
+    with open(test_source, "rb") as file_object:
       fvde_volume = pyfvde.open_file_object(file_object)
       self.assertIsNotNone(fvde_volume)
 
