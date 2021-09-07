@@ -377,6 +377,15 @@ void pyfvde_volume_free(
 
 		return;
 	}
+	if( pyfvde_volume->file_io_handle != NULL )
+	{
+		if( pyfvde_volume_close(
+		     pyfvde_volume,
+		     NULL ) == NULL )
+		{
+			return;
+		}
+	}
 	if( pyfvde_volume->volume != NULL )
 	{
 		Py_BEGIN_ALLOW_THREADS
