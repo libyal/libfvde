@@ -1,7 +1,7 @@
 /*
  * Shows information obtained from a FileVault Drive Encryption (FVDE) encrypted volume
  *
- * Copyright (C) 2011-2021, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2022, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.

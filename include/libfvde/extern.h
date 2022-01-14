@@ -4,7 +4,7 @@
  * This header should be included in header files that export or import
  * library functions
  *
- * Copyright (C) 2011-2021, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2022, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.

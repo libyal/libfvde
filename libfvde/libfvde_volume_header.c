@@ -1,7 +1,7 @@
 /*
  * The FVDE volume header functions
  *
- * Copyright (C) 2011-2021, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -462,7 +462,7 @@ int libfvde_volume_header_read_data(
 		 0 );
 
 		libcnotify_printf(
-		 "%s: encryption method\t\t\t\t: %" PRIu32 "\n",
+		 "%s: encryption method\t\t\t: %" PRIu32 "\n",
 		 function,
 		 volume_header->physical_volume_encryption_method );
 
