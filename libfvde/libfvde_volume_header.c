@@ -727,3 +727,203 @@ int libfvde_volume_header_read_file_io_handle(
 	return( 1 );
 }
 
+/* Retrieves the logical volume group identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_header_get_logical_volume_group_identifier(
+     libfvde_volume_header_t *volume_header,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_volume_header_get_logical_volume_group_identifier";
+
+	if( volume_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume header.",
+		 function );
+
+		return( -1 );
+	}
+	if( uuid_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UUID data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( uuid_data_size < 16 )
+	 || ( uuid_data_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid UUID data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( memory_copy(
+	     uuid_data,
+	     volume_header->logical_volume_group_identifier,
+	     16 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy logical volume group identifier.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the physical volume identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_header_get_physical_volume_identifier(
+     libfvde_volume_header_t *volume_header,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_volume_header_get_physical_volume_identifier";
+
+	if( volume_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume header.",
+		 function );
+
+		return( -1 );
+	}
+	if( uuid_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UUID data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( uuid_data_size < 16 )
+	 || ( uuid_data_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid UUID data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( memory_copy(
+	     uuid_data,
+	     volume_header->physical_volume_identifier,
+	     16 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy physical volume identifier.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the physical volume encryption method
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_header_get_physical_volume_encryption_method(
+     libfvde_volume_header_t *volume_header,
+     uint32_t *encryption_method,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_volume_header_get_physical_volume_encryption_method";
+
+	if( volume_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume header.",
+		 function );
+
+		return( -1 );
+	}
+	if( encryption_method == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encryption method.",
+		 function );
+
+		return( -1 );
+	}
+	*encryption_method = volume_header->physical_volume_encryption_method;
+
+	return( 1 );
+}
+
+/* Retrieves the physical volume size
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_header_get_physical_volume_size(
+     libfvde_volume_header_t *volume_header,
+     size64_t *size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_volume_header_get_physical_volume_size";
+
+	if( volume_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume header.",
+		 function );
+
+		return( -1 );
+	}
+	if( size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid size.",
+		 function );
+
+		return( -1 );
+	}
+	*size = volume_header->physical_volume_size;
+
+	return( 1 );
+}
+

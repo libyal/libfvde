@@ -109,6 +109,28 @@ int libfvde_volume_header_read_file_io_handle(
      off64_t file_offset,
      libcerror_error_t **error );
 
+int libfvde_volume_header_get_logical_volume_group_identifier(
+     libfvde_volume_header_t *volume_header,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error );
+
+int libfvde_volume_header_get_physical_volume_identifier(
+     libfvde_volume_header_t *volume_header,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error );
+
+int libfvde_volume_header_get_physical_volume_encryption_method(
+     libfvde_volume_header_t *volume_header,
+     uint32_t *encryption_method,
+     libcerror_error_t **error );
+
+int libfvde_volume_header_get_physical_volume_size(
+     libfvde_volume_header_t *volume_header,
+     size64_t *size,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

@@ -58,10 +58,14 @@ libfvde_la_SOURCES = \
 	libfvde_libfvalue.h \
 	libfvde_libhmac.h \
 	libfvde_libuna.h \
+	libfvde_logical_volume.c libfvde_logical_volume.h \
+	libfvde_logical_volume_descriptor.c libfvde_logical_volume_descriptor.h \
 	libfvde_metadata.c libfvde_metadata.h \
 	libfvde_metadata_block.c libfvde_metadata_block.h \
 	libfvde_notify.c libfvde_notify.h \
 	libfvde_password.c libfvde_password.h \
+	libfvde_physical_volume.c libfvde_physical_volume.h \
+	libfvde_physical_volume_descriptor.c libfvde_physical_volume_descriptor.h \
 	libfvde_sector_data.c libfvde_sector_data.h \
 	libfvde_segment_descriptor.c libfvde_segment_descriptor.h \
 	libfvde_support.c libfvde_support.h \

@@ -42,6 +42,7 @@
 #include "libfvde_libfguid.h"
 #include "libfvde_libfplist.h"
 #include "libfvde_libfvalue.h"
+#include "libfvde_logical_volume_descriptor.h"
 #include "libfvde_metadata_block.h"
 #include "libfvde_password.h"
 #include "libfvde_segment_descriptor.h"
@@ -134,6 +135,20 @@ int libfvde_encrypted_metadata_initialize(
 		goto on_error;
 	}
 	if( libcdata_array_initialize(
+	     &( ( *encrypted_metadata )->logical_volume_descriptors ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create logical volume descriptors array.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcdata_array_initialize(
 	     &( ( *encrypted_metadata )->data_area_descriptors ),
 	     0,
 	     error ) != 1 )
@@ -170,6 +185,13 @@ on_error:
 		{
 			libcdata_array_free(
 			 &( ( *encrypted_metadata )->data_area_descriptors ),
+			 NULL,
+			 NULL );
+		}
+		if( ( *encrypted_metadata )->logical_volume_descriptors != NULL )
+		{
+			libcdata_array_free(
+			 &( ( *encrypted_metadata )->logical_volume_descriptors ),
 			 NULL,
 			 NULL );
 		}
@@ -223,39 +245,47 @@ int libfvde_encrypted_metadata_free(
 
 			result = -1;
 		}
-		if( ( *encrypted_metadata )->segment_descriptors != NULL )
+		if( libcdata_array_free(
+		     &( ( *encrypted_metadata )->logical_volume_descriptors ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_logical_volume_descriptor_free,
+		     error ) != 1 )
 		{
-			if( libcdata_array_free(
-			     &( ( *encrypted_metadata )->segment_descriptors ),
-			     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_segment_descriptor_free,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free segment descriptors array.",
-				 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free logical volume descriptors array.",
+			 function );
 
-				result = -1;
-			}
+			result = -1;
 		}
-		if( ( *encrypted_metadata )->data_area_descriptors != NULL )
+		if( libcdata_array_free(
+		     &( ( *encrypted_metadata )->segment_descriptors ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_segment_descriptor_free,
+		     error ) != 1 )
 		{
-			if( libcdata_array_free(
-			     &( ( *encrypted_metadata )->data_area_descriptors ),
-			     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free data area descriptors array.",
-				 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free segment descriptors array.",
+			 function );
 
-				result = -1;
-			}
+			result = -1;
+		}
+		if( libcdata_array_free(
+		     &( ( *encrypted_metadata )->data_area_descriptors ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free data area descriptors array.",
+			 function );
+
+			result = -1;
 		}
 		memory_free(
 		 *encrypted_metadata );
@@ -1611,22 +1641,25 @@ int libfvde_encrypted_metadata_read_type_0x001a(
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	libfplist_property_list_t *property_list  = NULL;
-	libfplist_property_t *root_property       = NULL;
-	libfplist_property_t *sub_property        = NULL;
-	const uint8_t *xml_plist_data             = NULL;
-	static char *function                     = "libfvde_encrypted_metadata_read_type_0x001a";
-	size_t xml_length                         = 0;
-	uint64_t logical_volume_size              = 0;
-	uint32_t compressed_xml_plist_data_size   = 0;
-	uint32_t stored_xml_plist_data_offset     = 0;
-	uint32_t stored_xml_plist_data_size       = 0;
-	uint32_t uncompressed_xml_plist_data_size = 0;
+	libfplist_property_t *root_property                            = NULL;
+	libfplist_property_t *sub_property                             = NULL;
+	libfplist_property_list_t *property_list                       = NULL;
+	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
+	const uint8_t *xml_plist_data                                  = NULL;
+	static char *function                                          = "libfvde_encrypted_metadata_read_type_0x001a";
+	size_t xml_length                                              = 0;
+	uint64_t logical_volume_size                                   = 0;
+	uint32_t compressed_xml_plist_data_size                        = 0;
+	uint32_t stored_xml_plist_data_offset                          = 0;
+	uint32_t stored_xml_plist_data_size                            = 0;
+	uint32_t uncompressed_xml_plist_data_size                      = 0;
+	int logical_volume_descriptor_index                            = 0;
+	int result                                                     = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint8_t *string                           = NULL;
-	size_t string_size                        = 0;
-	uint64_t value_64bit                      = 0;
+	uint8_t *string                                                = NULL;
+	size_t string_size                                             = 0;
+	uint64_t value_64bit                                           = 0;
 #endif
 
 	if( encrypted_metadata == NULL )
@@ -1730,7 +1763,8 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		 function,
 		 stored_xml_plist_data_size );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	if( ( stored_xml_plist_data_offset < 72 )
 	 || ( (size_t) stored_xml_plist_data_offset > block_data_size ) )
 	{
@@ -1833,6 +1867,19 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
+		if( libfvde_logical_volume_descriptor_initialize(
+		     &logical_volume_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create logical volume descriptor.",
+			 function );
+
+			goto on_error;
+		}
 		if( libfplist_property_get_sub_property_by_utf8_name(
 		     root_property,
 		     (uint8_t *) "com.apple.corestorage.lv.familyUUID",
@@ -1877,7 +1924,24 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			string = NULL;
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		if( libfplist_property_value_uuid_string_copy_to_byte_stream(
+		     sub_property,
+		     logical_volume_descriptor->family_identifier,
+		     16,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to copy LVF UUID string to byte stream.",
+			 function );
+
+			goto on_error;
+		}
+/* TODO remove */
 		if( libfplist_property_value_uuid_string_copy_to_byte_stream(
 		     sub_property,
 		     encrypted_metadata->logical_volume_family_identifier,
@@ -1902,6 +1966,60 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 			 "%s: unable to free com.apple.corestorage.lv.familyUUID property.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfplist_property_get_sub_property_by_utf8_name(
+		     root_property,
+		     (uint8_t *) "com.apple.corestorage.lv.name",
+		     29,
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve com.apple.corestorage.lv.name sub property.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfplist_property_get_value_string(
+		     sub_property,
+		     &( logical_volume_descriptor->name ),
+		     &( logical_volume_descriptor->name_size ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume name.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: logical volume name\t\t\t: %s\n",
+			 function,
+			 logical_volume_descriptor->name );
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		if( libfplist_property_free(
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free com.apple.corestorage.lv.name property.",
 			 function );
 
 			goto on_error;
@@ -1945,6 +2063,8 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			 logical_volume_size );
 		}
 #endif
+		logical_volume_descriptor->size = (size64_t) logical_volume_size;
+
 		if( libfplist_property_free(
 		     &sub_property,
 		     error ) != 1 )
@@ -1954,6 +2074,80 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 			 "%s: unable to free com.apple.corestorage.lv.size property.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfplist_property_get_sub_property_by_utf8_name(
+		     root_property,
+		     (uint8_t *) "com.apple.corestorage.lv.uuid",
+		     29,
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve com.apple.corestorage.lv.uuid sub property.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			if( libfplist_property_get_value_string(
+			     sub_property,
+			     &string,
+			     &string_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve logical volume identifier.",
+				 function );
+
+				goto on_error;
+			}
+			libcnotify_printf(
+			 "%s: logical volume identifier\t\t: %s\n",
+			 function,
+			 string );
+
+			memory_free(
+			 string );
+
+			string = NULL;
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		if( libfplist_property_value_uuid_string_copy_to_byte_stream(
+		     sub_property,
+		     logical_volume_descriptor->identifier,
+		     16,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to copy LV UUID string to byte stream.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfplist_property_free(
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free com.apple.corestorage.lv.uuid property.",
 			 function );
 
 			goto on_error;
@@ -1984,6 +2178,46 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 
 			goto on_error;
 		}
+		result = libcdata_array_insert_entry(
+		          encrypted_metadata->logical_volume_descriptors,
+		          &logical_volume_descriptor_index,
+		          (intptr_t *) logical_volume_descriptor,
+		          (int (*)(intptr_t *, intptr_t *, libcerror_error_t **)) &libfvde_logical_volume_descriptor_compare,
+		          LIBCDATA_INSERT_FLAG_UNIQUE_ENTRIES,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to insert logical volume descriptor into array.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
+		{
+			logical_volume_descriptor = NULL;
+		}
+		else
+		{
+/* TODO replace existing logical_volume_descriptor */
+			if( libfvde_logical_volume_descriptor_free(
+			     &logical_volume_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free logical volume descriptor.",
+				 function );
+
+				goto on_error;
+			}
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -2002,6 +2236,12 @@ on_error:
 		 string );
 	}
 #endif
+	if( logical_volume_descriptor != NULL )
+	{
+		libfvde_logical_volume_descriptor_free(
+		 &logical_volume_descriptor,
+		 NULL );
+	}
 	if( sub_property != NULL )
 	{
 		libfplist_property_free(
@@ -3210,7 +3450,8 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 				libcnotify_printf(
 				 "\n" );
 			}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 			block_data_offset += 40;
 
 			if( encrypted_metadata->block_group_0x0305 < block_group )
@@ -5054,6 +5295,85 @@ on_error:
 	 16 );
 
 	return( -1 );
+}
+
+/* Retrieves the number of logical volume descriptors
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     int *number_of_logical_volume_descriptors,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors";
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     encrypted_metadata->logical_volume_descriptors,
+	     number_of_logical_volume_descriptors,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of logical volume descriptors.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves a specific logical volume descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     int logical_volume_descriptor_index,
+     libfvde_logical_volume_descriptor_t **logical_volume_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index";
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_entry_by_index(
+	     encrypted_metadata->logical_volume_descriptors,
+	     logical_volume_descriptor_index,
+	     (intptr_t **) logical_volume_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume descriptor: %d.",
+		 function,
+		 logical_volume_descriptor_index );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 
 /* Retrieves the number data area descriptors

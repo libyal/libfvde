@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="data_area_descriptor encrypted_metadata encryption_context_plist error io_handle keyring metadata metadata_block notify sector_data segment_descriptor volume volume_group volume_header";
+LIBRARY_TESTS="data_area_descriptor encrypted_metadata encryption_context_plist error io_handle keyring logical_volume logical_volume_descriptor metadata metadata_block notify physical_volume physical_volume_descriptor sector_data segment_descriptor volume volume_group volume_header";
 LIBRARY_TESTS_WITH_INPUT="support volume";
 OPTION_SETS="offset password recovery_password";
 

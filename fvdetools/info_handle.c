@@ -997,17 +997,19 @@ on_error:
 	return( -1 );
 }
 
-/* Prints the volume information to a stream
+/* Prints physcial volume information
  * Returns 1 if successful or -1 on error
  */
-int info_handle_volume_fprint(
+int info_handle_physical_volume_fprint(
      info_handle_t *info_handle,
+     int physical_volume_index,
+     libfvde_physical_volume_t *physical_volume,
      libcerror_error_t **error )
 {
         system_character_t byte_size_string[ 16 ];
 	uint8_t uuid_data[ 16 ];
 
-	static char *function      = "info_handle_volume_fprint";
+	static char *function      = "info_handle_physical_volume_fprint";
 	size64_t volume_size       = 0;
 	uint32_t encryption_method = 0;
 	int result                 = 0;
@@ -1025,56 +1027,11 @@ int info_handle_volume_fprint(
 	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "Core Storage information:\n" );
+	 "Physical volume: %d\n",
+	 physical_volume_index + 1 );
 
-	fprintf(
-	 info_handle->notify_stream,
-	 "\n" );
-
-	fprintf(
-	 info_handle->notify_stream,
-	 "Logical volume group:\n" );
-
-	if( libfvde_volume_get_logical_volume_group_identifier(
-	     info_handle->input_volume,
-	     uuid_data,
-	     16,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve logical volume group identifier.",
-		 function );
-
-		return( -1 );
-	}
-	if( info_handle_uuid_value_fprint(
-	     info_handle,
-	     "\tIdentifier\t\t\t",
-	     uuid_data,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
-		 "%s: unable to print UUID value.",
-		 function );
-
-		return( -1 );
-	}
-	fprintf(
-	 info_handle->notify_stream,
-	 "\n" );
-
-	fprintf(
-	 info_handle->notify_stream,
-	 "Physical volume:\n" );
-
-	if( libfvde_volume_get_physical_volume_identifier(
-	     info_handle->input_volume,
+	if( libfvde_physical_volume_get_identifier(
+	     physical_volume,
 	     uuid_data,
 	     16,
 	     error ) != 1 )
@@ -1103,8 +1060,8 @@ int info_handle_volume_fprint(
 
 		return( -1 );
 	}
-	if( libfvde_volume_get_physical_volume_size(
-	     info_handle->input_volume,
+	if( libfvde_physical_volume_get_size(
+	     physical_volume,
 	     &volume_size,
 	     error ) != 1 )
 	{
@@ -1112,7 +1069,7 @@ int info_handle_volume_fprint(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve physical volume size.",
+		 "%s: unable to retrieve size.",
 		 function );
 
 		return( -1 );
@@ -1147,8 +1104,8 @@ int info_handle_volume_fprint(
 	 info_handle->notify_stream,
 	 "\n" );
 
-	if( libfvde_volume_get_physical_volume_encryption_method(
-	     info_handle->input_volume,
+	if( libfvde_physical_volume_get_encryption_method(
+	     physical_volume,
 	     &encryption_method,
 	     error ) != 1 )
 	{
@@ -1156,7 +1113,7 @@ int info_handle_volume_fprint(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve encryption method of physical volume.",
+		 "%s: unable to retrieve encryption method.",
 		 function );
 
 		return( -1 );
@@ -1185,10 +1142,44 @@ int info_handle_volume_fprint(
 	 info_handle->notify_stream,
 	 "\n" );
 
+	return( 1 );
+}
+
+/* Prints logical volume information
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_logical_volume_fprint(
+     info_handle_t *info_handle,
+     int logical_volume_index,
+     libfvde_logical_volume_t *logical_volume,
+     libcerror_error_t **error )
+{
+        system_character_t byte_size_string[ 16 ];
+	uint8_t uuid_data[ 16 ];
+
+	system_character_t *value_string = NULL;
+	static char *function            = "info_handle_logical_volume_fprint";
+	size64_t volume_size             = 0;
+	size_t value_string_size         = 0;
+	int result                       = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "Logical volume:\n" );
+	 "Logical volume: %d\n",
+	 logical_volume_index + 1 );
 
+/* TODO implement for logical volume */
 	result = libfvde_volume_is_locked(
 	          info_handle->input_volume,
 	          error );
@@ -1202,7 +1193,7 @@ int info_handle_volume_fprint(
 		 "%s: unable to determine if volume is locked.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	else if( result != 0 )
 	{
@@ -1212,9 +1203,8 @@ int info_handle_volume_fprint(
 	}
 	else
 	{
-/* TODO implement
-		if( libfvde_volume_get_logical_volume_identifier(
-		     info_handle->input_volume,
+		if( libfvde_logical_volume_get_identifier(
+		     logical_volume,
 		     uuid_data,
 		     16,
 		     error ) != 1 )
@@ -1226,7 +1216,7 @@ int info_handle_volume_fprint(
 			 "%s: unable to retrieve logical volume identifier.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( info_handle_uuid_value_fprint(
 		     info_handle,
@@ -1241,11 +1231,91 @@ int info_handle_volume_fprint(
 			 "%s: unable to print UUID value.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
-*/
-		if( libfvde_volume_get_logical_volume_size(
-		     info_handle->input_volume,
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tName\t\t\t\t:" );
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfvde_logical_volume_get_utf16_name_size(
+		          logical_volume,
+		          &value_string_size,
+		          error );
+#else
+		result = libfvde_logical_volume_get_utf8_name_size(
+		          logical_volume,
+		          &value_string_size,
+		          error );
+#endif
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume name string size.",
+			 function );
+
+			goto on_error;
+		}
+		else if( ( result != 0 )
+		      && ( value_string_size > 0 ) )
+		{
+			value_string = system_string_allocate(
+			                value_string_size );
+
+			if( value_string == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+				 "%s: unable to create logical volume name string.",
+				 function );
+
+				goto on_error;
+			}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libfvde_logical_volume_get_utf16_name(
+			          logical_volume,
+			          (uint16_t *) value_string,
+			          value_string_size,
+			          error );
+#else
+			result = libfvde_logical_volume_get_utf8_name(
+			          logical_volume,
+			          (uint8_t *) value_string,
+			          value_string_size,
+			          error );
+#endif
+			if( result != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve logical volume name string.",
+				 function );
+
+				goto on_error;
+			}
+			fprintf(
+			 info_handle->notify_stream,
+			 " %" PRIs_SYSTEM "",
+			 value_string );
+
+			memory_free(
+			 value_string );
+
+			value_string = NULL;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\n" );
+
+		if( libfvde_logical_volume_get_size(
+		     logical_volume,
 		     &volume_size,
 		     error ) != 1 )
 		{
@@ -1256,19 +1326,406 @@ int info_handle_volume_fprint(
 			 "%s: unable to retrieve logical volume size.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tSize\t\t\t\t: %" PRIu64 " bytes\n",
-		 volume_size );
+		 "\tSize\t\t\t\t: " );
+
+		result = byte_size_string_create(
+		          byte_size_string,
+		          16,
+		          volume_size,
+		          BYTE_SIZE_STRING_UNIT_MEBIBYTE,
+		          NULL );
+
+		if( result == 1 )
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "%" PRIs_SYSTEM " (%" PRIu64 " bytes)",
+			 byte_size_string,
+			 volume_size );
+		}
+		else
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "%" PRIu64 " bytes",
+			 volume_size );
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\n" );
 	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
+
 /* TODO add more info */
+
+	return( 1 );
+
+on_error:
+	if( value_string != NULL )
+	{
+		memory_free(
+		 value_string );
+	}
+	return( -1 );
+}
+
+/* Prints the volume information to a stream
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_volume_fprint(
+     info_handle_t *info_handle,
+     libcerror_error_t **error )
+{
+	uint8_t uuid_data[ 16 ];
+
+	libfvde_logical_volume_t *logical_volume   = NULL;
+	libfvde_physical_volume_t *physical_volume = NULL;
+	libfvde_volume_group_t *volume_group       = NULL;
+	system_character_t *value_string           = NULL;
+	static char *function                      = "info_handle_volume_fprint";
+	size_t value_string_size                   = 0;
+	int number_of_logical_volumes              = 0;
+	int number_of_physical_volumes             = 0;
+	int result                                 = 0;
+	int volume_index                           = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "Core Storage information:\n" );
 
 	fprintf(
 	 info_handle->notify_stream,
 	 "\n" );
 
+	fprintf(
+	 info_handle->notify_stream,
+	 "Logical volume group:\n" );
+
+	if( libfvde_volume_get_volume_group(
+	     info_handle->input_volume,
+	     &volume_group,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve volume group.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfvde_volume_group_get_identifier(
+	     volume_group,
+	     uuid_data,
+	     16,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume group identifier.",
+		 function );
+
+		goto on_error;
+	}
+	if( info_handle_uuid_value_fprint(
+	     info_handle,
+	     "\tIdentifier\t\t\t",
+	     uuid_data,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+		 "%s: unable to print UUID value.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tName\t\t\t\t:" );
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfvde_volume_group_get_utf16_name_size(
+	          volume_group,
+	          &value_string_size,
+	          error );
+#else
+	result = libfvde_volume_group_get_utf8_name_size(
+	          volume_group,
+	          &value_string_size,
+	          error );
+#endif
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve volume group name string size.",
+		 function );
+
+		goto on_error;
+	}
+	else if( ( result != 0 )
+	      && ( value_string_size > 0 ) )
+	{
+		value_string = system_string_allocate(
+		                value_string_size );
+
+		if( value_string == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create volume group name string.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfvde_volume_group_get_utf16_name(
+		          volume_group,
+		          (uint16_t *) value_string,
+		          value_string_size,
+		          error );
+#else
+		result = libfvde_volume_group_get_utf8_name(
+		          volume_group,
+		          (uint8_t *) value_string,
+		          value_string_size,
+		          error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve volume group name string.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 " %" PRIs_SYSTEM "",
+		 value_string );
+
+		memory_free(
+		 value_string );
+
+		value_string = NULL;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
+
+	if( libfvde_volume_group_get_number_of_physical_volumes(
+	     volume_group,
+	     &number_of_physical_volumes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volumes.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tNumber of physical volumes\t: %d\n",
+	 number_of_physical_volumes );
+
+	if( libfvde_volume_group_get_number_of_logical_volumes(
+	     volume_group,
+	     &number_of_logical_volumes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of logical volumes.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tNumber of logical volumes\t: %d\n",
+	 number_of_logical_volumes );
+
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
+
+	for( volume_index = 0;
+	     volume_index < number_of_physical_volumes;
+	     volume_index++ )
+	{
+		if( libfvde_volume_group_get_physical_volume_by_index(
+		     volume_group,
+		     volume_index,
+		     &physical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve physical volume: %d.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+		if( info_handle_physical_volume_fprint(
+		     info_handle,
+		     volume_index,
+		     physical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print physical volume: %d information.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+		if( libfvde_physical_volume_free(
+		     &physical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free physical volume: %d.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+	}
+	for( volume_index = 0;
+	     volume_index < number_of_logical_volumes;
+	     volume_index++ )
+	{
+		if( libfvde_volume_group_get_logical_volume_by_index(
+		     volume_group,
+		     volume_index,
+		     &logical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume: %d.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+		if( info_handle_logical_volume_fprint(
+		     info_handle,
+		     volume_index,
+		     logical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print logical volume: %d information.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+		if( libfvde_logical_volume_free(
+		     &logical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free logical volume: %d.",
+			 function,
+			 volume_index );
+
+			goto on_error;
+		}
+	}
+	if( libfvde_volume_group_free(
+	     &volume_group,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free volume group.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
+
+on_error:
+	if( logical_volume != NULL )
+	{
+		libfvde_logical_volume_free(
+		 &logical_volume,
+		 NULL );
+	}
+	if( physical_volume != NULL )
+	{
+		libfvde_physical_volume_free(
+		 &physical_volume,
+		 NULL );
+	}
+	if( value_string != NULL )
+	{
+		memory_free(
+		 value_string );
+	}
+	if( volume_group != NULL )
+	{
+		libfvde_volume_group_free(
+		 &volume_group,
+		 NULL );
+	}
+	return( -1 );
 }
 

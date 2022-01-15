@@ -1,16 +1,21 @@
 TODO
+* volume group refactor
+  - remove encrypted_metadata->logical_volume_family_identifier
+
 * libfvde
   - optimize XML plist parser to directly generate keys
-* fvdeinfo
-  - print logical volume identifier
+
 * format support
   - 2x 0x001a block with same serial, where second one contains size of 2x extents
   - and first 1x extent, another image only the size of 1x extent.
+
 * volume offset detection
   - fallback check if volume data is before encrypted metadata?
+
 * pyfvde
   - pyfvde_volume_get_size replace by pyfvde_volume_get_logical_volume_size ?
   - add functionality to set encrypted context plist
+
 * complete libfvde_xml_plist
   - rename XML plist key to element
   - improve error reporting regardin not being able to read the plist
@@ -77,69 +82,8 @@ Future considerations:
   - rename library to libvcs ?
   - rename FileVault to CoreStorage ?
 
-20161103
-* worked on tests
-
-20160729
-* worked on format support
-
-20160728
-* worked on format support
-
-20160727
-* worked on format support
-
-20160720
-* worked on format support
-
-20160719
-* worked on format support
-
-20160718
-* worked on Python bindings
-
-20151018
-* worked on format support
-
-20151017
-* worked on Python bindings
-
-20151013
-* worked on format support
-
-20151013
-* worked on XML plist
-
-20151012
-* worked on XML plist
-
-20151011
-* worked on format support
-
-20150926
-* added ps1 scripts
-
-20150720
-* worked on signature check
-
-20150222
-* Code clean up
-* Worked on documenation
-* Changes for handling 0x001a metadata with different plist key sequence
-
-20150106
-* 2015 update
-
-20141226
-* changes for updated dependencies
-
-20141130
-* code clean up
-
-20141120
-* code clean up
-
 20141018
+* see `git log' for more recent change log
 * removed README.macosx
 
 20141017

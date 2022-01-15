@@ -317,15 +317,6 @@ int libfvde_volume_get_offset(
      off64_t *offset,
      libfvde_error_t **error );
 
-/* Retrieves the logical volume size
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_logical_volume_size(
-     libfvde_volume_t *volume,
-     size64_t *size,
-     libfvde_error_t **error );
-
 /* Retrieves the encryption method of the logical volume
  * Returns 1 if successful or -1 on error
  */
@@ -333,57 +324,6 @@ LIBFVDE_EXTERN \
 int libfvde_volume_get_logical_volume_encryption_method(
      libfvde_volume_t *volume,
      uint32_t *encryption_method,
-     libfvde_error_t **error );
-
-/* Retrieves the logical volume identifier
- * The identifier is a UUID and is 16 bytes of size
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_logical_volume_identifier(
-     libfvde_volume_t *volume,
-     uint8_t *uuid_data,
-     size_t uuid_data_size,
-     libfvde_error_t **error );
-
-/* Retrieves the logical volume group identifier
- * The identifier is a UUID and is 16 bytes of size
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_logical_volume_group_identifier(
-     libfvde_volume_t *volume,
-     uint8_t *uuid_data,
-     size_t uuid_data_size,
-     libfvde_error_t **error );
-
-/* Retrieves the physical volume size
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_physical_volume_size(
-     libfvde_volume_t *volume,
-     size64_t *size,
-     libfvde_error_t **error );
-
-/* Retrieves the encryption method of the physical volume
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_physical_volume_encryption_method(
-     libfvde_volume_t *volume,
-     uint32_t *encryption_method,
-     libfvde_error_t **error );
-
-/* Retrieves the physical volume identifier
- * The identifier is a UUID and is 16 bytes of size
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_physical_volume_identifier(
-     libfvde_volume_t *volume,
-     uint8_t *uuid_data,
-     size_t uuid_data_size,
      libfvde_error_t **error );
 
 /* Sets the keys
@@ -479,6 +419,15 @@ int libfvde_volume_read_encrypted_root_plist_file_io_handle(
 
 #endif /* defined( LIBFVDE_HAVE_BFIO ) */
 
+/* Retrieves the volume group
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_get_volume_group(
+     libfvde_volume_t *volume,
+     libfvde_volume_group_t **volume_group,
+     libfvde_error_t **error );
+
 /* -------------------------------------------------------------------------
  * Volume functions - deprecated
  * ------------------------------------------------------------------------- */
@@ -486,7 +435,7 @@ int libfvde_volume_read_encrypted_root_plist_file_io_handle(
 /* Retrieves the size
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_volume_get_logical_volume_size instead
+ * This function deprecated use libfvde_logical_volume_get_size instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -498,13 +447,91 @@ int libfvde_volume_get_size(
 /* Retrieves the encryption method
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_volume_get_physical_volume_encryption_method instead
+ * This function deprecated use libfvde_physical_volume_get_encryption_method instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
 int libfvde_volume_get_encryption_method(
      libfvde_volume_t *volume,
      uint32_t *encryption_method,
+     libfvde_error_t **error );
+
+/* Retrieves the logical volume group identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ *
+ * This function deprecated use libfvde_volume_group_get_identifier instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_group_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
+/* Retrieves the physical volume size
+ * Returns 1 if successful or -1 on error
+ *
+ * This function deprecated use libfvde_physical_volume_get_size instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_physical_volume_size(
+     libfvde_volume_t *volume,
+     size64_t *size,
+     libfvde_error_t **error );
+
+/* Retrieves the encryption method of the physical volume
+ * Returns 1 if successful or -1 on error
+ *
+ * This function deprecated use libfvde_physical_volume_get_encryption_method instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_physical_volume_encryption_method(
+     libfvde_volume_t *volume,
+     uint32_t *encryption_method,
+     libfvde_error_t **error );
+
+/* Retrieves the physical volume identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ *
+ * This function deprecated use libfvde_physical_volume_get_identifier instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_physical_volume_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
+/* Retrieves the logical volume size
+ * Returns 1 if successful or -1 on error
+ *
+ * This function deprecated use libfvde_logica_volume_get_size instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_size(
+     libfvde_volume_t *volume,
+     size64_t *size,
+     libfvde_error_t **error );
+
+/* Retrieves the logical volume identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ *
+ * This function deprecated use libfvde_logical_volume_get_identifier instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
      libfvde_error_t **error );
 
 /* -------------------------------------------------------------------------
@@ -517,6 +544,212 @@ int libfvde_volume_get_encryption_method(
 LIBFVDE_EXTERN \
 int libfvde_volume_group_free(
      libfvde_volume_group_t **volume_group,
+     libfvde_error_t **error );
+
+/* Retrieves the logical volume group identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_identifier(
+     libfvde_volume_group_t *volume_group,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf8_name_size(
+     libfvde_volume_group_t *volume_group,
+     size_t *utf8_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the UTF-8 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf8_name(
+     libfvde_volume_group_t *volume_group,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the size of the UTF-16 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf16_name_size(
+     libfvde_volume_group_t *volume_group,
+     size_t *utf16_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the UTF-16 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf16_name(
+     libfvde_volume_group_t *volume_group,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the number of physical volumes
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_number_of_physical_volumes(
+     libfvde_volume_group_t *volume_group,
+     int *number_of_physical_volumes,
+     libfvde_error_t **error );
+
+/* Retrieves a specific physical volume
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_physical_volume_by_index(
+     libfvde_volume_group_t *volume_group,
+     int volume_index,
+     libfvde_physical_volume_t **physical_volume,
+     libfvde_error_t **error );
+
+/* Retrieves the number of logical volumes
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_number_of_logical_volumes(
+     libfvde_volume_group_t *volume_group,
+     int *number_of_logical_volumes,
+     libfvde_error_t **error );
+
+/* Retrieves a specific logical volume
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_logical_volume_by_index(
+     libfvde_volume_group_t *volume_group,
+     int volume_index,
+     libfvde_logical_volume_t **logical_volume,
+     libfvde_error_t **error );
+
+/* -------------------------------------------------------------------------
+ * Physical volume functions
+ * ------------------------------------------------------------------------- */
+
+/* Frees a physical volume
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_physical_volume_free(
+     libfvde_physical_volume_t **physical_volume,
+     libfvde_error_t **error );
+
+/* Retrieves the physical volume identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_physical_volume_get_identifier(
+     libfvde_physical_volume_t *physical_volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
+/* Retrieves the encryption method
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_physical_volume_get_encryption_method(
+     libfvde_physical_volume_t *physical_volume,
+     uint32_t *encryption_method,
+     libfvde_error_t **error );
+
+/* Retrieves the size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_physical_volume_get_size(
+     libfvde_physical_volume_t *physical_volume,
+     size64_t *size,
+     libfvde_error_t **error );
+
+/* -------------------------------------------------------------------------
+ * Logical volume functions
+ * ------------------------------------------------------------------------- */
+
+/* Frees a logical volume
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_free(
+     libfvde_logical_volume_t **logical_volume,
+     libfvde_error_t **error );
+
+/* Retrieves the logical volume identifier
+ * The identifier is a UUID and is 16 bytes of size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_get_identifier(
+     libfvde_logical_volume_t *logical_volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libfvde_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_get_utf8_name_size(
+     libfvde_logical_volume_t *logical_volume,
+     size_t *utf8_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the UTF-8 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_get_utf8_name(
+     libfvde_logical_volume_t *logical_volume,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the size of the UTF-16 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_get_utf16_name_size(
+     libfvde_logical_volume_t *logical_volume,
+     size_t *utf16_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the UTF-16 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_get_utf16_name(
+     libfvde_logical_volume_t *logical_volume,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libfvde_error_t **error );
+
+/* Retrieves the size
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_get_size(
+     libfvde_logical_volume_t *logical_volume,
+     size64_t *size,
      libfvde_error_t **error );
 
 /* -------------------------------------------------------------------------

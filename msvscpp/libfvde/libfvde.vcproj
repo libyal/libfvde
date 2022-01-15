@@ -222,6 +222,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_logical_volume.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_logical_volume_descriptor.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_metadata.c"
 				>
 			</File>
@@ -235,6 +243,14 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_password.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_physical_volume.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_physical_volume_descriptor.c"
 				>
 			</File>
 			<File
@@ -392,6 +408,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_logical_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_logical_volume_descriptor.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_metadata.h"
 				>
 			</File>
@@ -405,6 +429,14 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_password.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_physical_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_physical_volume_descriptor.h"
 				>
 			</File>
 			<File

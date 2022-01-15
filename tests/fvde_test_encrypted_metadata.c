@@ -48,7 +48,7 @@ int fvde_test_encrypted_metadata_initialize(
 	int result                                       = 0;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
-	int number_of_malloc_fail_tests                  = 1;
+	int number_of_malloc_fail_tests                  = 4;
 	int number_of_memset_fail_tests                  = 1;
 	int test_number                                  = 0;
 #endif

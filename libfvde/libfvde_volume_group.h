@@ -20,16 +20,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_INTERNAL_VOLUME_GROUP_H )
-#define _LIBFVDE_INTERNAL_VOLUME_GROUP_H
+#if !defined( _LIBFVDE_VOLUME_GROUP_H )
+#define _LIBFVDE_VOLUME_GROUP_H
 
 #include <common.h>
 #include <types.h>
 
+#include "libfvde_encrypted_metadata.h"
 #include "libfvde_extern.h"
-#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
+#include "libfvde_libcthreads.h"
+#include "libfvde_metadata.h"
 #include "libfvde_types.h"
+#include "libfvde_volume_header.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -39,29 +42,30 @@ typedef struct libfvde_internal_volume_group libfvde_internal_volume_group_t;
 
 struct libfvde_internal_volume_group
 {
-	/* The name
+	/* The volume header
 	 */
-	char *name;
+	libfvde_volume_header_t *volume_header;
 
-	/* The name size
+	/* The metadata
 	 */
-	size_t name_size;
+	libfvde_metadata_t *metadata;
 
-	/* The identfier
+	/* The encrypted metadata
 	 */
-	char identifier[ 39 ];
+	libfvde_encrypted_metadata_t *encrypted_metadata;
 
-	/* The physical volumes array
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	/* The read/write lock
 	 */
-	libcdata_array_t *physical_volumes_array;
-
-	/* The logical volumes array
-	 */
-	libcdata_array_t *logical_volumes_array;
+	libcthreads_read_write_lock_t *read_write_lock;
+#endif
 };
 
 int libfvde_volume_group_initialize(
      libfvde_volume_group_t **volume_group,
+     libfvde_volume_header_t *volume_header,
+     libfvde_metadata_t *metadata,
+     libfvde_encrypted_metadata_t *encrypted_metadata,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
@@ -69,13 +73,68 @@ int libfvde_volume_group_free(
      libfvde_volume_group_t **volume_group,
      libcerror_error_t **error );
 
-int libfvde_internal_volume_group_free(
-     libfvde_internal_volume_group_t **internal_volume_group,
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf8_name_size(
+     libfvde_volume_group_t *volume_group,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf8_name(
+     libfvde_volume_group_t *volume_group,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf16_name_size(
+     libfvde_volume_group_t *volume_group,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_utf16_name(
+     libfvde_volume_group_t *volume_group,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_number_of_physical_volumes(
+     libfvde_volume_group_t *volume_group,
+     int *number_of_physical_volumes,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_physical_volume_by_index(
+     libfvde_volume_group_t *volume_group,
+     int volume_index,
+     libfvde_physical_volume_t **physical_volume,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_number_of_logical_volumes(
+     libfvde_volume_group_t *volume_group,
+     int *number_of_logical_volumes,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_group_get_logical_volume_by_index(
+     libfvde_volume_group_t *volume_group,
+     int volume_index,
+     libfvde_logical_volume_t **logical_volume,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFVDE_INTERNAL_VOLUME_GROUP_H ) */
+#endif /* !defined( _LIBFVDE_VOLUME_GROUP_H ) */
 

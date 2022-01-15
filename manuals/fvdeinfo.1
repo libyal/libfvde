@@ -1,4 +1,4 @@
-.Dd December  6, 2020
+.Dd January 15, 2022
 .Dt fvdeinfo
 .Os libfvde
 .Sh NAME
@@ -51,18 +51,25 @@ None
 None
 .Sh EXAMPLES
 .Bd -literal
-# fvdeinfo -p Password /dev/sda1
-fvdeinfo 20121112
-
+# fvdeinfo -o20480 image.raw
+fvdeinfo 20220114
+.sp
 Core Storage information:
-
-Physical volume:
-	Size:				262103040 bytes
-	Encryption method:		AES XTS
-
-Logical volume:
-	Size:				224346112 bytes
-
+.sp
+Logical volume group:
+	Identifier			: 94923b58-9f31-4988-8707-cb90c8e45a46
+	Name				: TESTLVG
+	Number of physical volumes	: 1
+	Number of logical volumes	: 1
+.sp
+Physical volume: 1
+	Identifier			: 3273a055-3b8b-47e8-b970-df35eecda81b
+	Size				: 511 MiB (536829952 bytes)
+	Encryption method		: AES-XTS
+.sp
+Logical volume: 1
+	Is locked
+.sp
 .Ed
 .Sh DIAGNOSTICS
 Errors, verbose and debug output are printed to stderr when verbose output \-v is enabled.

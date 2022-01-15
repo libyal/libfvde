@@ -24,10 +24,16 @@
 #include <memory.h>
 #include <types.h>
 
-#include "libfvde_libcdata.h"
+#include "libfvde_encrypted_metadata.h"
 #include "libfvde_libcerror.h"
+#include "libfvde_libcthreads.h"
+#include "libfvde_logical_volume.h"
+#include "libfvde_metadata.h"
+#include "libfvde_physical_volume.h"
+#include "libfvde_physical_volume_descriptor.h"
 #include "libfvde_types.h"
 #include "libfvde_volume_group.h"
+#include "libfvde_volume_header.h"
 
 /* Creates a volume group
  * Make sure the value volume_group is referencing, is set to NULL
@@ -35,6 +41,9 @@
  */
 int libfvde_volume_group_initialize(
      libfvde_volume_group_t **volume_group,
+     libfvde_volume_header_t *volume_header,
+     libfvde_metadata_t *metadata,
+     libfvde_encrypted_metadata_t *encrypted_metadata,
      libcerror_error_t **error )
 {
 	libfvde_internal_volume_group_t *internal_volume_group = NULL;
@@ -62,6 +71,19 @@ int libfvde_volume_group_initialize(
 
 		return( -1 );
 	}
+	if( volume_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume header.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO check if metadata is set */
+/* TODO check if encrypted_metadata is set */
 	internal_volume_group = memory_allocate_structure(
 	                         libfvde_internal_volume_group_t );
 
@@ -93,34 +115,25 @@ int libfvde_volume_group_initialize(
 
 		return( -1 );
 	}
-	if( libcdata_array_initialize(
-	     &( internal_volume_group->physical_volumes_array ),
-	     0,
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_initialize(
+	     &( internal_volume_group->read_write_lock ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create physical volumes array.",
+		 "%s: unable to initialize read/write lock.",
 		 function );
 
 		goto on_error;
 	}
-	if( libcdata_array_initialize(
-	     &( internal_volume_group->logical_volumes_array ),
-	     0,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create logical volumes array.",
-		 function );
+#endif
+	internal_volume_group->volume_header      = volume_header;
+	internal_volume_group->metadata           = metadata;
+	internal_volume_group->encrypted_metadata = encrypted_metadata;
 
-		goto on_error;
-	}
 	*volume_group = (libfvde_volume_group_t *) internal_volume_group;
 
 	return( 1 );
@@ -128,13 +141,6 @@ int libfvde_volume_group_initialize(
 on_error:
 	if( internal_volume_group != NULL )
 	{
-		if( internal_volume_group->physical_volumes_array != NULL )
-		{
-			libcdata_array_free(
-			 &( internal_volume_group->physical_volumes_array ),
-			 NULL,
-			 NULL );
-		}
 		memory_free(
 		 internal_volume_group );
 	}
@@ -148,7 +154,9 @@ int libfvde_volume_group_free(
      libfvde_volume_group_t **volume_group,
      libcerror_error_t **error )
 {
-	static char *function = "libfvde_volume_group_free";
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_free";
+	int result                                             = 1;
 
 	if( volume_group == NULL )
 	{
@@ -163,22 +171,47 @@ int libfvde_volume_group_free(
 	}
 	if( *volume_group != NULL )
 	{
-		*volume_group = NULL;
+		internal_volume_group = (libfvde_internal_volume_group_t *) *volume_group;
+		*volume_group         = NULL;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_free(
+		     &( internal_volume_group->read_write_lock ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free read/write lock.",
+			 function );
+
+			result = -1;
+		}
+#endif
+		/* The volume_header and metadata references are freed elsewhere
+		 */
+		memory_free(
+		 internal_volume_group );
 	}
-	return( 1 );
+	return( result );
 }
 
-/* Frees a volume group
+/* Retrieves the logical volume group identifier
+ * The identifier is a UUID and is 16 bytes of size
  * Returns 1 if successful or -1 on error
  */
-int libfvde_internal_volume_group_free(
-     libfvde_internal_volume_group_t **internal_volume_group,
+int libfvde_volume_group_get_identifier(
+     libfvde_volume_group_t *volume_group,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfvde_internal_volume_group_free";
-	int result            = 1;
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_get_identifier";
+	int result                                             = 1;
 
-	if( internal_volume_group == NULL )
+	if( volume_group == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -189,50 +222,735 @@ int libfvde_internal_volume_group_free(
 
 		return( -1 );
 	}
-	if( *internal_volume_group != NULL )
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
 	{
-		/* The io_handle and physical_volume_file_io_pool references are freed elsewhere
-		 */
-		if( ( *internal_volume_group )->name != NULL )
-		{
-			memory_free(
-			 ( *internal_volume_group )->name );
-		}
-/* TODO add free function */
-		if( libcdata_array_free(
-		     &( ( *internal_volume_group )->physical_volumes_array ),
-		     (int (*)(intptr_t **, libcerror_error_t **)) NULL,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free physical volumes array.",
-			 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
 
-			result = -1;
-		}
-/* TODO add free function */
-		if( libcdata_array_free(
-		     &( ( *internal_volume_group )->logical_volumes_array ),
-		     (int (*)(intptr_t **, libcerror_error_t **)) NULL,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free logical volumes array.",
-			 function );
-
-			result = -1;
-		}
-		memory_free(
-		 *internal_volume_group );
-
-		*internal_volume_group = NULL;
+		return( -1 );
 	}
+#endif
+	if( libfvde_volume_header_get_logical_volume_group_identifier(
+	     internal_volume_group->volume_header,
+	     uuid_data,
+	     uuid_data_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume group identifier from volume header.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the size of the UTF-8 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_utf8_name_size(
+     libfvde_volume_group_t *volume_group,
+     size_t *utf8_string_size,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_get_utf8_name_size";
+	int result                                             = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_metadata_get_utf8_volume_group_name_size(
+	     internal_volume_group->metadata,
+	     utf8_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve size of UTF-8 volume group name from metadata.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the UTF-8 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_utf8_name(
+     libfvde_volume_group_t *volume_group,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_get_utf8_name";
+	int result                                             = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_metadata_get_utf8_volume_group_name(
+	     internal_volume_group->metadata,
+	     utf8_string,
+	     utf8_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 volume group name from metadata.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the size of the UTF-16 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_utf16_name_size(
+     libfvde_volume_group_t *volume_group,
+     size_t *utf16_string_size,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_get_utf16_name_size";
+	int result                                             = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_metadata_get_utf16_volume_group_name_size(
+	     internal_volume_group->metadata,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve size of UTF-16 volume group name from metadata.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the UTF-16 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_utf16_name(
+     libfvde_volume_group_t *volume_group,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_get_utf16_name";
+	int result                                             = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_metadata_get_utf16_volume_group_name(
+	     internal_volume_group->metadata,
+	     utf16_string,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 volume group name from metadata.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the number of physical volumes
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_number_of_physical_volumes(
+     libfvde_volume_group_t *volume_group,
+     int *number_of_physical_volumes,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_get_number_of_physical_volumes";
+	int result                                             = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_metadata_get_number_of_physical_volume_descriptors(
+	     internal_volume_group->metadata,
+	     number_of_physical_volumes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volume descriptors from metadata.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves a specific physical volume
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_physical_volume_by_index(
+     libfvde_volume_group_t *volume_group,
+     int volume_index,
+     libfvde_physical_volume_t **physical_volume,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group           = NULL;
+	libfvde_physical_volume_descriptor_t *physical_volume_descriptor = NULL;
+	static char *function                                            = "libfvde_volume_group_get_physical_volume_by_index";
+	int result                                                       = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+	if( physical_volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid physical volume.",
+		 function );
+
+		return( -1 );
+	}
+	if( *physical_volume != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid physical volume value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_metadata_get_physical_volume_descriptor_by_index(
+	     internal_volume_group->metadata,
+	     volume_index,
+	     &physical_volume_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve physical volume descriptor: %d from metadata.",
+		 function,
+		 volume_index );
+
+		result = -1;
+	}
+	else
+	{
+		if( libfvde_physical_volume_initialize(
+		      physical_volume,
+		      internal_volume_group->volume_header,
+		      physical_volume_descriptor,
+		      error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create physical volume.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the number of logical volumes
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_number_of_logical_volumes(
+     libfvde_volume_group_t *volume_group,
+     int *number_of_logical_volumes,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group = NULL;
+	static char *function                                  = "libfvde_volume_group_get_number_of_logical_volumes";
+	int result                                             = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+	if( number_of_logical_volumes == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid number of logical_volumes.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
+	     internal_volume_group->encrypted_metadata,
+	     number_of_logical_volumes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of logical volume descriptors from encrypted metadata.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves a specific logical volume
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_group_get_logical_volume_by_index(
+     libfvde_volume_group_t *volume_group,
+     int volume_index,
+     libfvde_logical_volume_t **logical_volume,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_group_t *internal_volume_group         = NULL;
+	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
+	static char *function                                          = "libfvde_volume_group_get_logical_volume_by_index";
+	int result                                                     = 1;
+
+	if( volume_group == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume_group = (libfvde_internal_volume_group_t *) volume_group;
+
+	if( logical_volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid logical volume.",
+		 function );
+
+		return( -1 );
+	}
+	if( *logical_volume != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid logical volume value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
+	     internal_volume_group->encrypted_metadata,
+	     volume_index,
+	     &logical_volume_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume descriptor: %d from encrypted metadata.",
+		 function,
+		 volume_index );
+
+		result = -1;
+	}
+	else
+	{
+		if( libfvde_logical_volume_initialize(
+		      logical_volume,
+		      logical_volume_descriptor,
+		      error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create logical volume.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume_group->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( result );
 }
 

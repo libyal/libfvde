@@ -1,4 +1,4 @@
-.Dd April 25, 2021
+.Dd January 15, 2022
 .Dt libfvde 3
 .Os libfvde
 .Sh NAME
@@ -79,8 +79,6 @@ Volume functions
 .Ft int
 .Fn libfvde_volume_get_logical_volume_identifier "libfvde_volume_t *volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_get_logical_volume_group_identifier "libfvde_volume_t *volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
-.Ft int
 .Fn libfvde_volume_get_physical_volume_size "libfvde_volume_t *volume" "size64_t *size" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_get_physical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
@@ -98,6 +96,8 @@ Volume functions
 .Fn libfvde_volume_set_utf16_recovery_password "libfvde_volume_t *volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_read_encrypted_root_plist "libfvde_volume_t *volume" "const char *filename" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_get_volume_group "libfvde_volume_t *volume" "libfvde_volume_group_t **volume_group" "libfvde_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
@@ -114,6 +114,50 @@ Available when compiled with libbfio support:
 Volume group functions
 .Ft int
 .Fn libfvde_volume_group_free "libfvde_volume_group_t **volume_group" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_identifier "libfvde_volume_group_t *volume_group" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_utf8_name_size "libfvde_volume_group_t *volume_group" "size_t *utf8_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_utf8_name "libfvde_volume_group_t *volume_group" "uint8_t *utf8_string" "size_t utf8_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_utf16_name_size "libfvde_volume_group_t *volume_group" "size_t *utf16_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_utf16_name "libfvde_volume_group_t *volume_group" "uint16_t *utf16_string" "size_t utf16_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_number_of_physical_volumes "libfvde_volume_group_t *volume_group" "int *number_of_physical_volumes" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_physical_volume_by_index "libfvde_volume_group_t *volume_group" "int volume_index" "libfvde_physical_volume_t **physical_volume" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_number_of_logical_volumes "libfvde_volume_group_t *volume_group" "int *number_of_logical_volumes" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_group_get_logical_volume_by_index "libfvde_volume_group_t *volume_group" "int volume_index" "libfvde_logical_volume_t **logical_volume" "libfvde_error_t **error"
+.Pp
+Physical volume functions
+.Ft int
+.Fn libfvde_physical_volume_free "libfvde_physical_volume_t **physical_volume" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_physical_volume_get_identifier "libfvde_physical_volume_t *physical_volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_physical_volume_get_encryption_method "libfvde_physical_volume_t *physical_volume" "uint32_t *encryption_method" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_physical_volume_get_size "libfvde_physical_volume_t *physical_volume" "size64_t *size" "libfvde_error_t **error"
+.Pp
+Logical volume functions
+.Ft int
+.Fn libfvde_logical_volume_free "libfvde_logical_volume_t **logical_volume" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_get_identifier "libfvde_logical_volume_t *logical_volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_get_utf8_name_size "libfvde_logical_volume_t *logical_volume" "size_t *utf8_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_get_utf8_name "libfvde_logical_volume_t *logical_volume" "uint8_t *utf8_string" "size_t utf8_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_get_utf16_name_size "libfvde_logical_volume_t *logical_volume" "size_t *utf16_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_get_utf16_name "libfvde_logical_volume_t *logical_volume" "uint16_t *utf16_string" "size_t utf16_string_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_get_size "libfvde_logical_volume_t *logical_volume" "size64_t *size" "libfvde_error_t **error"
 .Pp
 LVF encryption context and EncryptedRoot.plist file functions
 .Ft int

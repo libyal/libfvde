@@ -6,9 +6,13 @@ MSVSCPP_FILES = \
 	fvde_test_error/fvde_test_error.vcproj \
 	fvde_test_io_handle/fvde_test_io_handle.vcproj \
 	fvde_test_keyring/fvde_test_keyring.vcproj \
+	fvde_test_logical_volume/fvde_test_logical_volume.vcproj \
+	fvde_test_logical_volume_descriptor/fvde_test_logical_volume_descriptor.vcproj \
 	fvde_test_metadata/fvde_test_metadata.vcproj \
 	fvde_test_metadata_block/fvde_test_metadata_block.vcproj \
 	fvde_test_notify/fvde_test_notify.vcproj \
+	fvde_test_physical_volume/fvde_test_physical_volume.vcproj \
+	fvde_test_physical_volume_descriptor/fvde_test_physical_volume_descriptor.vcproj \
 	fvde_test_sector_data/fvde_test_sector_data.vcproj \
 	fvde_test_segment_descriptor/fvde_test_segment_descriptor.vcproj \
 	fvde_test_support/fvde_test_support.vcproj \

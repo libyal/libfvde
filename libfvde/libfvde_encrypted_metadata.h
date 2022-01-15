@@ -33,6 +33,7 @@
 #include "libfvde_libbfio.h"
 #include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
+#include "libfvde_logical_volume_descriptor.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -103,6 +104,10 @@ struct libfvde_encrypted_metadata
 	/* The logical volume number of blocks as defined by metadata block 0x0505
 	 */
 	uint64_t logical_volume_number_of_blocks_0x0505;
+
+	/* The logical volume descriptors
+	 */
+	libcdata_array_t *logical_volume_descriptors;
 
 	/* The segment descriptors
 	 */
@@ -263,6 +268,17 @@ int libfvde_encrypted_metadata_get_volume_master_key(
      libfvde_io_handle_t *io_handle,
      libfvde_encryption_context_plist_t *encryption_context_plist,
      libfvde_keyring_t *keyring,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     int *number_of_logical_volume_descriptors,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     int logical_volume_descriptor_index,
+     libfvde_logical_volume_descriptor_t **logical_volume_descriptor,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_get_number_of_data_area_descriptors(

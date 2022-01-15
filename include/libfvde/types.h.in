@@ -204,6 +204,7 @@ typedef int64_t off64_t;
  */
 typedef intptr_t libfvde_encryption_context_plist_t;
 typedef intptr_t libfvde_logical_volume_t;
+typedef intptr_t libfvde_physical_volume_t;
 typedef intptr_t libfvde_volume_t;
 typedef intptr_t libfvde_volume_group_t;
 

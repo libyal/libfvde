@@ -1,5 +1,5 @@
 /*
- * Library metadata type test program
+ * Library physical_volume_descriptor type test program
  *
  * Copyright (C) 2011-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,30 +33,30 @@
 #include "fvde_test_memory.h"
 #include "fvde_test_unused.h"
 
-#include "../libfvde/libfvde_metadata.h"
+#include "../libfvde/libfvde_physical_volume_descriptor.h"
 
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
-/* Tests the libfvde_metadata_initialize function
+/* Tests the libfvde_physical_volume_descriptor_initialize function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_metadata_initialize(
+int fvde_test_physical_volume_descriptor_initialize(
      void )
 {
-	libcerror_error_t *error        = NULL;
-	libfvde_metadata_t *metadata    = NULL;
-	int result                      = 0;
+	libcerror_error_t *error                                         = NULL;
+	libfvde_physical_volume_descriptor_t *physical_volume_descriptor = NULL;
+	int result                                                       = 0;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
-	int number_of_malloc_fail_tests = 2;
-	int number_of_memset_fail_tests = 1;
-	int test_number                 = 0;
+	int number_of_malloc_fail_tests                                  = 1;
+	int number_of_memset_fail_tests                                  = 1;
+	int test_number                                                  = 0;
 #endif
 
 	/* Test regular cases
 	 */
-	result = libfvde_metadata_initialize(
-	          &metadata,
+	result = libfvde_physical_volume_descriptor_initialize(
+	          &physical_volume_descriptor,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -65,15 +65,15 @@ int fvde_test_metadata_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "metadata",
-	 metadata );
+	 "physical_volume_descriptor",
+	 physical_volume_descriptor );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	result = libfvde_metadata_free(
-	          &metadata,
+	result = libfvde_physical_volume_descriptor_free(
+	          &physical_volume_descriptor,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -82,8 +82,8 @@ int fvde_test_metadata_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
-	 "metadata",
-	 metadata );
+	 "physical_volume_descriptor",
+	 physical_volume_descriptor );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -91,7 +91,7 @@ int fvde_test_metadata_initialize(
 
 	/* Test error cases
 	 */
-	result = libfvde_metadata_initialize(
+	result = libfvde_physical_volume_descriptor_initialize(
 	          NULL,
 	          &error );
 
@@ -107,13 +107,13 @@ int fvde_test_metadata_initialize(
 	libcerror_error_free(
 	 &error );
 
-	metadata = (libfvde_metadata_t *) 0x12345678UL;
+	physical_volume_descriptor = (libfvde_physical_volume_descriptor_t *) 0x12345678UL;
 
-	result = libfvde_metadata_initialize(
-	          &metadata,
+	result = libfvde_physical_volume_descriptor_initialize(
+	          &physical_volume_descriptor,
 	          &error );
 
-	metadata = NULL;
+	physical_volume_descriptor = NULL;
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
@@ -133,22 +133,22 @@ int fvde_test_metadata_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_metadata_initialize with malloc failing
+		/* Test libfvde_physical_volume_descriptor_initialize with malloc failing
 		 */
 		fvde_test_malloc_attempts_before_fail = test_number;
 
-		result = libfvde_metadata_initialize(
-		          &metadata,
+		result = libfvde_physical_volume_descriptor_initialize(
+		          &physical_volume_descriptor,
 		          &error );
 
 		if( fvde_test_malloc_attempts_before_fail != -1 )
 		{
 			fvde_test_malloc_attempts_before_fail = -1;
 
-			if( metadata != NULL )
+			if( physical_volume_descriptor != NULL )
 			{
-				libfvde_metadata_free(
-				 &metadata,
+				libfvde_physical_volume_descriptor_free(
+				 &physical_volume_descriptor,
 				 NULL );
 			}
 		}
@@ -160,8 +160,8 @@ int fvde_test_metadata_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "metadata",
-			 metadata );
+			 "physical_volume_descriptor",
+			 physical_volume_descriptor );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -175,22 +175,22 @@ int fvde_test_metadata_initialize(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_metadata_initialize with memset failing
+		/* Test libfvde_physical_volume_descriptor_initialize with memset failing
 		 */
 		fvde_test_memset_attempts_before_fail = test_number;
 
-		result = libfvde_metadata_initialize(
-		          &metadata,
+		result = libfvde_physical_volume_descriptor_initialize(
+		          &physical_volume_descriptor,
 		          &error );
 
 		if( fvde_test_memset_attempts_before_fail != -1 )
 		{
 			fvde_test_memset_attempts_before_fail = -1;
 
-			if( metadata != NULL )
+			if( physical_volume_descriptor != NULL )
 			{
-				libfvde_metadata_free(
-				 &metadata,
+				libfvde_physical_volume_descriptor_free(
+				 &physical_volume_descriptor,
 				 NULL );
 			}
 		}
@@ -202,8 +202,8 @@ int fvde_test_metadata_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "metadata",
-			 metadata );
+			 "physical_volume_descriptor",
+			 physical_volume_descriptor );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -223,19 +223,19 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
-	if( metadata != NULL )
+	if( physical_volume_descriptor != NULL )
 	{
-		libfvde_metadata_free(
-		 &metadata,
+		libfvde_physical_volume_descriptor_free(
+		 &physical_volume_descriptor,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the libfvde_metadata_free function
+/* Tests the libfvde_physical_volume_descriptor_free function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_metadata_free(
+int fvde_test_physical_volume_descriptor_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -243,7 +243,7 @@ int fvde_test_metadata_free(
 
 	/* Test error cases
 	 */
-	result = libfvde_metadata_free(
+	result = libfvde_physical_volume_descriptor_free(
 	          NULL,
 	          &error );
 
@@ -266,111 +266,6 @@ on_error:
 	{
 		libcerror_error_free(
 		 &error );
-	}
-	return( 0 );
-}
-
-/* Tests the libfvde_metadata_read_file_io_handle function
- * Returns 1 if successful or 0 if not
- */
-int fvde_test_metadata_read_file_io_handle(
-     void )
-{
-	libcerror_error_t *error     = NULL;
-	libfvde_metadata_t *metadata = NULL;
-	int result                   = 0;
-
-	/* Initialize test
-	 */
-	result = libfvde_metadata_initialize(
-	          &metadata,
-	          &error );
-
-	FVDE_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "metadata",
-	 metadata );
-
-	FVDE_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test error cases
-	 */
-	result = libfvde_metadata_read_file_io_handle(
-	          NULL,
-	          NULL,
-	          NULL,
-	          0,
-	          &error );
-
-	FVDE_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	result = libfvde_metadata_read_file_io_handle(
-	          metadata,
-	          NULL,
-	          NULL,
-	          0,
-	          &error );
-
-	FVDE_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	/* Clean up
-	 */
-	result = libfvde_metadata_free(
-	          &metadata,
-	          &error );
-
-	FVDE_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FVDE_TEST_ASSERT_IS_NULL(
-	 "metadata",
-	 metadata );
-
-	FVDE_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	if( metadata != NULL )
-	{
-		libfvde_metadata_free(
-		 &metadata,
-		 NULL );
 	}
 	return( 0 );
 }
@@ -395,20 +290,12 @@ int main(
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	FVDE_TEST_RUN(
-	 "libfvde_metadata_initialize",
-	 fvde_test_metadata_initialize );
+	 "libfvde_physical_volume_descriptor_initialize",
+	 fvde_test_physical_volume_descriptor_initialize );
 
 	FVDE_TEST_RUN(
-	 "libfvde_metadata_free",
-	 fvde_test_metadata_free );
-
-	/* TODO: add tests for libfvde_metadata_read_type_0x0011 */
-
-	/* TODO: add tests for libfvde_metadata_read_core_storage_plist */
-
-	FVDE_TEST_RUN(
-	 "libfvde_metadata_read_file_io_handle",
-	 fvde_test_metadata_read_file_io_handle );
+	 "libfvde_physical_volume_descriptor_free",
+	 fvde_test_physical_volume_descriptor_free );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 

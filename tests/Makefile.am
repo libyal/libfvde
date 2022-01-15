@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = subdir-objects
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
@@ -20,7 +22,7 @@ AM_CPPFLAGS = \
 	@LIBCRYPTO_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@LIBCAES_CPPFLAGS@ \
-	@PTHREAD_CPPFLAGS@
+	@PTHREAD_CPPFLAGS@ \
 	@LIBFVDE_DLL_IMPORT@
 
 if HAVE_PYTHON_TESTS
@@ -53,9 +55,13 @@ check_PROGRAMS = \
 	fvde_test_error \
 	fvde_test_io_handle \
 	fvde_test_keyring \
+	fvde_test_logical_volume \
+	fvde_test_logical_volume_descriptor \
 	fvde_test_metadata \
 	fvde_test_metadata_block \
 	fvde_test_notify \
+	fvde_test_physical_volume \
+	fvde_test_physical_volume_descriptor \
 	fvde_test_sector_data \
 	fvde_test_segment_descriptor \
 	fvde_test_support \
@@ -145,6 +151,30 @@ fvde_test_keyring_LDADD = \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 
+fvde_test_logical_volume_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_logical_volume.c \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_logical_volume_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_logical_volume_descriptor_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_logical_volume_descriptor.c \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_logical_volume_descriptor_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
 fvde_test_metadata_SOURCES = \
 	fvde_test_libcerror.h \
 	fvde_test_libfvde.h \
@@ -177,6 +207,30 @@ fvde_test_notify_SOURCES = \
 	fvde_test_unused.h
 
 fvde_test_notify_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_physical_volume_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_physical_volume.c \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_physical_volume_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_physical_volume_descriptor_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_physical_volume_descriptor.c \
+	fvde_test_unused.h
+
+fvde_test_physical_volume_descriptor_LDADD = \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 

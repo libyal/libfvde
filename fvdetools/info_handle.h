@@ -126,6 +126,18 @@ int info_handle_uuid_value_fprint(
      const uint8_t *uuid_data,
      libcerror_error_t **error );
 
+int info_handle_physical_volume_fprint(
+     info_handle_t *info_handle,
+     int physical_volume_index,
+     libfvde_physical_volume_t *physical_volume,
+     libcerror_error_t **error );
+
+int info_handle_logical_volume_fprint(
+     info_handle_t *info_handle,
+     int logical_volume_index,
+     libfvde_logical_volume_t *logical_volume,
+     libcerror_error_t **error );
+
 int info_handle_volume_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error );

@@ -28,7 +28,9 @@
 
 #include "libfvde_io_handle.h"
 #include "libfvde_libbfio.h"
+#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
+#include "libfvde_physical_volume_descriptor.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -49,6 +51,18 @@ struct libfvde_metadata
 	/* The secondary encrypted metadata offset
 	 */
 	uint64_t secondary_encrypted_metadata_offset;
+
+	/* The volume group name
+	 */
+	uint8_t *volume_group_name;
+
+	/* The volume group name size
+	 */
+	size_t volume_group_name_size;
+
+	/* The physical volume descriptors
+	 */
+	libcdata_array_t *physical_volume_descriptors;
 };
 
 int libfvde_metadata_initialize(
@@ -71,11 +85,44 @@ int libfvde_metadata_read_core_storage_plist(
      const uint8_t *xml_plist_data,
      libcerror_error_t **error );
 
-int libfvde_metadata_read(
+int libfvde_metadata_read_file_io_handle(
      libfvde_metadata_t *metadata,
      libfvde_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
+     libcerror_error_t **error );
+
+int libfvde_metadata_get_utf8_volume_group_name_size(
+     libfvde_metadata_t *metadata,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+int libfvde_metadata_get_utf8_volume_group_name(
+     libfvde_metadata_t *metadata,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+int libfvde_metadata_get_utf16_volume_group_name_size(
+     libfvde_metadata_t *metadata,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+int libfvde_metadata_get_utf16_volume_group_name(
+     libfvde_metadata_t *metadata,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error );
+
+int libfvde_metadata_get_number_of_physical_volume_descriptors(
+     libfvde_metadata_t *metadata,
+     int *number_of_physical_volume_descriptors,
+     libcerror_error_t **error );
+
+int libfvde_metadata_get_physical_volume_descriptor_by_index(
+     libfvde_metadata_t *metadata,
+     int physical_volume_descriptor_index,
+     libfvde_physical_volume_descriptor_t **physical_volume_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

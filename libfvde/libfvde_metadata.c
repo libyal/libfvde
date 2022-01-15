@@ -29,11 +29,14 @@
 #include "libfvde_checksum.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_libbfio.h"
+#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
 #include "libfvde_libfplist.h"
+#include "libfvde_libuna.h"
 #include "libfvde_metadata.h"
 #include "libfvde_metadata_block.h"
+#include "libfvde_physical_volume_descriptor.h"
 
 #include "fvde_metadata.h"
 
@@ -95,6 +98,25 @@ int libfvde_metadata_initialize(
 		 "%s: unable to clear metadata.",
 		 function );
 
+		memory_free(
+		 *metadata );
+
+		*metadata = NULL;
+
+		return( -1 );
+	}
+	if( libcdata_array_initialize(
+	     &( ( *metadata )->physical_volume_descriptors ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create physical volume descriptors array.",
+		 function );
+
 		goto on_error;
 	}
 	return( 1 );
@@ -118,6 +140,7 @@ int libfvde_metadata_free(
      libcerror_error_t **error )
 {
 	static char *function = "libfvde_metadata_free";
+	int result            = 1;
 
 	if( metadata == NULL )
 	{
@@ -132,12 +155,31 @@ int libfvde_metadata_free(
 	}
 	if( *metadata != NULL )
 	{
+		if( ( *metadata )->volume_group_name != NULL )
+		{
+			memory_free(
+			 ( *metadata )->volume_group_name );
+		}
+		if( libcdata_array_free(
+		     &( ( *metadata )->physical_volume_descriptors ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_physical_volume_descriptor_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free physical volume descriptors array.",
+			 function );
+
+			result = -1;
+		}
 		memory_free(
 		 *metadata );
 
 		*metadata = NULL;
 	}
-	return( 1 );
+	return( result );
 }
 
 /* Reads the metadata block type 0x0011
@@ -197,25 +239,15 @@ int libfvde_metadata_read_type_0x0011(
 
 		return( -1 );
 	}
-	if( block_data_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid block data size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
 /* TODO data size check */
-	if( block_data_size < 48 )
+	if( ( block_data_size < 48 )
+	 || ( block_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: block data size value too small.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid block data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -453,7 +485,8 @@ int libfvde_metadata_read_type_0x0011(
 		libcnotify_printf(
 		 "\n" );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 184 ] ),
 	 number_of_entries );
@@ -518,7 +551,8 @@ int libfvde_metadata_read_type_0x0011(
 			libcnotify_printf(
 			 "\n" );
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		block_data_offset += 24;
 	}
 	if( metadata_size != io_handle->metadata_size )
@@ -616,7 +650,8 @@ int libfvde_metadata_read_type_0x0011(
 		libcnotify_printf(
 		 "\n" );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	metadata->encrypted_metadata_size *= io_handle->block_size;
 
 	if( ( xml_offset < 248 )
@@ -661,15 +696,20 @@ int libfvde_metadata_read_core_storage_plist(
      const uint8_t *xml_plist_data,
      libcerror_error_t **error )
 {
-	libfplist_property_list_t *property_list = NULL;
-	libfplist_property_t *root_property      = NULL;
-	libfplist_property_t *sub_property       = NULL;
-	static char *function                    = "libfvde_metadata_read_core_storage_plist";
-	size_t xml_length                        = 0;
+	libfplist_property_t *array_entry_property                       = NULL;
+	libfplist_property_t *root_property                              = NULL;
+	libfplist_property_t *sub_property                               = NULL;
+	libfplist_property_list_t *property_list                         = NULL;
+	libfvde_physical_volume_descriptor_t *physical_volume_descriptor = NULL;
+	static char *function                                            = "libfvde_metadata_read_core_storage_plist";
+	size_t xml_length                                                = 0;
+	int entry_index                                                  = 0;
+	int number_of_entries                                            = 0;
+	int physical_volume_descriptor_index                             = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint8_t *string                          = NULL;
-	size_t string_size                       = 0;
+	uint8_t *string                                                  = NULL;
+	size_t string_size                                               = 0;
 #endif
 
 	if( metadata == NULL )
@@ -679,6 +719,17 @@ int libfvde_metadata_read_core_storage_plist(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( metadata->volume_group_name != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid metadata - volume group name value already set.",
 		 function );
 
 		return( -1 );
@@ -827,6 +878,218 @@ int libfvde_metadata_read_core_storage_plist(
 
 			goto on_error;
 		}
+		if( libfplist_property_get_sub_property_by_utf8_name(
+		     root_property,
+		     (uint8_t *) "com.apple.corestorage.lvg.name",
+		     30,
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve com.apple.corestorage.lvg.name sub property.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfplist_property_get_value_string(
+		     sub_property,
+		     &( metadata->volume_group_name ),
+		     &( metadata->volume_group_name_size ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume group name.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: logical volume group name\t\t: %s\n",
+			 function,
+			 metadata->volume_group_name );
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		if( libfplist_property_free(
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free com.apple.corestorage.lvg.uuid property.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfplist_property_get_sub_property_by_utf8_name(
+		     root_property,
+		     (uint8_t *) "com.apple.corestorage.lvg.physicalVolumes",
+		     41,
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve com.apple.corestorage.lvg.physicalVolumes sub property.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfplist_property_get_array_number_of_entries(
+		     sub_property,
+		     &number_of_entries,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of physical volumes array entries.",
+			 function );
+
+			goto on_error;
+		}
+		for( entry_index = 0;
+		     entry_index < number_of_entries;
+		     entry_index++ )
+		{
+			if( libfplist_property_get_array_entry_by_index(
+			     sub_property,
+			     entry_index,
+			     &array_entry_property,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve physical volumes array entry: %d.",
+				 function,
+				 entry_index );
+
+				goto on_error;
+			}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				if( libfplist_property_get_value_string(
+				     array_entry_property,
+				     &string,
+				     &string_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve physical volume: %d identifier.",
+					 function,
+					 entry_index );
+
+					goto on_error;
+				}
+				libcnotify_printf(
+				 "%s: physical volume: %d identifier\t\t: %s\n",
+				 function,
+				 entry_index + 1,
+				 string );
+
+				memory_free(
+				 string );
+
+				string = NULL;
+			}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+			if( libfvde_physical_volume_descriptor_initialize(
+			     &physical_volume_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create physical volume: %d descriptor.",
+				 function,
+				 entry_index );
+
+				goto on_error;
+			}
+			if( libfplist_property_value_uuid_string_copy_to_byte_stream(
+			     array_entry_property,
+			     physical_volume_descriptor->identifier,
+			     16,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy physical volume: %d identifier string to byte stream.",
+				 function,
+				 entry_index );
+
+				goto on_error;
+			}
+			if( libcdata_array_append_entry(
+			     metadata->physical_volume_descriptors,
+			     &physical_volume_descriptor_index,
+			     (intptr_t *) physical_volume_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to append physical volume: %d descriptor to array.",
+				 function,
+				 entry_index );
+
+				goto on_error;
+			}
+			physical_volume_descriptor = NULL;
+
+			if( libfplist_property_free(
+			     &array_entry_property,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free physical volumes array entry: %d.",
+				 function,
+				 entry_index );
+
+				goto on_error;
+			}
+		}
+		if( libfplist_property_free(
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free com.apple.corestorage.lvg.physicalVolumes property.",
+			 function );
+
+			goto on_error;
+		}
 		if( libfplist_property_free(
 		     &root_property,
 		     error ) != 1 )
@@ -871,6 +1134,18 @@ on_error:
 		 string );
 	}
 #endif
+	if( physical_volume_descriptor != NULL )
+	{
+		libfvde_physical_volume_descriptor_free(
+		 &physical_volume_descriptor,
+		 NULL );
+	}
+	if( array_entry_property != NULL )
+	{
+		libfplist_property_free(
+		 &array_entry_property,
+		 NULL );
+	}
 	if( sub_property != NULL )
 	{
 		libfplist_property_free(
@@ -889,13 +1164,22 @@ on_error:
 		 &property_list,
 		 NULL );
 	}
+	if( metadata->volume_group_name != NULL )
+	{
+		memory_free(
+		 metadata->volume_group_name );
+
+		metadata->volume_group_name = NULL;
+	}
+	metadata->volume_group_name_size = 0;
+
 	return( -1 );
 }
 
 /* Reads the metadata
  * Returns 1 if successful or -1 on error
  */
-int libfvde_metadata_read(
+int libfvde_metadata_read_file_io_handle(
      libfvde_metadata_t *metadata,
      libfvde_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
@@ -904,7 +1188,7 @@ int libfvde_metadata_read(
 {
 	libfvde_metadata_block_t *metadata_block = NULL;
 	uint8_t *metadata_block_data             = NULL;
-	static char *function                    = "libfvde_metadata_read";
+	static char *function                    = "libfvde_metadata_read_file_io_handle";
 	ssize_t read_count                       = 0;
 
 	if( metadata == NULL )
@@ -1102,5 +1386,248 @@ on_error:
 		 metadata_block_data );
 	}
 	return( -1 );
+}
+
+/* Retrieves the size of the UTF-8 encoded volume group name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_metadata_get_utf8_volume_group_name_size(
+     libfvde_metadata_t *metadata,
+     size_t *utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_metadata_get_utf8_volume_group_name_size";
+
+	if( metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf8_string_size_from_utf8_stream(
+	     metadata->volume_group_name,
+	     metadata->volume_group_name_size,
+	     utf8_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the UTF-8 encoded volume group name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_metadata_get_utf8_volume_group_name(
+     libfvde_metadata_t *metadata,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_metadata_get_utf8_volume_group_name";
+
+	if( metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf8_string_copy_from_utf8_stream(
+	     utf8_string,
+	     utf8_string_size,
+	     metadata->volume_group_name,
+	     metadata->volume_group_name_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the size of the UTF-16 encoded volume group name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_metadata_get_utf16_volume_group_name_size(
+     libfvde_metadata_t *metadata,
+     size_t *utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_metadata_get_utf16_volume_group_name_size";
+
+	if( metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf16_string_size_from_utf8_stream(
+	     metadata->volume_group_name,
+	     metadata->volume_group_name_size,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string size.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the UTF-16 encoded volume group name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_metadata_get_utf16_volume_group_name(
+     libfvde_metadata_t *metadata,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_metadata_get_utf16_volume_group_name";
+
+	if( metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf16_string_copy_from_utf8_stream(
+	     utf16_string,
+	     utf16_string_size,
+	     metadata->volume_group_name,
+	     metadata->volume_group_name_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the number of physical volume descriptors
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_metadata_get_number_of_physical_volume_descriptors(
+     libfvde_metadata_t *metadata,
+     int *number_of_physical_volume_descriptors,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_metadata_get_number_of_physical_volume_descriptors";
+
+	if( metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     metadata->physical_volume_descriptors,
+	     number_of_physical_volume_descriptors,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volume descriptors.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves a specific physical volume descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_metadata_get_physical_volume_descriptor_by_index(
+     libfvde_metadata_t *metadata,
+     int physical_volume_descriptor_index,
+     libfvde_physical_volume_descriptor_t **physical_volume_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_metadata_get_physical_volume_descriptor_by_index";
+
+	if( metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_entry_by_index(
+	     metadata->physical_volume_descriptors,
+	     physical_volume_descriptor_index,
+	     (intptr_t **) physical_volume_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve physical volume descriptor: %d.",
+		 function,
+		 physical_volume_descriptor_index );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 

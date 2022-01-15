@@ -1,5 +1,5 @@
 /*
- * Library volume_group type test program
+ * Library physical_volume type test program
  *
  * Copyright (C) 2011-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,26 +33,28 @@
 #include "fvde_test_memory.h"
 #include "fvde_test_unused.h"
 
-#include "../libfvde/libfvde_volume_group.h"
+#include "../libfvde/libfvde_physical_volume.h"
+#include "../libfvde/libfvde_physical_volume_descriptor.h"
 #include "../libfvde/libfvde_volume_header.h"
 
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
-/* Tests the libfvde_volume_group_initialize function
+/* Tests the libfvde_physical_volume_initialize function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_volume_group_initialize(
+int fvde_test_physical_volume_initialize(
      void )
 {
-	libcerror_error_t *error               = NULL;
-	libfvde_volume_group_t *volume_group   = NULL;
-	libfvde_volume_header_t *volume_header = NULL;
-	int result                             = 0;
+	libcerror_error_t *error                                         = NULL;
+	libfvde_physical_volume_t *physical_volume                       = NULL;
+	libfvde_physical_volume_descriptor_t *physical_volume_descriptor = NULL;
+	libfvde_volume_header_t *volume_header                           = NULL;
+	int result                                                       = 0;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
-	int number_of_malloc_fail_tests        = 1;
-	int number_of_memset_fail_tests        = 1;
-	int test_number                        = 0;
+	int number_of_malloc_fail_tests                                  = 1;
+	int number_of_memset_fail_tests                                  = 1;
+	int test_number                                                  = 0;
 #endif
 
 	/* Initialize test
@@ -74,13 +76,8 @@ int fvde_test_volume_group_initialize(
 	 "error",
 	 error );
 
-	/* Test regular cases
-	 */
-	result = libfvde_volume_group_initialize(
-	          &volume_group,
-	          volume_header,
-	          NULL,
-	          NULL,
+	result = libfvde_physical_volume_descriptor_initialize(
+	          &physical_volume_descriptor,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -89,15 +86,36 @@ int fvde_test_volume_group_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "volume_group",
-	 volume_group );
+	 "physical_volume_descriptor",
+	 physical_volume_descriptor );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	result = libfvde_volume_group_free(
-	          &volume_group,
+	/* Test regular cases
+	 */
+	result = libfvde_physical_volume_initialize(
+	          &physical_volume,
+	          volume_header,
+	          physical_volume_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "physical_volume",
+	 physical_volume );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfvde_physical_volume_free(
+	          &physical_volume,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -106,8 +124,8 @@ int fvde_test_volume_group_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
-	 "volume_group",
-	 volume_group );
+	 "physical_volume",
+	 physical_volume );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -115,11 +133,10 @@ int fvde_test_volume_group_initialize(
 
 	/* Test error cases
 	 */
-	result = libfvde_volume_group_initialize(
+	result = libfvde_physical_volume_initialize(
 	          NULL,
 	          volume_header,
-	          NULL,
-	          NULL,
+	          physical_volume_descriptor,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -134,16 +151,15 @@ int fvde_test_volume_group_initialize(
 	libcerror_error_free(
 	 &error );
 
-	volume_group = (libfvde_volume_group_t *) 0x12345678UL;
+	physical_volume = (libfvde_physical_volume_t *) 0x12345678UL;
 
-	result = libfvde_volume_group_initialize(
-	          &volume_group,
+	result = libfvde_physical_volume_initialize(
+	          &physical_volume,
 	          volume_header,
-	          NULL,
-	          NULL,
+	          physical_volume_descriptor,
 	          &error );
 
-	volume_group = NULL;
+	physical_volume = NULL;
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
@@ -157,10 +173,27 @@ int fvde_test_volume_group_initialize(
 	libcerror_error_free(
 	 &error );
 
-	result = libfvde_volume_group_initialize(
-	          &volume_group,
+	result = libfvde_physical_volume_initialize(
+	          &physical_volume,
 	          NULL,
-	          NULL,
+	          physical_volume_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_physical_volume_initialize(
+	          &physical_volume,
+	          volume_header,
 	          NULL,
 	          &error );
 
@@ -182,25 +215,24 @@ int fvde_test_volume_group_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_volume_group_initialize with malloc failing
+		/* Test libfvde_physical_volume_initialize with malloc failing
 		 */
 		fvde_test_malloc_attempts_before_fail = test_number;
 
-		result = libfvde_volume_group_initialize(
-		          &volume_group,
+		result = libfvde_physical_volume_initialize(
+		          &physical_volume,
 		          volume_header,
-		          NULL,
-		          NULL,
+		          physical_volume_descriptor,
 		          &error );
 
 		if( fvde_test_malloc_attempts_before_fail != -1 )
 		{
 			fvde_test_malloc_attempts_before_fail = -1;
 
-			if( volume_group != NULL )
+			if( physical_volume != NULL )
 			{
-				libfvde_volume_group_free(
-				 &volume_group,
+				libfvde_physical_volume_free(
+				 &physical_volume,
 				 NULL );
 			}
 		}
@@ -212,8 +244,8 @@ int fvde_test_volume_group_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "volume_group",
-			 volume_group );
+			 "physical_volume",
+			 physical_volume );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -227,25 +259,24 @@ int fvde_test_volume_group_initialize(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_volume_group_initialize with memset failing
+		/* Test libfvde_physical_volume_initialize with memset failing
 		 */
 		fvde_test_memset_attempts_before_fail = test_number;
 
-		result = libfvde_volume_group_initialize(
-		          &volume_group,
+		result = libfvde_physical_volume_initialize(
+		          &physical_volume,
 		          volume_header,
-		          NULL,
-		          NULL,
+		          physical_volume_descriptor,
 		          &error );
 
 		if( fvde_test_memset_attempts_before_fail != -1 )
 		{
 			fvde_test_memset_attempts_before_fail = -1;
 
-			if( volume_group != NULL )
+			if( physical_volume != NULL )
 			{
-				libfvde_volume_group_free(
-				 &volume_group,
+				libfvde_physical_volume_free(
+				 &physical_volume,
 				 NULL );
 			}
 		}
@@ -257,8 +288,8 @@ int fvde_test_volume_group_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "volume_group",
-			 volume_group );
+			 "physical_volume",
+			 physical_volume );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -272,6 +303,23 @@ int fvde_test_volume_group_initialize(
 
 	/* Clean up
 	 */
+	result = libfvde_physical_volume_descriptor_free(
+	          &physical_volume_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "physical_volume_descriptor",
+	 physical_volume_descriptor );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = libfvde_volume_header_free(
 	          &volume_header,
 	          &error );
@@ -297,16 +345,22 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
+	if( physical_volume_descriptor != NULL )
+	{
+		libfvde_physical_volume_descriptor_free(
+		 &physical_volume_descriptor,
+		 NULL );
+	}
 	if( volume_header != NULL )
 	{
 		libfvde_volume_header_free(
 		 &volume_header,
 		 NULL );
 	}
-	if( volume_group != NULL )
+	if( physical_volume != NULL )
 	{
-		libfvde_volume_group_free(
-		 &volume_group,
+		libfvde_physical_volume_free(
+		 &physical_volume,
 		 NULL );
 	}
 	return( 0 );
@@ -314,10 +368,10 @@ on_error:
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
-/* Tests the libfvde_volume_group_free function
+/* Tests the libfvde_physical_volume_free function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_volume_group_free(
+int fvde_test_physical_volume_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -325,7 +379,7 @@ int fvde_test_volume_group_free(
 
 	/* Test error cases
 	 */
-	result = libfvde_volume_group_free(
+	result = libfvde_physical_volume_free(
 	          NULL,
 	          &error );
 
@@ -352,10 +406,6 @@ on_error:
 	return( 0 );
 }
 
-#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
-
-#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
-
 /* The main program
  */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -374,14 +424,14 @@ int main(
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	FVDE_TEST_RUN(
-	 "libfvde_volume_group_initialize",
-	 fvde_test_volume_group_initialize );
+	 "libfvde_physical_volume_initialize",
+	 fvde_test_physical_volume_initialize );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 	FVDE_TEST_RUN(
-	 "libfvde_volume_group_free",
-	 fvde_test_volume_group_free );
+	 "libfvde_physical_volume_free",
+	 fvde_test_physical_volume_free );
 
 	return( EXIT_SUCCESS );
 
