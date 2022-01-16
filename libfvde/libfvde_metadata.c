@@ -525,7 +525,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d block group\t\t\t: %" PRIu64 "\n",
+			 "%s: entry: %03d transaction identifier\t\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -640,12 +640,22 @@ int libfvde_metadata_read_type_0x0011(
 		libcnotify_printf(
 		 "%s: primary encrypted metadata block number\t: %" PRIu64 "\n",
 		 function,
-		 metadata->primary_encrypted_metadata_offset );
+		 metadata->primary_encrypted_metadata_offset & 0x0000ffffffffffffUL );
+
+		libcnotify_printf(
+		 "%s: primary encrypted metadata physical volume\t: %" PRIu64 "\n",
+		 function,
+		 metadata->primary_encrypted_metadata_offset >> 48 );
 
 		libcnotify_printf(
 		 "%s: secondary encrypted metadata block number\t: %" PRIu64 "\n",
 		 function,
-		 metadata->secondary_encrypted_metadata_offset );
+		 metadata->secondary_encrypted_metadata_offset & 0x0000ffffffffffffUL );
+
+		libcnotify_printf(
+		 "%s: secondary encrypted metadata physical volume\t: %" PRIu64 "\n",
+		 function,
+		 metadata->secondary_encrypted_metadata_offset >> 48 );
 
 		libcnotify_printf(
 		 "\n" );
@@ -682,7 +692,10 @@ int libfvde_metadata_read_type_0x0011(
 		return( -1 );
 	}
 /* TODO add bounds check */
-	metadata->primary_encrypted_metadata_offset   *= io_handle->block_size;
+	metadata->primary_encrypted_metadata_offset &= 0x0000ffffffffffffUL;
+	metadata->primary_encrypted_metadata_offset *= io_handle->block_size;
+
+	metadata->secondary_encrypted_metadata_offset &= 0x0000ffffffffffffUL;
 	metadata->secondary_encrypted_metadata_offset *= io_handle->block_size;
 
 	return( 1 );

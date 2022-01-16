@@ -1,4 +1,4 @@
-.Dd January 15, 2022
+.Dd January 16, 2022
 .Dt fvdeinfo
 .Os libfvde
 .Sh NAME
@@ -52,7 +52,7 @@ None
 .Sh EXAMPLES
 .Bd -literal
 # fvdeinfo -o20480 image.raw
-fvdeinfo 20220114
+fvdeinfo 20220116
 .sp
 Core Storage information:
 .sp
@@ -68,6 +68,9 @@ Physical volume: 1
 	Encryption method		: AES-XTS
 .sp
 Logical volume: 1
+	Identifier			: 420af122-cf73-4a30-8b0a-a593a65fbef5
+	Name				: TestLV
+	Size				: 160 MiB (167772160 bytes)
 	Is locked
 .sp
 .Ed
@@ -75,8 +78,7 @@ Logical volume: 1
 Errors, verbose and debug output are printed to stderr when verbose output \-v is enabled.
 Verbose and debug output are only printed when enabled at compilation.
 .Sh BUGS
-Please report bugs of any kind to <joachim.metz@gmail.com> or on the project website:
-http://code.google.com/p/libfvde/
+Please report bugs of any kind on the project issue tracker: https://github.com/libyal/libfvde/issues
 .Sh AUTHOR
 These man pages were written by Joachim Metz.
 .Sh COPYRIGHT

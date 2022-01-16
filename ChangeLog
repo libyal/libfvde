@@ -1,6 +1,7 @@
 TODO
 * volume group refactor
-  - remove encrypted_metadata->logical_volume_family_identifier
+  - fix libfvde_volume_get_logical_volume_encryption_method
+  - fix libfvde_volume_set functions
 
 * libfvde
   - optimize XML plist parser to directly generate keys

@@ -345,8 +345,12 @@ int libfvde_metadata_block_read_data(
 	 metadata_block->serial_number );
 
 	byte_stream_copy_to_uint64_little_endian(
-	 ( (fvde_metadata_block_header_t *) block_data )->group,
-	 metadata_block->group );
+	 ( (fvde_metadata_block_header_t *) block_data )->transaction_identifier,
+	 metadata_block->transaction_identifier );
+
+	byte_stream_copy_to_uint64_little_endian(
+	 ( (fvde_metadata_block_header_t *) block_data )->object_identifier,
+	 metadata_block->object_identifier );
 
 	byte_stream_copy_to_uint64_little_endian(
 	 ( (fvde_metadata_block_header_t *) block_data )->number,
@@ -393,17 +397,14 @@ int libfvde_metadata_block_read_data(
 		 metadata_block->serial_number );
 
 		libcnotify_printf(
-		 "%s: group\t\t\t\t\t: %" PRIu64 "\n",
+		 "%s: transaction identifier\t\t: %" PRIu64 "\n",
 		 function,
-		 metadata_block->group );
+		 metadata_block->transaction_identifier );
 
-		byte_stream_copy_to_uint64_little_endian(
-		 ( (fvde_metadata_block_header_t *) block_data )->unknown3,
-		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown3\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: object identifier\t\t\t: %" PRIu64 "\n",
 		 function,
-		 value_64bit );
+		 metadata_block->object_identifier );
 
 		libcnotify_printf(
 		 "%s: number\t\t\t\t: %" PRIu64 "\n",

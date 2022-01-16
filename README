@@ -7,13 +7,15 @@ Project information:
 * Status: experimental
 * Licence: LGPLv3+
 
-Supported FileVault2 implementations:
+Supported Core Storage / FileVault2 implementations:
 
 * Mac OS X Lion (10.7)
 * Mac OS X Mountain Lion (10.8)
 * Mac OS X Mavericks (10.9)
 * Mac OS X Yosemite (10.10)
 * Mac OS X El Capitan (10.11)
+* macOS Sierra (10.12)
+* macOS High Sierra (10.13)
 
 Supported encryption volume types:
 
@@ -25,6 +27,10 @@ Supported protection methods:
 * password
 * recovery password
 * VMK key data (as of 20121114 version)
+
+Unsupported Core Storage format features:
+
+* multiple physical volumes
 
 Also see:
 

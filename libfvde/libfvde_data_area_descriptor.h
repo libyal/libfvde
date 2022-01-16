@@ -44,9 +44,9 @@ struct libfvde_data_area_descriptor
 	 */
 	size64_t size;
 
-	/* The data type
+	/* The object identifier
 	 */
-	uint64_t data_type;
+	uint64_t object_identifier;
 
 	/* The mapped offset
 	 */

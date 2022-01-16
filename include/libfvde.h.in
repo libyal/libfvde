@@ -242,7 +242,7 @@ int libfvde_volume_open_wide(
 #if defined( LIBFVDE_HAVE_BFIO )
 
 /* Opens a volume using a Basic File IO (bfio) handle
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_volume_open_file_io_handle(
@@ -261,62 +261,6 @@ int libfvde_volume_close(
      libfvde_volume_t *volume,
      libfvde_error_t **error );
 
-/* Unlocks the volume
- * Returns 1 if the volume is unlocked, 0 if not or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_unlock(
-     libfvde_volume_t *volume,
-     libfvde_error_t **error );
-
-/* Determines if the volume is locked
- * Returns 1 if locked, 0 if not or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_is_locked(
-     libfvde_volume_t *volume,
-     libfvde_error_t **error );
-
-/* Reads data at the current offset into a buffer
- * Returns the number of bytes read or -1 on error
- */
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_read_buffer(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         libfvde_error_t **error );
-
-/* Reads (media) data at a specific offset
- * Returns the number of bytes read or -1 on error
- */
-LIBFVDE_EXTERN \
-ssize_t libfvde_volume_read_buffer_at_offset(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libfvde_error_t **error );
-
-/* Seeks a certain offset of the data
- * Returns the offset if seek is successful or -1 on error
- */
-LIBFVDE_EXTERN \
-off64_t libfvde_volume_seek_offset(
-         libfvde_volume_t *volume,
-         off64_t offset,
-         int whence,
-         libfvde_error_t **error );
-
-/* Retrieves the the current offset of the (volume) data
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_offset(
-     libfvde_volume_t *volume,
-     off64_t *offset,
-     libfvde_error_t **error );
-
 /* Retrieves the encryption method of the logical volume
  * Returns 1 if successful or -1 on error
  */
@@ -324,61 +268,6 @@ LIBFVDE_EXTERN \
 int libfvde_volume_get_logical_volume_encryption_method(
      libfvde_volume_t *volume,
      uint32_t *encryption_method,
-     libfvde_error_t **error );
-
-/* Sets the keys
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_set_keys(
-     libfvde_volume_t *volume,
-     const uint8_t *volume_master_key,
-     size_t volume_master_key_size,
-     libfvde_error_t **error );
-
-/* Sets an UTF-8 formatted password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if password is invalid or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_set_utf8_password(
-     libfvde_volume_t *volume,
-     const uint8_t *utf8_string,
-     size_t utf8_string_length,
-     libfvde_error_t **error );
-
-/* Sets an UTF-16 formatted password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if password is invalid or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_set_utf16_password(
-     libfvde_volume_t *volume,
-     const uint16_t *utf16_string,
-     size_t utf16_string_length,
-     libfvde_error_t **error );
-
-/* Sets an UTF-8 formatted recovery password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_set_utf8_recovery_password(
-     libfvde_volume_t *volume,
-     const uint8_t *utf8_string,
-     size_t utf8_string_length,
-     libfvde_error_t **error );
-
-/* Sets an UTF-16 formatted recovery password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_set_utf16_recovery_password(
-     libfvde_volume_t *volume,
-     const uint16_t *utf16_string,
-     size_t utf16_string_length,
      libfvde_error_t **error );
 
 /* Reads the EncryptedRoot.plist file
@@ -432,10 +321,84 @@ int libfvde_volume_get_volume_group(
  * Volume functions - deprecated
  * ------------------------------------------------------------------------- */
 
+/* Unlocks the volume
+ * Returns 1 if the volume is unlocked, 0 if not or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_unlock instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_unlock(
+     libfvde_volume_t *volume,
+     libfvde_error_t **error );
+
+/* Reads data at the current offset into a buffer
+ * Returns the number of bytes read or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_read_buffer instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+ssize_t libfvde_volume_read_buffer(
+         libfvde_volume_t *volume,
+         void *buffer,
+         size_t buffer_size,
+         libfvde_error_t **error );
+
+/* Reads data at a specific offset
+ * Returns the number of bytes read or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_read_buffer_at_offset instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+ssize_t libfvde_volume_read_buffer_at_offset(
+         libfvde_volume_t *volume,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libfvde_error_t **error );
+
+/* Seeks a certain offset of the data
+ * Returns the offset if seek is successful or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_seek_offset instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+off64_t libfvde_volume_seek_offset(
+         libfvde_volume_t *volume,
+         off64_t offset,
+         int whence,
+         libfvde_error_t **error );
+
+/* Retrieves the the current offset of the data
+ * Returns 1 if successful or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_get_offset instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_offset(
+     libfvde_volume_t *volume,
+     off64_t *offset,
+     libfvde_error_t **error );
+
+/* Determines if the volume is locked
+ * Returns 1 if locked, 0 if not or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_is_locked instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_is_locked(
+     libfvde_volume_t *volume,
+     libfvde_error_t **error );
+
 /* Retrieves the size
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_logical_volume_get_size instead
+ * This function is deprecated use libfvde_logical_volume_get_size instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -447,7 +410,7 @@ int libfvde_volume_get_size(
 /* Retrieves the encryption method
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_physical_volume_get_encryption_method instead
+ * This function is deprecated use libfvde_physical_volume_get_encryption_method instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -460,7 +423,7 @@ int libfvde_volume_get_encryption_method(
  * The identifier is a UUID and is 16 bytes of size
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_volume_group_get_identifier instead
+ * This function is deprecated use libfvde_volume_group_get_identifier instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -473,7 +436,7 @@ int libfvde_volume_get_logical_volume_group_identifier(
 /* Retrieves the physical volume size
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_physical_volume_get_size instead
+ * This function is deprecated use libfvde_physical_volume_get_size instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -485,7 +448,7 @@ int libfvde_volume_get_physical_volume_size(
 /* Retrieves the encryption method of the physical volume
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_physical_volume_get_encryption_method instead
+ * This function is deprecated use libfvde_physical_volume_get_encryption_method instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -498,7 +461,7 @@ int libfvde_volume_get_physical_volume_encryption_method(
  * The identifier is a UUID and is 16 bytes of size
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_physical_volume_get_identifier instead
+ * This function is deprecated use libfvde_physical_volume_get_identifier instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -511,7 +474,7 @@ int libfvde_volume_get_physical_volume_identifier(
 /* Retrieves the logical volume size
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_logica_volume_get_size instead
+ * This function is deprecated use libfvde_logica_volume_get_size instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -524,7 +487,7 @@ int libfvde_volume_get_logical_volume_size(
  * The identifier is a UUID and is 16 bytes of size
  * Returns 1 if successful or -1 on error
  *
- * This function deprecated use libfvde_logical_volume_get_identifier instead
+ * This function is deprecated use libfvde_logical_volume_get_identifier instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -532,6 +495,76 @@ int libfvde_volume_get_logical_volume_identifier(
      libfvde_volume_t *volume,
      uint8_t *uuid_data,
      size_t uuid_data_size,
+     libfvde_error_t **error );
+
+/* Sets the keys
+ * This function needs to be used before one of the open or unlock functions
+ * Returns 1 if successful or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_set_keys instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_set_keys(
+     libfvde_volume_t *volume,
+     const uint8_t *volume_master_key,
+     size_t volume_master_key_size,
+     libfvde_error_t **error );
+
+/* Sets an UTF-8 formatted password
+ * This function needs to be used before one of the open or unlock functions
+ * Returns 1 if successful, 0 if password is invalid or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_set_utf8_password instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf8_password(
+     libfvde_volume_t *volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfvde_error_t **error );
+
+/* Sets an UTF-16 formatted password
+ * This function needs to be used before one of the open or unlock functions
+ * Returns 1 if successful, 0 if password is invalid or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_set_utf16_password instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf16_password(
+     libfvde_volume_t *volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfvde_error_t **error );
+
+/* Sets an UTF-8 formatted recovery password
+ * This function needs to be used before one of the open or unlock functions
+ * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_set_utf8_recovery_password instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf8_recovery_password(
+     libfvde_volume_t *volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfvde_error_t **error );
+
+/* Sets an UTF-16 formatted recovery password
+ * This function needs to be used before one of the open or unlock functions
+ * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
+ *
+ * This function is deprecated use libfvde_logical_volume_set_utf16_recovery_password instead
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf16_recovery_password(
+     libfvde_volume_t *volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
      libfvde_error_t **error );
 
 /* -------------------------------------------------------------------------
@@ -690,6 +723,54 @@ int libfvde_logical_volume_free(
      libfvde_logical_volume_t **logical_volume,
      libfvde_error_t **error );
 
+/* Unlocks the logical volume
+ * Returns 1 if the volume is unlocked, 0 if not or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_unlock(
+     libfvde_logical_volume_t *logical_volume,
+     libfvde_error_t **error );
+
+/* Reads data at the current offset into a buffer
+ * Returns the number of bytes read or -1 on error
+ */
+LIBFVDE_EXTERN \
+ssize_t libfvde_logical_volume_read_buffer(
+         libfvde_logical_volume_t *logical_volume,
+         void *buffer,
+         size_t buffer_size,
+         libfvde_error_t **error );
+
+/* Reads data at a specific offset
+ * Returns the number of bytes read or -1 on error
+ */
+LIBFVDE_EXTERN \
+ssize_t libfvde_logical_volume_read_buffer_at_offset(
+         libfvde_logical_volume_t *logical_volume,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libfvde_error_t **error );
+
+/* Seeks a certain offset of the data
+ * Returns the offset if seek is successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+off64_t libfvde_logical_volume_seek_offset(
+         libfvde_logical_volume_t *logical_volume,
+         off64_t offset,
+         int whence,
+         libfvde_error_t **error );
+
+/* Retrieves the the current offset of the data
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_get_offset(
+     libfvde_logical_volume_t *logical_volume,
+     off64_t *offset,
+     libfvde_error_t **error );
+
 /* Retrieves the logical volume identifier
  * The identifier is a UUID and is 16 bytes of size
  * Returns 1 if successful or -1 on error
@@ -750,6 +831,69 @@ LIBFVDE_EXTERN \
 int libfvde_logical_volume_get_size(
      libfvde_logical_volume_t *logical_volume,
      size64_t *size,
+     libfvde_error_t **error );
+
+/* Determines if the logical volume is locked
+ * Returns 1 if locked, 0 if not or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_is_locked(
+     libfvde_logical_volume_t *logical_volume,
+     libfvde_error_t **error );
+
+/* Sets the keys
+ * This function needs to be used before the unlock function
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_set_keys(
+     libfvde_logical_volume_t *logical_volume,
+     const uint8_t *volume_master_key,
+     size_t volume_master_key_size,
+     libfvde_error_t **error );
+
+/* Sets an UTF-8 formatted password
+ * This function needs to be used before the unlock function
+ * Returns 1 if successful, 0 if password is invalid or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_set_utf8_password(
+     libfvde_logical_volume_t *logical_volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfvde_error_t **error );
+
+/* Sets an UTF-16 formatted password
+ * This function needs to be used before the unlock function
+ * Returns 1 if successful, 0 if password is invalid or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_set_utf16_password(
+     libfvde_logical_volume_t *logical_volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfvde_error_t **error );
+
+/* Sets an UTF-8 formatted recovery password
+ * This function needs to be used before the unlock function
+ * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_set_utf8_recovery_password(
+     libfvde_logical_volume_t *logical_volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfvde_error_t **error );
+
+/* Sets an UTF-16 formatted recovery password
+ * This function needs to be used before the unlock function
+ * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_logical_volume_set_utf16_recovery_password(
+     libfvde_logical_volume_t *logical_volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
      libfvde_error_t **error );
 
 /* -------------------------------------------------------------------------

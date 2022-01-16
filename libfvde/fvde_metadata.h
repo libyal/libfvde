@@ -61,15 +61,15 @@ struct fvde_metadata_block_header
 	 */
 	uint8_t serial_number[ 4 ];
 
-	/* The group
+	/* The transaction identifier
 	 * Consists of 8 bytes
 	 */
-	uint8_t group[ 8 ];
+	uint8_t transaction_identifier[ 8 ];
 
-	/* Unknown
+	/* The object identifier
 	 * Consists of 8 bytes
 	 */
-	uint8_t unknown3[ 8 ];
+	uint8_t object_identifier[ 8 ];
 
 	/* The number
 	 * Consists of 8 bytes

@@ -203,7 +203,7 @@ int libfvde_encryption_aes_key_unwrap(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of blocks: %" PRIzd "\n",
+		 "%s: number of blocks\t\t\t: %" PRIzd "\n",
 		 function,
 		 number_of_blocks );
 
@@ -215,7 +215,8 @@ int libfvde_encryption_aes_key_unwrap(
 		 wrapped_data_size,
 		 0 );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 /* TODO make this code more readable */
 	initialization_vector = unwrapped_data;
 

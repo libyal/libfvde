@@ -138,6 +138,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fvde_test_volume", "fvde_te
 		{BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C} = {BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fvde_test_volume_data_handle", "fvde_test_volume_data_handle\fvde_test_volume_data_handle.vcproj", "{9630D487-5528-40DC-AF58-3B62EF649EF9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{542112B5-4CA5-4EA9-B28D-0BACEFE72AC9} = {542112B5-4CA5-4EA9-B28D-0BACEFE72AC9}
+		{BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C} = {BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fvde_test_volume_group", "fvde_test_volume_group\fvde_test_volume_group.vcproj", "{EFED8371-14EC-4447-9F75-C6235E964544}"
 	ProjectSection(ProjectDependencies) = postProject
 		{542112B5-4CA5-4EA9-B28D-0BACEFE72AC9} = {542112B5-4CA5-4EA9-B28D-0BACEFE72AC9}
@@ -427,6 +433,10 @@ Global
 		{807C5455-E8B5-433E-9012-A284FD098D36}.Release|Win32.Build.0 = Release|Win32
 		{807C5455-E8B5-433E-9012-A284FD098D36}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
 		{807C5455-E8B5-433E-9012-A284FD098D36}.VSDebug|Win32.Build.0 = VSDebug|Win32
+		{9630D487-5528-40DC-AF58-3B62EF649EF9}.Release|Win32.ActiveCfg = Release|Win32
+		{9630D487-5528-40DC-AF58-3B62EF649EF9}.Release|Win32.Build.0 = Release|Win32
+		{9630D487-5528-40DC-AF58-3B62EF649EF9}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
+		{9630D487-5528-40DC-AF58-3B62EF649EF9}.VSDebug|Win32.Build.0 = VSDebug|Win32
 		{EFED8371-14EC-4447-9F75-C6235E964544}.Release|Win32.ActiveCfg = Release|Win32
 		{EFED8371-14EC-4447-9F75-C6235E964544}.Release|Win32.Build.0 = Release|Win32
 		{EFED8371-14EC-4447-9F75-C6235E964544}.VSDebug|Win32.ActiveCfg = VSDebug|Win32

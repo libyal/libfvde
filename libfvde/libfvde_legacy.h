@@ -35,6 +35,44 @@ extern "C" {
 #endif
 
 LIBFVDE_EXTERN \
+int libfvde_volume_unlock(
+     libfvde_volume_t *volume,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_is_locked(
+     libfvde_volume_t *volume,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+ssize_t libfvde_volume_read_buffer(
+         libfvde_volume_t *volume,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+ssize_t libfvde_volume_read_buffer_at_offset(
+         libfvde_volume_t *volume,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+off64_t libfvde_volume_seek_offset(
+         libfvde_volume_t *volume,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_offset(
+     libfvde_volume_t *volume,
+     off64_t *offset,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
 int libfvde_volume_get_size(
      libfvde_volume_t *volume,
      size64_t *size,
@@ -44,6 +82,80 @@ LIBFVDE_EXTERN \
 int libfvde_volume_get_encryption_method(
      libfvde_volume_t *volume,
      uint32_t *encryption_method,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_group_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_physical_volume_size(
+     libfvde_volume_t *volume,
+     size64_t *size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_physical_volume_encryption_method(
+     libfvde_volume_t *volume,
+     uint32_t *encryption_method,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_physical_volume_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_size(
+     libfvde_volume_t *volume,
+     size64_t *size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_identifier(
+     libfvde_volume_t *volume,
+     uint8_t *uuid_data,
+     size_t uuid_data_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_set_keys(
+     libfvde_volume_t *volume,
+     const uint8_t *volume_master_key,
+     size_t volume_master_key_size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf8_password(
+     libfvde_volume_t *volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf16_password(
+     libfvde_volume_t *volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf8_recovery_password(
+     libfvde_volume_t *volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_set_utf16_recovery_password(
+     libfvde_volume_t *volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

@@ -39,6 +39,22 @@ typedef struct info_handle info_handle_t;
 
 struct info_handle
 {
+	/* The recovery password
+	 */
+	system_character_t *recovery_password;
+
+	/* The recovery password size
+	 */
+	size_t recovery_password_size;
+
+	/* The user password
+	 */
+	system_character_t *user_password;
+
+	/* The user password size
+	 */
+	size_t user_password_size;
+
 	/* The volume offset
 	 */
 	off64_t volume_offset;

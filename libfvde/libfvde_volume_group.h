@@ -27,7 +27,10 @@
 #include <types.h>
 
 #include "libfvde_encrypted_metadata.h"
+#include "libfvde_encryption_context_plist.h"
 #include "libfvde_extern.h"
+#include "libfvde_io_handle.h"
+#include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcthreads.h"
 #include "libfvde_metadata.h"
@@ -42,6 +45,14 @@ typedef struct libfvde_internal_volume_group libfvde_internal_volume_group_t;
 
 struct libfvde_internal_volume_group
 {
+	/* The IO handle
+	 */
+	libfvde_io_handle_t *io_handle;
+
+	/* The file IO handle
+	 */
+	libbfio_handle_t *file_io_handle;
+
 	/* The volume header
 	 */
 	libfvde_volume_header_t *volume_header;
@@ -54,6 +65,10 @@ struct libfvde_internal_volume_group
 	 */
 	libfvde_encrypted_metadata_t *encrypted_metadata;
 
+	/* The EncryptedRoot.plist
+	 */
+	libfvde_encryption_context_plist_t *encrypted_root_plist;
+
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
 	 */
@@ -63,9 +78,12 @@ struct libfvde_internal_volume_group
 
 int libfvde_volume_group_initialize(
      libfvde_volume_group_t **volume_group,
+     libfvde_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
      libfvde_volume_header_t *volume_header,
      libfvde_metadata_t *metadata,
      libfvde_encrypted_metadata_t *encrypted_metadata,
+     libfvde_encryption_context_plist_t *encrypted_root_plist,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \

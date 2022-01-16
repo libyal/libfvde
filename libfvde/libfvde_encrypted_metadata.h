@@ -43,24 +43,6 @@ typedef struct libfvde_encrypted_metadata libfvde_encrypted_metadata_t;
 
 struct libfvde_encrypted_metadata
 {
-        /* The logical volume offset
-         */
-        off64_t logical_volume_offset;
-
-	/* The logical volume size
-	 */
-	size64_t logical_volume_size;
-
-	/* The logical volume identifier
-	 * Contains an UUID
-	 */
-	uint8_t logical_volume_identifier[ 16 ];
-
-	/* The logical volume family identifier
-	 * Contains an UUID
-	 */
-	uint8_t logical_volume_family_identifier[ 16 ];
-
 	/* The encryption context plist (com.apple.corestorage.lvf.encryption.context)
 	 */
 	libfvde_encryption_context_plist_t *encryption_context_plist;
@@ -69,49 +51,9 @@ struct libfvde_encrypted_metadata
 	 */
 	uint8_t encryption_context_plist_file_is_set;
 
-	/* The group number of the metadata block 0x0305
-	 */
-	uint64_t block_group_0x0305;
-
-	/* The group number of the metadata block 0x0405
-	 */
-	uint64_t block_group_0x0405;
-
-	/* The group number of the metadata block 0x0505
-	 */
-	uint64_t block_group_0x0505;
-
-	/* The logical volume block number as defined by metadata block 0x0305
-	 */
-	uint64_t logical_volume_block_number_0x0305;
-
-	/* The logical volume number of blocks as defined by metadata block 0x0305
-	 */
-	uint64_t logical_volume_number_of_blocks_0x0305;
-
-	/* The logical volume block number as defined by metadata block 0x0405
-	 */
-	uint64_t logical_volume_block_number_0x0405;
-
-	/* The logical volume number of blocks as defined by metadata block 0x0405
-	 */
-	uint64_t logical_volume_number_of_blocks_0x0405;
-
-	/* The logical volume block number as defined by metadata block 0x0505
-	 */
-	uint64_t logical_volume_block_number_0x0505;
-
-	/* The logical volume number of blocks as defined by metadata block 0x0505
-	 */
-	uint64_t logical_volume_number_of_blocks_0x0505;
-
 	/* The logical volume descriptors
 	 */
 	libcdata_array_t *logical_volume_descriptors;
-
-	/* The segment descriptors
-	 */
-	libcdata_array_t *segment_descriptors;
 
 	/* The data area descriptors
 	 */
@@ -224,9 +166,9 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 
 int libfvde_encrypted_metadata_read_type_0x0305(
      libfvde_encrypted_metadata_t *encrypted_metadata,
+     uint64_t object_identifier,
      const uint8_t *block_data,
      size_t block_data_size,
-     uint64_t block_group,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read_type_0x0404(
@@ -241,14 +183,12 @@ int libfvde_encrypted_metadata_read_type_0x0405(
      libfvde_io_handle_t *io_handle,
      const uint8_t *block_data,
      size_t block_data_size,
-     uint64_t block_group,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read_type_0x0505(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,
-     uint64_t block_group,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read(
@@ -265,9 +205,12 @@ int libfvde_encrypted_metadata_read(
 
 int libfvde_encrypted_metadata_get_volume_master_key(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     libfvde_io_handle_t *io_handle,
      libfvde_encryption_context_plist_t *encryption_context_plist,
      libfvde_keyring_t *keyring,
+     const uint8_t *user_password,
+     size_t user_password_length,
+     const uint8_t *recovery_password,
+     size_t recovery_password_length,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
@@ -281,15 +224,15 @@ int libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
      libfvde_logical_volume_descriptor_t **logical_volume_descriptor,
      libcerror_error_t **error );
 
-int libfvde_encrypted_metadata_get_number_of_data_area_descriptors(
+int libfvde_encrypted_metadata_get_logical_volume_descriptor_by_object_identifier(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     int *data_area_descriptors,
+     uint64_t object_identifier,
+     libfvde_logical_volume_descriptor_t **logical_volume_descriptor,
      libcerror_error_t **error );
 
-int libfvde_encrypted_metadata_get_data_area_descriptor_by_index(
+int libfvde_encrypted_metadata_get_last_logical_volume_descriptor(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     int data_area_descriptor_index,
-     libfvde_data_area_descriptor_t **data_area_descriptor,
+     libfvde_logical_volume_descriptor_t **logical_volume_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

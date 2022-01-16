@@ -25,6 +25,8 @@
 #include <types.h>
 
 #include "libfvde_encrypted_metadata.h"
+#include "libfvde_encryption_context_plist.h"
+#include "libfvde_io_handle.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcthreads.h"
 #include "libfvde_logical_volume.h"
@@ -41,9 +43,12 @@
  */
 int libfvde_volume_group_initialize(
      libfvde_volume_group_t **volume_group,
+     libfvde_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
      libfvde_volume_header_t *volume_header,
      libfvde_metadata_t *metadata,
      libfvde_encrypted_metadata_t *encrypted_metadata,
+     libfvde_encryption_context_plist_t *encrypted_root_plist,
      libcerror_error_t **error )
 {
 	libfvde_internal_volume_group_t *internal_volume_group = NULL;
@@ -71,6 +76,17 @@ int libfvde_volume_group_initialize(
 
 		return( -1 );
 	}
+	if( io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid IO handle.",
+		 function );
+
+		return( -1 );
+	}
 	if( volume_header == NULL )
 	{
 		libcerror_error_set(
@@ -84,6 +100,8 @@ int libfvde_volume_group_initialize(
 	}
 /* TODO check if metadata is set */
 /* TODO check if encrypted_metadata is set */
+/* TODO check if encrypted_root_plist is set */
+
 	internal_volume_group = memory_allocate_structure(
 	                         libfvde_internal_volume_group_t );
 
@@ -130,9 +148,12 @@ int libfvde_volume_group_initialize(
 		goto on_error;
 	}
 #endif
-	internal_volume_group->volume_header      = volume_header;
-	internal_volume_group->metadata           = metadata;
-	internal_volume_group->encrypted_metadata = encrypted_metadata;
+	internal_volume_group->io_handle            = io_handle;
+	internal_volume_group->file_io_handle       = file_io_handle;
+	internal_volume_group->volume_header        = volume_header;
+	internal_volume_group->metadata             = metadata;
+	internal_volume_group->encrypted_metadata   = encrypted_metadata;
+	internal_volume_group->encrypted_root_plist = encrypted_root_plist;
 
 	*volume_group = (libfvde_volume_group_t *) internal_volume_group;
 
@@ -923,7 +944,11 @@ int libfvde_volume_group_get_logical_volume_by_index(
 	{
 		if( libfvde_logical_volume_initialize(
 		      logical_volume,
+		      internal_volume_group->io_handle,
+		      internal_volume_group->file_io_handle,
 		      logical_volume_descriptor,
+		      internal_volume_group->encrypted_metadata,
+		      internal_volume_group->encrypted_root_plist,
 		      error ) != 1 )
 		{
 			libcerror_error_set(
@@ -932,6 +957,24 @@ int libfvde_volume_group_get_logical_volume_by_index(
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
 			 "%s: unable to create logical volume.",
 			 function );
+
+			result = -1;
+		}
+		else if( libfvde_internal_logical_volume_open_read(
+		          (libfvde_internal_logical_volume_t *) *logical_volume,
+		          internal_volume_group->file_io_handle,
+		          error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read logical volume.",
+			 function );
+
+			libfvde_logical_volume_free(
+			 logical_volume,
+			 NULL );
 
 			result = -1;
 		}

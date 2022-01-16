@@ -319,6 +319,50 @@ int info_handle_free(
 
 			result = -1;
 		}
+		if( ( *info_handle )->recovery_password != NULL )
+		{
+			if( memory_set(
+			     ( *info_handle )->recovery_password,
+			     0,
+			     ( *info_handle )->recovery_password_size ) == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+				 "%s: unable to clear recovery password.",
+				 function );
+
+				result = -1;
+			}
+			memory_free(
+			 ( *info_handle )->recovery_password );
+
+			( *info_handle )->recovery_password      = NULL;
+			( *info_handle )->recovery_password_size = 0;
+		}
+		if( ( *info_handle )->user_password != NULL )
+		{
+			if( memory_set(
+			     ( *info_handle )->user_password,
+			     0,
+			     ( *info_handle )->user_password_size ) == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+				 "%s: unable to clear user password.",
+				 function );
+
+				result = -1;
+			}
+			memory_free(
+			 ( *info_handle )->user_password );
+
+			( *info_handle )->user_password      = NULL;
+			( *info_handle )->user_password_size = 0;
+		}
 		memory_free(
 		 *info_handle );
 
@@ -516,33 +560,74 @@ int info_handle_set_password(
 
 		return( -1 );
 	}
-	string_length = system_string_length(
-	                 string );
-
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libfvde_volume_set_utf16_password(
-	     info_handle->input_volume,
-	     (uint16_t *) string,
-	     string_length,
-	     error ) != 1 )
-#else
-	if( libfvde_volume_set_utf8_password(
-	     info_handle->input_volume,
-	     (uint8_t *) string,
-	     string_length,
-	     error ) != 1 )
-#endif
+	if( info_handle->user_password != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set password.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid info handle - user password value already set.",
 		 function );
 
 		return( -1 );
 	}
+	if( string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid string.",
+		 function );
+
+		return( -1 );
+	}
+	string_length = system_string_length(
+	                 string );
+
+	info_handle->user_password_size = string_length + 1;
+
+	info_handle->user_password = system_string_allocate(
+	                              info_handle->user_password_size );
+
+	if( info_handle->user_password == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create user password.",
+		 function );
+
+		goto on_error;
+	}
+	if( system_string_copy(
+	     info_handle->user_password,
+	     string,
+	     info_handle->user_password_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy user password.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
+
+on_error:
+	if( info_handle->user_password != NULL )
+	{
+		memory_free(
+		 info_handle->user_password );
+
+		info_handle->user_password = NULL;
+	}
+	info_handle->user_password_size = 0;
+
+	return( -1 );
 }
 
 /* Sets the recovery password
@@ -567,33 +652,74 @@ int info_handle_set_recovery_password(
 
 		return( -1 );
 	}
-	string_length = system_string_length(
-	                 string );
-
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libfvde_volume_set_utf16_recovery_password(
-	     info_handle->input_volume,
-	     (uint16_t *) string,
-	     string_length,
-	     error ) != 1 )
-#else
-	if( libfvde_volume_set_utf8_recovery_password(
-	     info_handle->input_volume,
-	     (uint8_t *) string,
-	     string_length,
-	     error ) != 1 )
-#endif
+	if( info_handle->recovery_password != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set recovery password.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid info handle - recovery password value already set.",
 		 function );
 
 		return( -1 );
 	}
+	if( string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid string.",
+		 function );
+
+		return( -1 );
+	}
+	string_length = system_string_length(
+	                 string );
+
+	info_handle->recovery_password_size = string_length + 1;
+
+	info_handle->recovery_password = system_string_allocate(
+	                                  info_handle->recovery_password_size );
+
+	if( info_handle->recovery_password == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create recovery password.",
+		 function );
+
+		goto on_error;
+	}
+	if( system_string_copy(
+	     info_handle->recovery_password,
+	     string,
+	     info_handle->recovery_password_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy recovery password.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
+
+on_error:
+	if( info_handle->recovery_password != NULL )
+	{
+		memory_free(
+		 info_handle->recovery_password );
+
+		info_handle->recovery_password = NULL;
+	}
+	info_handle->recovery_password_size = 0;
+
+	return( -1 );
 }
 
 /* Reads the encrypted root plist file
@@ -1179,9 +1305,163 @@ int info_handle_logical_volume_fprint(
 	 "Logical volume: %d\n",
 	 logical_volume_index + 1 );
 
-/* TODO implement for logical volume */
-	result = libfvde_volume_is_locked(
-	          info_handle->input_volume,
+	if( libfvde_logical_volume_get_identifier(
+	     logical_volume,
+	     uuid_data,
+	     16,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume identifier.",
+		 function );
+
+		goto on_error;
+	}
+	if( info_handle_uuid_value_fprint(
+	     info_handle,
+	     "\tIdentifier\t\t\t",
+	     uuid_data,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+		 "%s: unable to print UUID value.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tName\t\t\t\t:" );
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfvde_logical_volume_get_utf16_name_size(
+	          logical_volume,
+	          &value_string_size,
+	          error );
+#else
+	result = libfvde_logical_volume_get_utf8_name_size(
+	          logical_volume,
+	          &value_string_size,
+	          error );
+#endif
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume name string size.",
+		 function );
+
+		goto on_error;
+	}
+	else if( ( result != 0 )
+	      && ( value_string_size > 0 ) )
+	{
+		value_string = system_string_allocate(
+		                value_string_size );
+
+		if( value_string == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create logical volume name string.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfvde_logical_volume_get_utf16_name(
+		          logical_volume,
+		          (uint16_t *) value_string,
+		          value_string_size,
+		          error );
+#else
+		result = libfvde_logical_volume_get_utf8_name(
+		          logical_volume,
+		          (uint8_t *) value_string,
+		          value_string_size,
+		          error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume name string.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 " %" PRIs_SYSTEM "",
+		 value_string );
+
+		memory_free(
+		 value_string );
+
+		value_string = NULL;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
+
+	if( libfvde_logical_volume_get_size(
+	     logical_volume,
+	     &volume_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume size.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tSize\t\t\t\t: " );
+
+	result = byte_size_string_create(
+	          byte_size_string,
+	          16,
+	          volume_size,
+	          BYTE_SIZE_STRING_UNIT_MEBIBYTE,
+	          NULL );
+
+	if( result == 1 )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "%" PRIs_SYSTEM " (%" PRIu64 " bytes)",
+		 byte_size_string,
+		 volume_size );
+	}
+	else
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "%" PRIu64 " bytes",
+		 volume_size );
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
+
+	result = libfvde_logical_volume_is_locked(
+	          logical_volume,
 	          error );
 
 	if( result == -1 )
@@ -1190,7 +1470,7 @@ int info_handle_logical_volume_fprint(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if volume is locked.",
+		 "%s: unable to determine if the logical volume is locked.",
 		 function );
 
 		goto on_error;
@@ -1201,168 +1481,9 @@ int info_handle_logical_volume_fprint(
 		 info_handle->notify_stream,
 		 "\tIs locked\n" );
 	}
-	else
-	{
-		if( libfvde_logical_volume_get_identifier(
-		     logical_volume,
-		     uuid_data,
-		     16,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve logical volume identifier.",
-			 function );
-
-			goto on_error;
-		}
-		if( info_handle_uuid_value_fprint(
-		     info_handle,
-		     "\tIdentifier\t\t\t",
-		     uuid_data,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
-			 "%s: unable to print UUID value.",
-			 function );
-
-			goto on_error;
-		}
-		fprintf(
-		 info_handle->notify_stream,
-		 "\tName\t\t\t\t:" );
-
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-		result = libfvde_logical_volume_get_utf16_name_size(
-		          logical_volume,
-		          &value_string_size,
-		          error );
-#else
-		result = libfvde_logical_volume_get_utf8_name_size(
-		          logical_volume,
-		          &value_string_size,
-		          error );
-#endif
-		if( result == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve logical volume name string size.",
-			 function );
-
-			goto on_error;
-		}
-		else if( ( result != 0 )
-		      && ( value_string_size > 0 ) )
-		{
-			value_string = system_string_allocate(
-			                value_string_size );
-
-			if( value_string == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-				 "%s: unable to create logical volume name string.",
-				 function );
-
-				goto on_error;
-			}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			result = libfvde_logical_volume_get_utf16_name(
-			          logical_volume,
-			          (uint16_t *) value_string,
-			          value_string_size,
-			          error );
-#else
-			result = libfvde_logical_volume_get_utf8_name(
-			          logical_volume,
-			          (uint8_t *) value_string,
-			          value_string_size,
-			          error );
-#endif
-			if( result != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve logical volume name string.",
-				 function );
-
-				goto on_error;
-			}
-			fprintf(
-			 info_handle->notify_stream,
-			 " %" PRIs_SYSTEM "",
-			 value_string );
-
-			memory_free(
-			 value_string );
-
-			value_string = NULL;
-		}
-		fprintf(
-		 info_handle->notify_stream,
-		 "\n" );
-
-		if( libfvde_logical_volume_get_size(
-		     logical_volume,
-		     &volume_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve logical volume size.",
-			 function );
-
-			goto on_error;
-		}
-		fprintf(
-		 info_handle->notify_stream,
-		 "\tSize\t\t\t\t: " );
-
-		result = byte_size_string_create(
-		          byte_size_string,
-		          16,
-		          volume_size,
-		          BYTE_SIZE_STRING_UNIT_MEBIBYTE,
-		          NULL );
-
-		if( result == 1 )
-		{
-			fprintf(
-			 info_handle->notify_stream,
-			 "%" PRIs_SYSTEM " (%" PRIu64 " bytes)",
-			 byte_size_string,
-			 volume_size );
-		}
-		else
-		{
-			fprintf(
-			 info_handle->notify_stream,
-			 "%" PRIu64 " bytes",
-			 volume_size );
-		}
-		fprintf(
-		 info_handle->notify_stream,
-		 "\n" );
-	}
 	fprintf(
 	 info_handle->notify_stream,
 	 "\n" );
-
-/* TODO add more info */
 
 	return( 1 );
 
@@ -1655,6 +1776,89 @@ int info_handle_volume_fprint(
 			 volume_index );
 
 			goto on_error;
+		}
+		if( info_handle->user_password != NULL )
+		{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			if( libfvde_logical_volume_set_utf16_password(
+			     logical_volume,
+			     (uint16_t *) info_handle->user_password,
+			     info_handle->user_password_size - 1,
+			     error ) != 1 )
+#else
+			if( libfvde_logical_volume_set_utf8_password(
+			     logical_volume,
+			     (uint8_t *) info_handle->user_password,
+			     info_handle->user_password_size - 1,
+			     error ) != 1 )
+#endif
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to set password.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		if( info_handle->recovery_password != NULL )
+		{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			if( libfvde_logical_volume_set_utf16_recovery_password(
+			     logical_volume,
+			     (uint16_t *) info_handle->recovery_password,
+			     info_handle->recovery_password_size - 1,
+			     error ) != 1 )
+#else
+			if( libfvde_logical_volume_set_utf8_recovery_password(
+			     logical_volume,
+			     (uint8_t *) info_handle->recovery_password,
+			     info_handle->recovery_password_size - 1,
+			     error ) != 1 )
+#endif
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to set recovery password.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		result = libfvde_logical_volume_is_locked(
+		          logical_volume,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine if logical volume is locked.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
+		{
+			if( libfvde_logical_volume_unlock(
+			     logical_volume,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to unlock logical volume.",
+				 function );
+
+				goto on_error;
+			}
 		}
 		if( info_handle_logical_volume_fprint(
 		     info_handle,

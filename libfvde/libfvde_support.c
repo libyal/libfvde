@@ -26,7 +26,6 @@
 #include <wide_string.h>
 
 #include "libfvde_definitions.h"
-#include "libfvde_io_handle.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libclocale.h"
@@ -411,7 +410,7 @@ int libfvde_check_volume_signature_file_io_handle(
 	}
 	else if( memory_compare(
 	          signature,
-	          libfvde_core_storage_signature,
+	          "CS",
 	          2 ) == 0 )
 	{
         	result = 1;

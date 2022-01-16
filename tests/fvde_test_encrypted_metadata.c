@@ -385,129 +385,6 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfvde_encrypted_metadata_get_number_of_data_area_descriptors function
- * Returns 1 if successful or 0 if not
- */
-int fvde_test_encrypted_metadata_get_number_of_data_area_descriptors(
-     void )
-{
-	libcerror_error_t *error                         = NULL;
-	libfvde_encrypted_metadata_t *encrypted_metadata = NULL;
-	int number_of_data_area_descriptors              = 0;
-	int number_of_data_area_descriptors_is_set       = 0;
-	int result                                       = 0;
-
-	/* Initialize test
-	 */
-	result = libfvde_encrypted_metadata_initialize(
-	          &encrypted_metadata,
-	          &error );
-
-	FVDE_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "encrypted_metadata",
-	 encrypted_metadata );
-
-	FVDE_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test regular cases
-	 */
-	result = libfvde_encrypted_metadata_get_number_of_data_area_descriptors(
-	          encrypted_metadata,
-	          &number_of_data_area_descriptors,
-	          &error );
-
-	FVDE_TEST_ASSERT_NOT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	FVDE_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	number_of_data_area_descriptors_is_set = result;
-
-	/* Test error cases
-	 */
-	result = libfvde_encrypted_metadata_get_number_of_data_area_descriptors(
-	          NULL,
-	          &number_of_data_area_descriptors,
-	          &error );
-
-	FVDE_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	if( number_of_data_area_descriptors_is_set != 0 )
-	{
-		result = libfvde_encrypted_metadata_get_number_of_data_area_descriptors(
-		          encrypted_metadata,
-		          NULL,
-		          &error );
-
-		FVDE_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
-
-		FVDE_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
-
-		libcerror_error_free(
-		 &error );
-	}
-	/* Clean up
-	 */
-	result = libfvde_encrypted_metadata_free(
-	          &encrypted_metadata,
-	          &error );
-
-	FVDE_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FVDE_TEST_ASSERT_IS_NULL(
-	 "encrypted_metadata",
-	 encrypted_metadata );
-
-	FVDE_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	if( encrypted_metadata != NULL )
-	{
-		libfvde_encrypted_metadata_free(
-		 &encrypted_metadata,
-		 NULL );
-	}
-	return( 0 );
-}
-
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 /* The main program
@@ -581,17 +458,15 @@ int main(
 
 	/* TODO: add tests for libfvde_encrypted_metadata_get_volume_master_key */
 
-	FVDE_TEST_RUN(
-	 "libfvde_encrypted_metadata_get_number_of_data_area_descriptors",
-	 fvde_test_encrypted_metadata_get_number_of_data_area_descriptors );
-
-	/* TODO: add tests for libfvde_encrypted_metadata_get_data_area_descriptor_by_index */
-
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 }
 

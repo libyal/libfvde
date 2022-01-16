@@ -37,12 +37,10 @@
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
 #include "libfvde_libcthreads.h"
-#include "libfvde_libfcache.h"
-#include "libfvde_libfdata.h"
-#include "libfvde_libhmac.h"
+#include "libfvde_logical_volume.h"
+#include "libfvde_logical_volume_descriptor.h"
 #include "libfvde_metadata.h"
 #include "libfvde_password.h"
-#include "libfvde_sector_data.h"
 #include "libfvde_volume.h"
 #include "libfvde_volume_group.h"
 #include "libfvde_volume_header.h"
@@ -126,19 +124,6 @@ int libfvde_volume_initialize(
 
 		goto on_error;
 	}
-	if( libfvde_keyring_initialize(
-	      &( internal_volume->keyring ),
-	      error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialise keyring.",
-		 function );
-
-		goto on_error;
-	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_initialize(
 	     &( internal_volume->read_write_lock ),
@@ -154,8 +139,6 @@ int libfvde_volume_initialize(
 		goto on_error;
 	}
 #endif
-	internal_volume->is_locked = 1;
-
 	*volume = (libfvde_volume_t *) internal_volume;
 
 	return( 1 );
@@ -244,6 +227,22 @@ int libfvde_volume_free(
 				result = -1;
 			}
 		}
+		if( internal_volume->logical_volume != NULL )
+		{
+			if( libfvde_logical_volume_free(
+			     &( internal_volume->logical_volume ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free logical volume.",
+				 function );
+
+				result = -1;
+			}
+		}
 		if( libfvde_io_handle_free(
 		     &( internal_volume->io_handle ),
 		     error ) != 1 )
@@ -253,19 +252,6 @@ int libfvde_volume_free(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 			 "%s: unable to free IO handle.",
-			 function );
-
-			result = -1;
-		}
-		if( libfvde_keyring_free(
-		     &( internal_volume->keyring ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free keyring.",
 			 function );
 
 			result = -1;
@@ -722,7 +708,7 @@ on_error:
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Opens a volume using a Basic File IO (bfio) handle
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 int libfvde_volume_open_file_io_handle(
      libfvde_volume_t *volume,
@@ -735,7 +721,7 @@ int libfvde_volume_open_file_io_handle(
 	uint8_t file_io_handle_opened_in_library   = 0;
 	int bfio_access_flags                      = 0;
 	int file_io_handle_is_open                 = 0;
-	int result                                 = 0;
+	int result                                 = 1;
 
 	if( volume == NULL )
 	{
@@ -832,59 +818,60 @@ int libfvde_volume_open_file_io_handle(
 		}
 		file_io_handle_opened_in_library = 1;
 	}
-	result = libfvde_volume_open_read(
-	          internal_volume,
-	          file_io_handle,
-	          error );
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
 
-	if( result == -1 )
+		goto on_error;
+	}
+#endif
+	if( libfvde_internal_volume_open_read(
+	     internal_volume,
+	     file_io_handle,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read from file IO handle.",
+		 "%s: unable to read volume from file IO handle.",
+		 function );
+
+		result = -1;
+	}
+	else
+	{
+		internal_volume->file_io_handle                   = file_io_handle;
+		internal_volume->file_io_handle_opened_in_library = file_io_handle_opened_in_library;
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
 		 function );
 
 		goto on_error;
 	}
-	else
+#endif
+	if( result == -1 )
 	{
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-		if( libcthreads_read_write_lock_grab_for_write(
-		     internal_volume->read_write_lock,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to grab read/write lock for writing.",
-			 function );
-
-			return( -1 );
-		}
-#endif
-		internal_volume->file_io_handle                   = file_io_handle;
-		internal_volume->file_io_handle_opened_in_library = file_io_handle_opened_in_library;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-		if( libcthreads_read_write_lock_release_for_write(
-		     internal_volume->read_write_lock,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to release read/write lock for writing.",
-			 function );
-
-			return( -1 );
-		}
-#endif
+		goto on_error;
 	}
-	return( result );
+	return( 1 );
 
 on_error:
 	if( file_io_handle_opened_in_library != 0 )
@@ -1000,8 +987,6 @@ int libfvde_volume_close(
 		internal_volume->file_io_handle_created_in_library = 0;
 	}
 	internal_volume->file_io_handle = NULL;
-	internal_volume->current_offset = 0;
-	internal_volume->is_locked      = 1;
 
 	if( libfvde_io_handle_clear(
 	     internal_volume->io_handle,
@@ -1128,38 +1113,6 @@ int libfvde_volume_close(
 			result = -1;
 		}
 	}
-	if( internal_volume->sectors_vector != NULL )
-	{
-		if( libfdata_vector_free(
-		     &( internal_volume->sectors_vector ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free sectors vector.",
-			 function );
-
-			result = -1;
-		}
-	}
-	if( internal_volume->sectors_cache != NULL )
-	{
-		if( libfcache_cache_free(
-		     &( internal_volume->sectors_cache ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free sectors cache.",
-			 function );
-
-			result = -1;
-		}
-	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -1179,16 +1132,17 @@ int libfvde_volume_close(
 }
 
 /* Opens a volume for reading
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
-int libfvde_volume_open_read(
+int libfvde_internal_volume_open_read(
      libfvde_internal_volume_t *internal_volume,
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	static char *function = "libfvde_volume_open_read";
-	int result            = 0;
-	int segment_index     = 0;
+	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
+	static char *function                                          = "libfvde_internal_volume_open_read";
+	int number_of_logical_volumes                                  = 0;
+	int number_of_physical_volumes                                 = 0;
 
 	if( internal_volume == NULL )
 	{
@@ -1289,43 +1243,6 @@ int libfvde_volume_open_read(
 
 		return( -1 );
 	}
-	if( internal_volume->sectors_vector != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - sectors vector value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->sectors_cache != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - sectors cache value already set.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1510,7 +1427,34 @@ int libfvde_volume_open_read(
 
 		goto on_error;
 	}
-/* TODO clean up and check */
+/* TODO compare information in metadata */
+
+	if( libfvde_metadata_get_number_of_physical_volume_descriptors(
+	     internal_volume->primary_metadata,
+	     &number_of_physical_volumes,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volume descriptors from primary metadata.",
+		 function );
+
+		goto on_error;
+	}
+	if( number_of_physical_volumes != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported number of physical volumes: %d.",
+		 function,
+		 number_of_physical_volumes );
+
+		goto on_error;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1587,177 +1531,128 @@ int libfvde_volume_open_read(
 
 		goto on_error;
 	}
-	if( internal_volume->primary_encrypted_metadata->logical_volume_size > 0 )
+	if( libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
+	     internal_volume->primary_encrypted_metadata,
+	     &number_of_logical_volumes,
+	     error ) == -1 )
 	{
-		internal_volume->io_handle->logical_volume_offset = internal_volume->primary_encrypted_metadata->logical_volume_offset;
-		internal_volume->io_handle->logical_volume_size   = internal_volume->primary_encrypted_metadata->logical_volume_size;
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of logical volume descriptors from primary encrypted metadata.",
+		 function );
+
+		goto on_error;
 	}
-	else if( internal_volume->secondary_encrypted_metadata->logical_volume_size > 0 )
+	if( internal_volume->encrypted_root_plist != NULL )
 	{
-		internal_volume->io_handle->logical_volume_offset = internal_volume->secondary_encrypted_metadata->logical_volume_offset;
-		internal_volume->io_handle->logical_volume_size   = internal_volume->secondary_encrypted_metadata->logical_volume_size;
+		if( libfvde_encryption_context_plist_decrypt(
+		     internal_volume->encrypted_root_plist,
+		     internal_volume->volume_header->key_data,
+		     128,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+			 LIBCERROR_ENCRYPTION_ERROR_DECRYPT_FAILED,
+			 "%s: unable to decrypt encrypted root plist.",
+			 function );
+
+			goto on_error;
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: physical volume size\t\t\t\t: %" PRIu64 "\n",
+		 "%s: physical volume size\t\t\t: %" PRIu64 "\n",
 		 function,
 		 internal_volume->volume_header->physical_volume_size );
-
-		libcnotify_printf(
-		 "%s: logical volume offset\t\t\t\t: 0x%08" PRIx64 "\n",
-		 function,
-		 internal_volume->io_handle->logical_volume_offset );
-
-		libcnotify_printf(
-		 "%s: logical volume size\t\t\t\t: %" PRIu64 "\n",
-		 function,
-		 internal_volume->io_handle->logical_volume_size );
-
-		libcnotify_printf(
-		 "\n" );
 	}
-#endif
-	if( internal_volume->io_handle->logical_volume_size == 0 )
-	{
-		/* No logical volume to be locked
-		 */
-		internal_volume->is_locked = 0;
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-		result = 1;
-	}
-	else
+	if( number_of_logical_volumes > 0 )
 	{
+		if( libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
+		     internal_volume->primary_encrypted_metadata,
+		     0,
+		     &logical_volume_descriptor,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve first logical volume descriptor from primary encrypted metadata.",
+			 function );
+
+			goto on_error;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "Reading logical volume header:\n" );
-		}
-#endif
-		result = libfvde_io_handle_read_logical_volume_header(
-		          internal_volume->io_handle,
-		          file_io_handle,
-		          internal_volume->io_handle->logical_volume_offset + 1024,
-		          error );
+			 "%s: logical volume offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 logical_volume_descriptor->block_number_0x0305 * internal_volume->io_handle->block_size,
+			 logical_volume_descriptor->block_number_0x0305 * internal_volume->io_handle->block_size );
 
-		if( result == -1 )
+			libcnotify_printf(
+			 "%s: logical volume size\t\t\t: %" PRIu64 "\n",
+			 function,
+			 logical_volume_descriptor->number_of_blocks_0x0305 * internal_volume->io_handle->block_size );
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		if( libfvde_logical_volume_initialize(
+		      &( internal_volume->logical_volume ),
+		      internal_volume->io_handle,
+		      file_io_handle,
+		      logical_volume_descriptor,
+		      internal_volume->primary_encrypted_metadata,
+		      internal_volume->encrypted_root_plist,
+		      error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create logical volume.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_internal_logical_volume_open_read(
+		     (libfvde_internal_logical_volume_t *) internal_volume->logical_volume,
+		     file_io_handle,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read logical volume header.",
-			 function );
-
-			goto on_error;
-		}
-		else if( result != 0 )
-		{
-			internal_volume->is_locked = 0;
-		}
-		if( internal_volume->is_locked != 0 )
-		{
-			result = libfvde_internal_volume_unlock(
-			          internal_volume,
-			          file_io_handle,
-			          error );
-
-			if( result == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 "%s: unable to unlock volume.",
-				 function );
-
-				goto on_error;
-			}
-		}
-/* TODO clone function ? */
-		if( libfdata_vector_initialize(
-		     &( internal_volume->sectors_vector ),
-		     (size64_t) internal_volume->io_handle->bytes_per_sector,
-		     (intptr_t *) internal_volume->io_handle,
-		     NULL,
-		     NULL,
-		     (int (*)(intptr_t *, intptr_t *, libfdata_vector_t *, libfdata_cache_t *, int, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libfvde_io_handle_read_sector,
-		     NULL,
-		     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create sectors vector.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfdata_vector_append_segment(
-		     internal_volume->sectors_vector,
-		     &segment_index,
-		     0,
-		     internal_volume->io_handle->logical_volume_offset,
-		     internal_volume->io_handle->logical_volume_size,
-		     LIBFVDE_RANGE_FLAG_ENCRYPTED,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append segment to sectors vector.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfcache_cache_initialize(
-		     &( internal_volume->sectors_cache ),
-		     LIBFVDE_MAXIMUM_CACHE_ENTRIES_SECTORS,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create sectors cache.",
+			 "%s: unable to read logical volume.",
 			 function );
 
 			goto on_error;
 		}
 	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
+		libcnotify_printf(
+		 "\n" );
 	}
 #endif
-	return( result );
+	return( 1 );
 
 on_error:
-	if( internal_volume->sectors_cache != NULL )
+	if( internal_volume->logical_volume != NULL )
 	{
-		libfcache_cache_free(
-		 &( internal_volume->sectors_cache ),
-		 NULL );
-	}
-	if( internal_volume->sectors_vector != NULL )
-	{
-		libfdata_vector_free(
-		 &( internal_volume->sectors_vector ),
+		libfvde_logical_volume_free(
+		 &( internal_volume->logical_volume ),
 		 NULL );
 	}
 	if( internal_volume->secondary_encrypted_metadata != NULL )
@@ -1802,1295 +1697,7 @@ on_error:
 		 &( internal_volume->volume_header ),
 		 NULL );
 	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_volume->read_write_lock,
-	 NULL );
-#endif
 	return( -1 );
-}
-
-/* Reads the keys from the encrypted metadata when opening the volume for reading
- * Returns 1 if successful, 0 if not or -1 on error
- */
-int libfvde_volume_open_read_keys_from_encrypted_metadata(
-     libfvde_internal_volume_t *internal_volume,
-     libfvde_encrypted_metadata_t *encrypted_metadata,
-     libcerror_error_t **error )
-{
-	uint8_t tweak_key_data[ 32 ];
-
-	static char *function = "libfvde_volume_open_read_keys_from_encrypted_metadata";
-	int result            = 1;
-
-	if( internal_volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->keyring == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing keyring handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( encrypted_metadata == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid encrypted metadata.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->volume_master_key_is_set == 0 )
-	{
-		if( encrypted_metadata->encryption_context_plist_file_is_set != 0 )
-		{
-			result = libfvde_encrypted_metadata_get_volume_master_key(
-				  encrypted_metadata,
-				  internal_volume->io_handle,
-				  encrypted_metadata->encryption_context_plist,
-				  internal_volume->keyring,
-				  error );
-
-			if( result == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve volume master key from encrypted metadata.",
-				 function );
-
-				goto on_error;
-			}
-			else if( result != 0 )
-			{
-				internal_volume->volume_master_key_is_set = 1;
-			}
-		}
-		else if( internal_volume->encrypted_root_plist_file_is_set != 0 )
-		{
-			if( internal_volume->encrypted_root_plist_file_is_decrypted == 0 )
-			{
-				result = libfvde_encryption_context_plist_decrypt(
-				          internal_volume->encrypted_root_plist,
-				          internal_volume->volume_header->key_data,
-				          128,
-				          error );
-
-				if( result == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-					 LIBCERROR_ENCRYPTION_ERROR_DECRYPT_FAILED,
-					 "%s: unable to decrypt encrypted root plist.",
-					 function );
-
-					goto on_error;
-				}
-				internal_volume->encrypted_root_plist_file_is_decrypted = result;
-			}
-			if( internal_volume->encrypted_root_plist_file_is_decrypted != 0 )
-			{
-				result = libfvde_encrypted_metadata_get_volume_master_key(
-					  encrypted_metadata,
-					  internal_volume->io_handle,
-					  internal_volume->encrypted_root_plist,
-					  internal_volume->keyring,
-					  error );
-
-				if( result == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve volume master key from encrypted metadata.",
-					 function );
-
-					goto on_error;
-				}
-				else if( result != 0 )
-				{
-					internal_volume->volume_master_key_is_set = 1;
-				}
-			}
-		}
-/* TODO test */
-		else
-		{
-#ifdef TEST
-			uint8_t salt[ 16 ];
-
-			uint32_t number_of_iterations = 41000;
-
-			if( memory_set(
-			     salt,
-			     0,
-			     16 ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-				 "%s: unable to clear salt.",
-				 function );
-
-				goto on_error;
-			}
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: number of iterations\t: %" PRIu32 "\n",
-				 function,
-				 number_of_iterations );
-			}
-#endif
-			if( internal_volume->io_handle->user_password_is_set != 0 )
-			{
-				if( libfvde_password_pbkdf2(
-				     internal_volume->io_handle->user_password,
-				     internal_volume->io_handle->user_password_size - 1,
-				     salt,
-				     16,
-				     number_of_iterations,
-				     internal_volume->keyring->volume_master_key,
-				     16,
-				     error ) == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to determine password key.",
-					 function );
-
-					goto on_error;
-				}
-			}
-			else if( internal_volume->io_handle->recovery_password_is_set != 0 )
-			{
-				if( libfvde_password_pbkdf2(
-				     internal_volume->io_handle->recovery_password,
-				     internal_volume->io_handle->recovery_password_size - 1,
-				     salt,
-				     16,
-				     number_of_iterations,
-				     internal_volume->keyring->volume_master_key,
-				     16,
-				     error ) == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to determine recovery password key.",
-					 function );
-
-					goto on_error;
-				}
-			}
-#endif
-			internal_volume->volume_master_key_is_set = 1;
-		}
-	}
-	if( internal_volume->volume_master_key_is_set != 0 )
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: volume master key:\n",
-			 function );
-			libcnotify_print_data(
-			 internal_volume->keyring->volume_master_key,
-			 16,
-			 0 );
-		}
-#endif
-		if( memory_copy(
-		     &( tweak_key_data[ 0 ] ),
-		     internal_volume->keyring->volume_master_key,
-		     16 ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy volume master key to tweak key data.",
-			 function );
-
-			goto on_error;
-		}
-		if( memory_copy(
-		     &( tweak_key_data[ 16 ] ),
-		     encrypted_metadata->logical_volume_family_identifier,
-		     16 ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy logical volume family identifier to tweak key data.",
-			 function );
-
-			goto on_error;
-		}
-		if( libhmac_sha256_calculate(
-		     tweak_key_data,
-		     32,
-		     internal_volume->keyring->volume_tweak_key,
-		     32,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to calculate SHA-256 of tweak key data.",
-			 function );
-
-			goto on_error;
-		}
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: volume tweak key:\n",
-			 function );
-			libcnotify_print_data(
-			 internal_volume->keyring->volume_tweak_key,
-			 16,
-			 0 );
-		}
-#endif
-		if( libcaes_tweaked_context_initialize(
-		     &( internal_volume->io_handle->xts_context ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create XTS context.",
-			 function );
-
-			goto on_error;
-		}
-		if( libcaes_tweaked_context_set_keys(
-		     internal_volume->io_handle->xts_context,
-		     LIBCAES_CRYPT_MODE_DECRYPT,
-		     internal_volume->keyring->volume_master_key,
-		     128,
-		     internal_volume->keyring->volume_tweak_key,
-		     128,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set keys in XTS context.",
-			 function );
-
-			goto on_error;
-		}
-		if( memory_set(
-		     tweak_key_data,
-		     0,
-		     32 ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear tweak key data.",
-			 function );
-
-			goto on_error;
-		}
-		internal_volume->io_handle->is_encrypted = 1;
-	}
-	return( result );
-
-on_error:
-	memory_set(
-	 tweak_key_data,
-	 0,
-	 32 );
-
-	return( -1 );
-}
-
-/* Unlocks an encrypted volume
- * Returns 1 if the volume is unlocked, 0 if not or -1 on error
- */
-int libfvde_internal_volume_unlock(
-     libfvde_internal_volume_t *internal_volume,
-     libbfio_handle_t *file_io_handle,
-     libcerror_error_t **error )
-{
-	static char *function = "libfvde_internal_volume_unlock";
-	int result            = 0;
-
-	if( internal_volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	result = libfvde_volume_open_read_keys_from_encrypted_metadata(
-		  internal_volume,
-		  internal_volume->primary_encrypted_metadata,
-		  error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read keys from primary encrypted metadata.",
-		 function );
-
-		return( -1 );
-	}
-	else if( result == 0 )
-	{
-		result = libfvde_volume_open_read_keys_from_encrypted_metadata(
-			  internal_volume,
-			  internal_volume->secondary_encrypted_metadata,
-			  error );
-
-		if( result == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read keys from secondary encrypted metadata.",
-			 function );
-
-			return( -1 );
-		}
-	}
-	if( result != 0 )
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "Reading logical volume header:\n" );
-		}
-#endif
-		result = libfvde_io_handle_read_logical_volume_header(
-			  internal_volume->io_handle,
-			  file_io_handle,
-			  internal_volume->io_handle->logical_volume_offset + 1024,
-			  error );
-
-		if( result == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read logical volume header.",
-			 function );
-
-			return( -1 );
-		}
-		else if( result != 0 )
-		{
-			internal_volume->is_locked = 0;
-		}
-	}
-	return( result );
-}
-
-/* Unlocks the volume
- * Returns 1 if the volume is unlocked, 0 if not or -1 on error
- */
-int libfvde_volume_unlock(
-     libfvde_volume_t *volume,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_unlock";
-	int result                                 = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( internal_volume->is_locked != 0 )
-	{
-		result = libfvde_internal_volume_unlock(
-		          internal_volume,
-		          internal_volume->file_io_handle,
-		          error );
-
-		if( result == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GENERIC,
-			 "%s: unable to unlock volume.",
-			 function );
-
-			result = -1;
-		}
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Determines if the volume is locked
- * Returns 1 if locked, 0 if not or -1 on error
- */
-int libfvde_volume_is_locked(
-     libfvde_volume_t *volume,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_is_locked";
-	uint8_t is_locked                          = 0;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	is_locked = internal_volume->is_locked;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( is_locked );
-}
-
-/* Reads (volume) data from the last current into a buffer using a Basic File IO (bfio) handle
- * This function is not multi-thread safe acquire write lock before call
- * Returns the number of bytes read or -1 on error
- */
-ssize_t libfvde_internal_volume_read_buffer_from_file_io_handle(
-         libfvde_internal_volume_t *internal_volume,
-         libbfio_handle_t *file_io_handle,
-         void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error )
-{
-	libfvde_sector_data_t *sector_data = NULL;
-	static char *function              = "libfvde_internal_volume_read_buffer_from_file_io_handle";
-	off64_t element_data_offset        = 0;
-	size_t buffer_offset               = 0;
-	size_t read_size                   = 0;
-	size_t sector_data_offset          = 0;
-	ssize_t total_read_count           = 0;
-
-	if( internal_volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->sectors_vector == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing sectors vector.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->sectors_cache == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing sectors cache.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->current_offset < 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid volume - current offset value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->is_locked != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - volume is locked.",
-		 function );
-
-		return( -1 );
-	}
-	if( buffer == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid buffer.",
-		 function );
-
-		return( -1 );
-	}
-	if( buffer_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid buffer size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( (size64_t) internal_volume->current_offset >= internal_volume->io_handle->logical_volume_size )
-	{
-		return( 0 );
-	}
-	if( (size64_t) ( internal_volume->current_offset + buffer_size ) >= internal_volume->io_handle->logical_volume_size )
-	{
-		buffer_size = (size_t) ( internal_volume->io_handle->logical_volume_size - internal_volume->current_offset );
-	}
-	sector_data_offset = (size_t) ( internal_volume->current_offset % internal_volume->io_handle->bytes_per_sector );
-
-	while( buffer_size > 0 )
-	{
-		if( libfdata_vector_get_element_value_at_offset(
-		     internal_volume->sectors_vector,
-		     (intptr_t *) file_io_handle,
-		     (libfdata_cache_t *) internal_volume->sectors_cache,
-		     internal_volume->current_offset,
-		     &element_data_offset,
-		     (intptr_t **) &sector_data,
-		     0,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve sector data at offset: %" PRIi64 ".",
-			 function,
-			 internal_volume->current_offset );
-
-			return( -1 );
-		}
-		if( sector_data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing sector data at offset: %" PRIi64 ".",
-			 function,
-			 internal_volume->current_offset );
-
-			return( -1 );
-		}
-		read_size = sector_data->data_size - sector_data_offset;
-
-		if( read_size > buffer_size )
-		{
-			read_size = buffer_size;
-		}
-		if( read_size == 0 )
-		{
-			break;
-		}
-		if( memory_copy(
-		     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
-		     &( ( sector_data->data )[ sector_data_offset ] ),
-		     read_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy sector data to buffer.",
-			 function );
-
-			return( -1 );
-		}
-		buffer_offset     += read_size;
-		buffer_size       -= read_size;
-		total_read_count  += (ssize_t) read_size;
-		sector_data_offset = 0;
-
-		internal_volume->current_offset += (off64_t) read_size;
-
-		if( (size64_t) internal_volume->current_offset >= internal_volume->io_handle->logical_volume_size )
-		{
-			break;
-		}
-		if( internal_volume->io_handle->abort != 0 )
-		{
-			break;
-		}
-	}
-	return( total_read_count );
-}
-
-/* Reads data at the current offset into a buffer
- * Returns the number of bytes read or -1 on error
- */
-ssize_t libfvde_volume_read_buffer(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_read_buffer";
-	ssize_t read_count                         = 0;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
-		      internal_volume,
-		      internal_volume->file_io_handle,
-		      buffer,
-		      buffer_size,
-		      error );
-
-	if( read_count == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read buffer.",
-		 function );
-
-		read_count = -1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( read_count );
-}
-
-/* Reads (media) data at a specific offset
- * Returns the number of bytes read or -1 on error
- */
-ssize_t libfvde_volume_read_buffer_at_offset(
-         libfvde_volume_t *volume,
-         void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_read_buffer_at_offset";
-	ssize_t read_count                         = 0;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( libfvde_internal_volume_seek_offset(
-	     internal_volume,
-	     offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset.",
-		 function );
-
-		read_count = -1;
-	}
-	else
-	{
-		read_count = libfvde_internal_volume_read_buffer_from_file_io_handle(
-			      internal_volume,
-			      internal_volume->file_io_handle,
-			      buffer,
-			      buffer_size,
-			      error );
-
-		if( read_count == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read buffer.",
-			 function );
-
-			read_count = -1;
-		}
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( read_count );
-}
-
-/* Seeks a certain offset of the (volume) data
- * This function is not multi-thread safe acquire write lock before call
- * Returns the offset if seek is successful or -1 on error
- */
-off64_t libfvde_internal_volume_seek_offset(
-         libfvde_internal_volume_t *internal_volume,
-         off64_t offset,
-         int whence,
-         libcerror_error_t **error )
-{
-	static char *function = "libfvde_internal_volume_seek_offset";
-
-	if( internal_volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->is_locked != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - volume is locked.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( whence != SEEK_CUR )
-	 && ( whence != SEEK_END )
-	 && ( whence != SEEK_SET ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported whence.",
-		 function );
-
-		return( -1 );
-	}
-	if( whence == SEEK_CUR )
-	{	
-		offset += internal_volume->current_offset;
-	}
-	else if( whence == SEEK_END )
-	{	
-		offset += (off64_t) internal_volume->io_handle->logical_volume_size;
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: seeking media data offset: %" PRIi64 ".\n",
-		 function,
-		 offset );
-	}
-#endif
-	if( offset < 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid offset value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume->current_offset = offset;
-
-	return( offset );
-}
-
-/* Seeks a certain offset of the data
- * Returns the offset if seek is successful or -1 on error
- */
-off64_t libfvde_volume_seek_offset(
-         libfvde_volume_t *volume,
-         off64_t offset,
-         int whence,
-         libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_seek_offset";
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	offset = libfvde_internal_volume_seek_offset(
-	          internal_volume,
-	          offset,
-	          whence,
-	          error );
-
-	if( offset == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset.",
-		 function );
-
-		offset = -1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( offset );
-}
-
-/* Retrieves the current offset of the (volume) data
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_get_offset(
-     libfvde_volume_t *volume,
-     off64_t *offset,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_get_offset";
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( offset == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid offset.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	*offset = internal_volume->current_offset;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( 1 );
-}
-
-/* Retrieves the logical volume size
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_get_logical_volume_size(
-     libfvde_volume_t *volume,
-     size64_t *size,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_get_logical_volume_size";
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid size.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	*size = internal_volume->io_handle->logical_volume_size;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( 1 );
 }
 
 /* Retrieves the encryption method of the logical volume
@@ -3154,7 +1761,8 @@ int libfvde_volume_get_logical_volume_encryption_method(
 		return( -1 );
 	}
 #endif
-	*encryption_method = internal_volume->io_handle->logical_volume_encryption_method;
+/* TODO implement */
+	*encryption_method = 0;
 
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -3172,1289 +1780,6 @@ int libfvde_volume_get_logical_volume_encryption_method(
 	}
 #endif
 	return( 1 );
-}
-
-/* Retrieves the logical volume identifier
- * The identifier is a UUID and is 16 bytes of size
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_get_logical_volume_identifier(
-     libfvde_volume_t *volume,
-     uint8_t *uuid_data,
-     size_t uuid_data_size,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_get_logical_volume_identifier";
-	int result                                 = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->primary_encrypted_metadata == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing primary encrypted metadata.",
-		 function );
-
-		return( -1 );
-	}
-	if( uuid_data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UUID data.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( uuid_data_size < 16 )
-	 || ( uuid_data_size > (size_t) SSIZE_MAX ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid UUID data size value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( memory_copy(
-	     uuid_data,
-	     internal_volume->primary_encrypted_metadata->logical_volume_identifier,
-	     16 ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set logical volume identifier.",
-		 function );
-
-		result = -1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Retrieves the logical volume group identifier
- * The identifier is a UUID and is 16 bytes of size
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_get_logical_volume_group_identifier(
-     libfvde_volume_t *volume,
-     uint8_t *uuid_data,
-     size_t uuid_data_size,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_get_logical_volume_group_identifier";
-	int result                                 = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( libfvde_volume_header_get_logical_volume_group_identifier(
-	     internal_volume->volume_header,
-	     uuid_data,
-	     uuid_data_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve logical volume group identifier from volume header.",
-		 function );
-
-		result = -1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Retrieves the physical volume size
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_get_physical_volume_size(
-     libfvde_volume_t *volume,
-     size64_t *size,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_get_physical_volume_size";
-	int result                                 = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( libfvde_volume_header_get_physical_volume_size(
-	     internal_volume->volume_header,
-	     size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve physical volume size from volume header.",
-		 function );
-
-		result = -1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Retrieves the encryption method of the physical volume
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_get_physical_volume_encryption_method(
-     libfvde_volume_t *volume,
-     uint32_t *encryption_method,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_get_physical_volume_encryption_method";
-	int result                                 = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( libfvde_volume_header_get_physical_volume_encryption_method(
-	     internal_volume->volume_header,
-	     encryption_method,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve physical volume encryption method from volume header.",
-		 function );
-
-		result = -1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Retrieves the physical volume identifier
- * The identifier is a UUID and is 16 bytes of size
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_get_physical_volume_identifier(
-     libfvde_volume_t *volume,
-     uint8_t *uuid_data,
-     size_t uuid_data_size,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_get_physical_volume_identifier";
-	int result                                 = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( libfvde_volume_header_get_physical_volume_identifier(
-	     internal_volume->volume_header,
-	     uuid_data,
-	     uuid_data_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve physical volume identifier from volume header.",
-		 function );
-
-		result = -1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Sets the keys
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful or -1 on error
- */
-int libfvde_volume_set_keys(
-     libfvde_volume_t *volume,
-     const uint8_t *volume_master_key,
-     size_t volume_master_key_size,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_set_keys";
-	int result                                 = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->keyring == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing keyring handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( volume_master_key == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume master key.",
-		 function );
-
-		return( -1 );
-	}
-	if( volume_master_key_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid volume master key size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( volume_master_key_size != 16 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported volume master key size.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( memory_copy(
-	     internal_volume->keyring->volume_master_key,
-	     volume_master_key,
-	     16 ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy volume master key to keyring.",
-		 function );
-
-		result = -1;
-	}
-	else
-	{
-		internal_volume->volume_master_key_is_set = 1;
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Sets an UTF-8 formatted password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if password is invalid or -1 on error
- */
-int libfvde_volume_set_utf8_password(
-     libfvde_volume_t *volume,
-     const uint8_t *utf8_string,
-     size_t utf8_string_length,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_set_utf8_password";
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( internal_volume->io_handle->user_password != NULL )
-	{
-		if( memory_set(
-		     internal_volume->io_handle->user_password,
-		     0,
-		     internal_volume->io_handle->user_password_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear user password.",
-			 function );
-
-			return( -1 );
-		}
-		memory_free(
-		 internal_volume->io_handle->user_password );
-
-		internal_volume->io_handle->user_password      = NULL;
-		internal_volume->io_handle->user_password_size = 0;
-	}
-	if( libuna_byte_stream_size_from_utf8(
-	     utf8_string,
-	     utf8_string_length,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     &( internal_volume->io_handle->user_password_size ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set password size.",
-		 function );
-
-		goto on_error;
-	}
-	if( ( internal_volume->io_handle->user_password_size == 0 )
-	 || ( internal_volume->io_handle->user_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid volume - invalid IO handle - user password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->user_password_size += 1;
-
-	internal_volume->io_handle->user_password = (uint8_t *) memory_allocate(
-	                                                         sizeof( uint8_t ) * internal_volume->io_handle->user_password_size );
-
-	if( internal_volume->io_handle->user_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create user password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf8(
-	     internal_volume->io_handle->user_password,
-	     internal_volume->io_handle->user_password_size,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     utf8_string,
-	     utf8_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy user password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->user_password[ internal_volume->io_handle->user_password_size - 1 ] = 0;
-
-	internal_volume->io_handle->user_password_is_set = 1;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: user password: %s\n",
-		 function,
-		 internal_volume->io_handle->user_password );
-	}
-#endif
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( 1 );
-
-on_error:
-	if( internal_volume->io_handle->user_password != NULL )
-	{
-		memory_set(
-		 internal_volume->io_handle->user_password,
-		 0,
-		 internal_volume->io_handle->user_password_size );
-		memory_free(
-		 internal_volume->io_handle->user_password );
-
-		internal_volume->io_handle->user_password = NULL;
-	}
-	internal_volume->io_handle->user_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
-}
-
-/* Sets an UTF-16 formatted password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if password is invalid or -1 on error
- */
-int libfvde_volume_set_utf16_password(
-     libfvde_volume_t *volume,
-     const uint16_t *utf16_string,
-     size_t utf16_string_length,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_set_utf16_password";
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( internal_volume->io_handle->user_password != NULL )
-	{
-		if( memory_set(
-		     internal_volume->io_handle->user_password,
-		     0,
-		     internal_volume->io_handle->user_password_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear user password.",
-			 function );
-
-			return( -1 );
-		}
-		memory_free(
-		 internal_volume->io_handle->user_password );
-
-		internal_volume->io_handle->user_password      = NULL;
-		internal_volume->io_handle->user_password_size = 0;
-	}
-	if( libuna_byte_stream_size_from_utf16(
-	     utf16_string,
-	     utf16_string_length,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     &( internal_volume->io_handle->user_password_size ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set password length.",
-		 function );
-
-		goto on_error;
-	}
-	if( ( internal_volume->io_handle->user_password_size == 0 )
-	 || ( internal_volume->io_handle->user_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid volume - invalid IO handle - user password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->user_password_size += 1;
-
-	internal_volume->io_handle->user_password = (uint8_t *) memory_allocate(
-	                                                         sizeof( uint8_t ) * internal_volume->io_handle->user_password_size );
-
-	if( internal_volume->io_handle->user_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create user password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf16(
-	     internal_volume->io_handle->user_password,
-	     internal_volume->io_handle->user_password_size,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     utf16_string,
-	     utf16_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy user password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->user_password[ internal_volume->io_handle->user_password_size - 1 ] = 0;
-
-	internal_volume->io_handle->user_password_is_set = 1;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: user password: %s\n",
-		 function,
-		 internal_volume->io_handle->user_password );
-	}
-#endif
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( 1 );
-
-on_error:
-	if( internal_volume->io_handle->user_password != NULL )
-	{
-		memory_set(
-		 internal_volume->io_handle->user_password,
-		 0,
-		 internal_volume->io_handle->user_password_size );
-		memory_free(
-		 internal_volume->io_handle->user_password );
-
-		internal_volume->io_handle->user_password = NULL;
-	}
-	internal_volume->io_handle->user_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
-}
-
-/* Sets an UTF-8 formatted recovery password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
- */
-int libfvde_volume_set_utf8_recovery_password(
-     libfvde_volume_t *volume,
-     const uint8_t *utf8_string,
-     size_t utf8_string_length,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                      = "libfvde_volume_set_utf8_recovery_password";
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( internal_volume->io_handle->recovery_password != NULL )
-	{
-		if( memory_set(
-		     internal_volume->io_handle->recovery_password,
-		     0,
-		     internal_volume->io_handle->recovery_password_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear recovery password.",
-			 function );
-
-			return( -1 );
-		}
-		memory_free(
-		 internal_volume->io_handle->recovery_password );
-
-		internal_volume->io_handle->recovery_password      = NULL;
-		internal_volume->io_handle->recovery_password_size = 0;
-	}
-	if( libuna_byte_stream_size_from_utf8(
-	     utf8_string,
-	     utf8_string_length,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     &( internal_volume->io_handle->recovery_password_size ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set recovery pasword size.",
-		 function );
-
-		goto on_error;
-	}
-	if( ( internal_volume->io_handle->recovery_password_size == 0 )
-	 || ( internal_volume->io_handle->recovery_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid volume - invalid IO handle - recovery password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->recovery_password_size += 1;
-
-	internal_volume->io_handle->recovery_password = (uint8_t *) memory_allocate(
-	                                                             sizeof( uint8_t ) * internal_volume->io_handle->recovery_password_size );
-
-	if( internal_volume->io_handle->recovery_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf8(
-	     internal_volume->io_handle->recovery_password,
-	     internal_volume->io_handle->recovery_password_size,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     utf8_string,
-	     utf8_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->recovery_password[ internal_volume->io_handle->recovery_password_size - 1 ] = 0;
-
-	internal_volume->io_handle->recovery_password_is_set = 1;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: recovery password: %s\n",
-		 function,
-		 internal_volume->io_handle->recovery_password );
-	}
-#endif
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( 1 );
-
-on_error:
-	if( internal_volume->io_handle->recovery_password != NULL )
-	{
-		memory_set(
-		 internal_volume->io_handle->recovery_password,
-		 0,
-		 internal_volume->io_handle->recovery_password_size );
-		memory_free(
-		 internal_volume->io_handle->recovery_password );
-
-		internal_volume->io_handle->recovery_password = NULL;
-	}
-	internal_volume->io_handle->recovery_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
-}
-
-/* Sets an UTF-16 formatted recovery password
- * This function needs to be used before one of the open or unlock functions
- * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
- */
-int libfvde_volume_set_utf16_recovery_password(
-     libfvde_volume_t *volume,
-     const uint16_t *utf16_string,
-     size_t utf16_string_length,
-     libcerror_error_t **error )
-{
-	libfvde_internal_volume_t *internal_volume = NULL;
-	static char *function                     = "libfvde_volume_set_utf16_recovery_password";
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfvde_internal_volume_t *) volume;
-
-	if( internal_volume->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( internal_volume->io_handle->recovery_password != NULL )
-	{
-		if( memory_set(
-		     internal_volume->io_handle->recovery_password,
-		     0,
-		     internal_volume->io_handle->recovery_password_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear recovery password.",
-			 function );
-
-			return( -1 );
-		}
-		memory_free(
-		 internal_volume->io_handle->recovery_password );
-
-		internal_volume->io_handle->recovery_password      = NULL;
-		internal_volume->io_handle->recovery_password_size = 0;
-	}
-	if( libuna_byte_stream_size_from_utf16(
-	     utf16_string,
-	     utf16_string_length,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     &(internal_volume->io_handle->recovery_password_size ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set recovery size.",
-		 function );
-
-		goto on_error;
-	}
-	if( ( internal_volume->io_handle->recovery_password_size == 0 )
-	 || ( internal_volume->io_handle->recovery_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid volume - invalid IO handle - recovery password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->recovery_password_size += 1;
-
-	internal_volume->io_handle->recovery_password = (uint8_t *) memory_allocate(
-	                                                             sizeof( uint8_t ) * internal_volume->io_handle->recovery_password_size );
-
-	if( internal_volume->io_handle->recovery_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf16(
-	     internal_volume->io_handle->recovery_password,
-	     internal_volume->io_handle->recovery_password_size,
-	     LIBFVDE_CODEPAGE_US_ASCII,
-	     utf16_string,
-	     utf16_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_volume->io_handle->recovery_password[ internal_volume->io_handle->recovery_password_size - 1 ] = 0;
-
-	internal_volume->io_handle->recovery_password_is_set = 1;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: recovery password: %s\n",
-		 function,
-		 internal_volume->io_handle->recovery_password );
-	}
-#endif
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( 1 );
-
-on_error:
-	if( internal_volume->io_handle->recovery_password != NULL )
-	{
-		memory_set(
-		 internal_volume->io_handle->recovery_password,
-		 0,
-		 internal_volume->io_handle->recovery_password_size );
-		memory_free(
-		 internal_volume->io_handle->recovery_password );
-
-		internal_volume->io_handle->recovery_password = NULL;
-	}
-	internal_volume->io_handle->recovery_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
 }
 
 /* Reads the EncryptedRoot.plist file
@@ -4767,8 +2092,6 @@ int libfvde_volume_read_encrypted_root_plist_file_io_handle(
 
 		goto on_error;
 	}
-	internal_volume->encrypted_root_plist_file_is_set = 1;
-
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -4876,9 +2199,12 @@ int libfvde_volume_get_volume_group(
 #endif
 	if( libfvde_volume_group_initialize(
 	      volume_group,
+	      internal_volume->io_handle,
+	      internal_volume->file_io_handle,
 	      internal_volume->volume_header,
 	      internal_volume->primary_metadata,
 	      internal_volume->primary_encrypted_metadata,
+	      internal_volume->encrypted_root_plist,
 	      error ) != 1 )
 	{
 		libcerror_error_set(

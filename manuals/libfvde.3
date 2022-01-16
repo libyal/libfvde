@@ -1,4 +1,4 @@
-.Dd January 15, 2022
+.Dd January 16, 2022
 .Dt libfvde 3
 .Os libfvde
 .Sh NAME
@@ -61,39 +61,7 @@ Volume functions
 .Ft int
 .Fn libfvde_volume_close "libfvde_volume_t *volume" "libfvde_error_t **error"
 .Ft int
-.Fn libfvde_volume_unlock "libfvde_volume_t *volume" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_is_locked "libfvde_volume_t *volume" "libfvde_error_t **error"
-.Ft ssize_t
-.Fn libfvde_volume_read_buffer "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "libfvde_error_t **error"
-.Ft ssize_t
-.Fn libfvde_volume_read_buffer_at_offset "libfvde_volume_t *volume" "void *buffer" "size_t buffer_size" "off64_t offset" "libfvde_error_t **error"
-.Ft off64_t
-.Fn libfvde_volume_seek_offset "libfvde_volume_t *volume" "off64_t offset" "int whence" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_get_offset "libfvde_volume_t *volume" "off64_t *offset" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_get_logical_volume_size "libfvde_volume_t *volume" "size64_t *size" "libfvde_error_t **error"
-.Ft int
 .Fn libfvde_volume_get_logical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_get_logical_volume_identifier "libfvde_volume_t *volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_get_physical_volume_size "libfvde_volume_t *volume" "size64_t *size" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_get_physical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_get_physical_volume_identifier "libfvde_volume_t *volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_set_keys "libfvde_volume_t *volume" "const uint8_t *volume_master_key" "size_t volume_master_key_size" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_set_utf8_password "libfvde_volume_t *volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_set_utf16_password "libfvde_volume_t *volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_set_utf8_recovery_password "libfvde_volume_t *volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfvde_error_t **error"
-.Ft int
-.Fn libfvde_volume_set_utf16_recovery_password "libfvde_volume_t *volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_read_encrypted_root_plist "libfvde_volume_t *volume" "const char *filename" "libfvde_error_t **error"
 .Ft int
@@ -147,6 +115,16 @@ Logical volume functions
 .Ft int
 .Fn libfvde_logical_volume_free "libfvde_logical_volume_t **logical_volume" "libfvde_error_t **error"
 .Ft int
+.Fn libfvde_logical_volume_unlock "libfvde_logical_volume_t *logical_volume" "libfvde_error_t **error"
+.Ft ssize_t
+.Fn libfvde_logical_volume_read_buffer "libfvde_logical_volume_t *logical_volume" "void *buffer" "size_t buffer_size" "libfvde_error_t **error"
+.Ft ssize_t
+.Fn libfvde_logical_volume_read_buffer_at_offset "libfvde_logical_volume_t *logical_volume" "void *buffer" "size_t buffer_size" "off64_t offset" "libfvde_error_t **error"
+.Ft off64_t
+.Fn libfvde_logical_volume_seek_offset "libfvde_logical_volume_t *logical_volume" "off64_t offset" "int whence" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_get_offset "libfvde_logical_volume_t *logical_volume" "off64_t *offset" "libfvde_error_t **error"
+.Ft int
 .Fn libfvde_logical_volume_get_identifier "libfvde_logical_volume_t *logical_volume" "uint8_t *uuid_data" "size_t uuid_data_size" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_logical_volume_get_utf8_name_size "libfvde_logical_volume_t *logical_volume" "size_t *utf8_string_size" "libfvde_error_t **error"
@@ -158,6 +136,18 @@ Logical volume functions
 .Fn libfvde_logical_volume_get_utf16_name "libfvde_logical_volume_t *logical_volume" "uint16_t *utf16_string" "size_t utf16_string_size" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_logical_volume_get_size "libfvde_logical_volume_t *logical_volume" "size64_t *size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_is_locked "libfvde_logical_volume_t *logical_volume" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_set_keys "libfvde_logical_volume_t *logical_volume" "const uint8_t *volume_master_key" "size_t volume_master_key_size" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_set_utf8_password "libfvde_logical_volume_t *logical_volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_set_utf16_password "libfvde_logical_volume_t *logical_volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_set_utf8_recovery_password "libfvde_logical_volume_t *logical_volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_logical_volume_set_utf16_recovery_password "libfvde_logical_volume_t *logical_volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfvde_error_t **error"
 .Pp
 LVF encryption context and EncryptedRoot.plist file functions
 .Ft int

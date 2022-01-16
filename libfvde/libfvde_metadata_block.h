@@ -44,9 +44,13 @@ struct libfvde_metadata_block
 	 */
 	uint32_t serial_number;
 
-	/* The group
+	/* The transaction identifier
 	 */
-	uint64_t group;
+	uint64_t transaction_identifier;
+
+	/* The object identifier
+	 */
+	uint64_t object_identifier;
 
 	/* The number
 	 */

@@ -1,5 +1,5 @@
 /*
- * Sector data functions
+ * Volume data handle functions
  *
  * Copyright (C) 2011-2022, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
@@ -20,60 +20,69 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFVDE_SECTOR_DATA_H )
-#define _LIBFVDE_SECTOR_DATA_H
+#if !defined( _LIBFVDE_VOLUME_DATA_HANDLE_H )
+#define _LIBFVDE_VOLUME_DATA_HANDLE_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libfvde_encryption.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_libcaes.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
+#include "libfvde_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libfvde_sector_data libfvde_sector_data_t;
+typedef struct libfvde_volume_data_handle libfvde_volume_data_handle_t;
 
-struct libfvde_sector_data
+struct libfvde_volume_data_handle
 {
-	/* The encrypted data
+	/* The IO handle
 	 */
-	uint8_t *encrypted_data;
+	libfvde_io_handle_t *io_handle;
 
-	/* The data
+	/* The logical volume offset
 	 */
-	uint8_t *data;
+	off64_t logical_volume_offset;
 
-	/* The data size
+	/* The XTS context
 	 */
-	size_t data_size;
+	libcaes_tweaked_context_t *xts_context;
+
+	/* Value to indicate the logical volume is encrypted
+	 */
+	uint8_t is_encrypted;
 };
 
-int libfvde_sector_data_initialize(
-     libfvde_sector_data_t **sector_data,
-     size_t data_size,
+int libfvde_volume_data_handle_initialize(
+     libfvde_volume_data_handle_t **volume_data_handle,
+     libfvde_io_handle_t *io_handle,
+     off64_t logical_volume_offset,
      libcerror_error_t **error );
 
-int libfvde_sector_data_free(
-     libfvde_sector_data_t **sector_data,
+int libfvde_volume_data_handle_free(
+     libfvde_volume_data_handle_t **volume_data_handle,
      libcerror_error_t **error );
 
-int libfvde_sector_data_read(
-     libfvde_sector_data_t *sector_data,
-     libcaes_tweaked_context_t *xts_context,
+int libfvde_volume_data_handle_read_sector(
+     libfvde_volume_data_handle_t *volume_data_handle,
      libbfio_handle_t *file_io_handle,
-     off64_t file_offset,
-     uint64_t block_number,
-     uint8_t is_encrypted,
+     libfdata_vector_t *vector,
+     libfdata_cache_t *cache,
+     int element_index,
+     int element_data_file_index,
+     off64_t element_data_offset,
+     size64_t element_data_size,
+     uint32_t element_data_flags,
+     uint8_t read_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFVDE_SECTOR_DATA_H ) */
+#endif /* !defined( _LIBFVDE_VOLUME_DATA_HANDLE_H ) */
 

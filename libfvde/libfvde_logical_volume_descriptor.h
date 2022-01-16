@@ -26,6 +26,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
 
 #if defined( __cplusplus )
@@ -36,6 +37,10 @@ typedef struct libfvde_logical_volume_descriptor libfvde_logical_volume_descript
 
 struct libfvde_logical_volume_descriptor
 {
+	/* The object identifier of the corresponding metadata block 0x001a
+	 */
+	uint64_t object_identifier;
+
 	/* The identifier
 	 */
 	uint8_t identifier[ 16 ];
@@ -55,6 +60,22 @@ struct libfvde_logical_volume_descriptor
 	/* The size
 	 */
 	size64_t size;
+
+	/* The object identifier of the corresponding metadata block 0x0305
+	 */
+	uint64_t object_identifier_0x0305;
+
+	/* The block number as defined by metadata block 0x0305
+	 */
+	uint64_t block_number_0x0305;
+
+	/* The number of blocks as defined by metadata block 0x0305
+	 */
+	uint64_t number_of_blocks_0x0305;
+
+	/* The segment descriptors
+	 */
+	libcdata_array_t *segment_descriptors;
 };
 
 int libfvde_logical_volume_descriptor_initialize(
@@ -63,11 +84,6 @@ int libfvde_logical_volume_descriptor_initialize(
 
 int libfvde_logical_volume_descriptor_free(
      libfvde_logical_volume_descriptor_t **logical_volume_descriptor,
-     libcerror_error_t **error );
-
-int libfvde_logical_volume_descriptor_compare(
-     libfvde_logical_volume_descriptor_t *first_logical_volume_descriptor,
-     libfvde_logical_volume_descriptor_t *second_logical_volume_descriptor,
      libcerror_error_t **error );
 
 int libfvde_logical_volume_descriptor_get_identifier(

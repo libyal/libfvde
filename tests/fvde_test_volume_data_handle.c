@@ -1,5 +1,5 @@
 /*
- * Library logical_volume_descriptor type test program
+ * Library volume_data_handle type test program
  *
  * Copyright (C) 2011-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,30 +33,32 @@
 #include "fvde_test_memory.h"
 #include "fvde_test_unused.h"
 
-#include "../libfvde/libfvde_logical_volume_descriptor.h"
+#include "../libfvde/libfvde_io_handle.h"
+#include "../libfvde/libfvde_volume_data_handle.h"
 
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
-/* Tests the libfvde_logical_volume_descriptor_initialize function
+/* Tests the libfvde_volume_data_handle_initialize function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_logical_volume_descriptor_initialize(
+int fvde_test_volume_data_handle_initialize(
      void )
 {
-	libcerror_error_t *error                                       = NULL;
-	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
-	int result                                                     = 0;
+	libcerror_error_t *error                         = NULL;
+	libfvde_io_handle_t *io_handle                   = NULL;
+	libfvde_volume_data_handle_t *volume_data_handle = NULL;
+	int result                                       = 0;
 
 #if defined( HAVE_FVDE_TEST_MEMORY )
-	int number_of_malloc_fail_tests                                = 2;
-	int number_of_memset_fail_tests                                = 1;
-	int test_number                                                = 0;
+	int number_of_malloc_fail_tests                  = 1;
+	int number_of_memset_fail_tests                  = 1;
+	int test_number                                  = 0;
 #endif
 
-	/* Test regular cases
+	/* Initialize test
 	 */
-	result = libfvde_logical_volume_descriptor_initialize(
-	          &logical_volume_descriptor,
+	result = libfvde_io_handle_initialize(
+	          &io_handle,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -65,15 +67,36 @@ int fvde_test_logical_volume_descriptor_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NOT_NULL(
-	 "logical_volume_descriptor",
-	 logical_volume_descriptor );
+	 "io_handle",
+	 io_handle );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	result = libfvde_logical_volume_descriptor_free(
-	          &logical_volume_descriptor,
+	/* Test regular cases
+	 */
+	result = libfvde_volume_data_handle_initialize(
+	          &volume_data_handle,
+	          io_handle,
+	          1024,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "volume_data_handle",
+	 volume_data_handle );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfvde_volume_data_handle_free(
+	          &volume_data_handle,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -82,8 +105,8 @@ int fvde_test_logical_volume_descriptor_initialize(
 	 1 );
 
 	FVDE_TEST_ASSERT_IS_NULL(
-	 "logical_volume_descriptor",
-	 logical_volume_descriptor );
+	 "volume_data_handle",
+	 volume_data_handle );
 
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -91,8 +114,10 @@ int fvde_test_logical_volume_descriptor_initialize(
 
 	/* Test error cases
 	 */
-	result = libfvde_logical_volume_descriptor_initialize(
+	result = libfvde_volume_data_handle_initialize(
 	          NULL,
+	          io_handle,
+	          1024,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -107,13 +132,33 @@ int fvde_test_logical_volume_descriptor_initialize(
 	libcerror_error_free(
 	 &error );
 
-	logical_volume_descriptor = (libfvde_logical_volume_descriptor_t *) 0x12345678UL;
+	volume_data_handle = (libfvde_volume_data_handle_t *) 0x12345678UL;
 
-	result = libfvde_logical_volume_descriptor_initialize(
-	          &logical_volume_descriptor,
+	result = libfvde_volume_data_handle_initialize(
+	          &volume_data_handle,
+	          io_handle,
+	          1024,
 	          &error );
 
-	logical_volume_descriptor = NULL;
+	volume_data_handle = NULL;
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_volume_data_handle_initialize(
+	          &volume_data_handle,
+	          NULL,
+	          1024,
+	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
 	 "result",
@@ -133,22 +178,24 @@ int fvde_test_logical_volume_descriptor_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_logical_volume_descriptor_initialize with malloc failing
+		/* Test libfvde_volume_data_handle_initialize with malloc failing
 		 */
 		fvde_test_malloc_attempts_before_fail = test_number;
 
-		result = libfvde_logical_volume_descriptor_initialize(
-		          &logical_volume_descriptor,
+		result = libfvde_volume_data_handle_initialize(
+		          &volume_data_handle,
+		          io_handle,
+		          1024,
 		          &error );
 
 		if( fvde_test_malloc_attempts_before_fail != -1 )
 		{
 			fvde_test_malloc_attempts_before_fail = -1;
 
-			if( logical_volume_descriptor != NULL )
+			if( volume_data_handle != NULL )
 			{
-				libfvde_logical_volume_descriptor_free(
-				 &logical_volume_descriptor,
+				libfvde_volume_data_handle_free(
+				 &volume_data_handle,
 				 NULL );
 			}
 		}
@@ -160,8 +207,8 @@ int fvde_test_logical_volume_descriptor_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "logical_volume_descriptor",
-			 logical_volume_descriptor );
+			 "volume_data_handle",
+			 volume_data_handle );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -175,22 +222,24 @@ int fvde_test_logical_volume_descriptor_initialize(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfvde_logical_volume_descriptor_initialize with memset failing
+		/* Test libfvde_volume_data_handle_initialize with memset failing
 		 */
 		fvde_test_memset_attempts_before_fail = test_number;
 
-		result = libfvde_logical_volume_descriptor_initialize(
-		          &logical_volume_descriptor,
+		result = libfvde_volume_data_handle_initialize(
+		          &volume_data_handle,
+		          io_handle,
+		          1024,
 		          &error );
 
 		if( fvde_test_memset_attempts_before_fail != -1 )
 		{
 			fvde_test_memset_attempts_before_fail = -1;
 
-			if( logical_volume_descriptor != NULL )
+			if( volume_data_handle != NULL )
 			{
-				libfvde_logical_volume_descriptor_free(
-				 &logical_volume_descriptor,
+				libfvde_volume_data_handle_free(
+				 &volume_data_handle,
 				 NULL );
 			}
 		}
@@ -202,8 +251,8 @@ int fvde_test_logical_volume_descriptor_initialize(
 			 -1 );
 
 			FVDE_TEST_ASSERT_IS_NULL(
-			 "logical_volume_descriptor",
-			 logical_volume_descriptor );
+			 "volume_data_handle",
+			 volume_data_handle );
 
 			FVDE_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -215,6 +264,25 @@ int fvde_test_logical_volume_descriptor_initialize(
 	}
 #endif /* defined( HAVE_FVDE_TEST_MEMORY ) */
 
+	/* Clean up
+	 */
+	result = libfvde_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	return( 1 );
 
 on_error:
@@ -223,19 +291,25 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
-	if( logical_volume_descriptor != NULL )
+	if( volume_data_handle != NULL )
 	{
-		libfvde_logical_volume_descriptor_free(
-		 &logical_volume_descriptor,
+		libfvde_volume_data_handle_free(
+		 &volume_data_handle,
+		 NULL );
+	}
+	if( io_handle != NULL )
+	{
+		libfvde_io_handle_free(
+		 &io_handle,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the libfvde_logical_volume_descriptor_free function
+/* Tests the libfvde_volume_data_handle_free function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_logical_volume_descriptor_free(
+int fvde_test_volume_data_handle_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -243,7 +317,7 @@ int fvde_test_logical_volume_descriptor_free(
 
 	/* Test error cases
 	 */
-	result = libfvde_logical_volume_descriptor_free(
+	result = libfvde_volume_data_handle_free(
 	          NULL,
 	          &error );
 
@@ -290,12 +364,12 @@ int main(
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 	FVDE_TEST_RUN(
-	 "libfvde_logical_volume_descriptor_initialize",
-	 fvde_test_logical_volume_descriptor_initialize );
+	 "libfvde_volume_data_handle_initialize",
+	 fvde_test_volume_data_handle_initialize );
 
 	FVDE_TEST_RUN(
-	 "libfvde_logical_volume_descriptor_free",
-	 fvde_test_logical_volume_descriptor_free );
+	 "libfvde_volume_data_handle_free",
+	 fvde_test_volume_data_handle_free );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 

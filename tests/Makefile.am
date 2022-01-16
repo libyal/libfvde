@@ -66,6 +66,7 @@ check_PROGRAMS = \
 	fvde_test_segment_descriptor \
 	fvde_test_support \
 	fvde_test_volume \
+	fvde_test_volume_data_handle \
 	fvde_test_volume_group \
 	fvde_test_volume_header
 
@@ -311,6 +312,18 @@ fvde_test_volume_LDADD = \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	@PTHREAD_LIBADD@
+
+fvde_test_volume_data_handle_SOURCES = \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h \
+	fvde_test_volume_data_handle.c
+
+fvde_test_volume_data_handle_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
 
 fvde_test_volume_group_SOURCES = \
 	fvde_test_libcerror.h \

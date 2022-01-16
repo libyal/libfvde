@@ -28,6 +28,7 @@
 #include "libfvde_libcerror.h"
 #include "libfvde_libuna.h"
 #include "libfvde_logical_volume_descriptor.h"
+#include "libfvde_segment_descriptor.h"
 
 /* Creates logical volume descriptor
  * Make sure the value logical_volume_descriptor is referencing, is set to NULL
@@ -94,6 +95,20 @@ int libfvde_logical_volume_descriptor_initialize(
 
 		return( -1 );
 	}
+	if( libcdata_array_initialize(
+	     &( ( *logical_volume_descriptor )->segment_descriptors ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create segment descriptors array.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
@@ -115,6 +130,7 @@ int libfvde_logical_volume_descriptor_free(
      libcerror_error_t **error )
 {
 	static char *function = "libfvde_logical_volume_descriptor_free";
+	int result            = 1;
 
 	if( logical_volume_descriptor == NULL )
 	{
@@ -134,61 +150,26 @@ int libfvde_logical_volume_descriptor_free(
 			memory_free(
 			 ( *logical_volume_descriptor )->name );
 		}
+		if( libcdata_array_free(
+		     &( ( *logical_volume_descriptor )->segment_descriptors ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_segment_descriptor_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free segment descriptors array.",
+			 function );
+
+			result = -1;
+		}
 		memory_free(
 		 *logical_volume_descriptor );
 
 		*logical_volume_descriptor = NULL;
 	}
-	return( 1 );
-}
-
-/* Compares two logical volume descriptors based on their identifier
- * Returns LIBCDATA_COMPARE_LESS, LIBCDATA_COMPARE_EQUAL, LIBCDATA_COMPARE_GREATER if successful or -1 on error
- */
-int libfvde_logical_volume_descriptor_compare(
-     libfvde_logical_volume_descriptor_t *first_logical_volume_descriptor,
-     libfvde_logical_volume_descriptor_t *second_logical_volume_descriptor,
-     libcerror_error_t **error )
-{
-	static char *function = "libfvde_logical_volume_descriptor_compare";
-	int compare_result    = 0;
-
-	if( first_logical_volume_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid first logical volume descriptor.",
-		 function );
-
-		return( -1 );
-	}
-	if( second_logical_volume_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid second logical volume descriptor.",
-		 function );
-
-		return( -1 );
-	}
-	compare_result = memory_compare(
-	                  first_logical_volume_descriptor->identifier,
-	                  second_logical_volume_descriptor->identifier,
-	                  16 );
-
-	if( compare_result < 0 )
-	{
-		return( LIBCDATA_COMPARE_LESS );
-	}
-	else if( compare_result > 0 )
-	{
-		return( LIBCDATA_COMPARE_GREATER );
-	}
-	return( LIBCDATA_COMPARE_EQUAL );
+	return( result );
 }
 
 /* Retrieves the identifier

@@ -222,17 +222,16 @@ int libfvde_sector_data_free(
  */
 int libfvde_sector_data_read(
      libfvde_sector_data_t *sector_data,
-     libfvde_io_handle_t *io_handle,
+     libcaes_tweaked_context_t *xts_context,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
-     libcaes_tweaked_context_t *xts_context,
+     uint64_t block_number,
+     uint8_t is_encrypted,
      libcerror_error_t **error )
 {
 	uint8_t tweak_value[ 16 ];
 
 	static char *function = "libfvde_sector_data_read";
-	off64_t block_offset  = 0;
-	uint64_t block_number = 0;
 	ssize_t read_count    = 0;
 
 	if( sector_data == NULL )
@@ -268,17 +267,6 @@ int libfvde_sector_data_read(
 
 		return( -1 );
 	}
-	if( io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid IO handle.",
-		 function );
-
-		return( -1 );
-	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -289,7 +277,7 @@ int libfvde_sector_data_read(
 		 file_offset );
 	}
 #endif
-	if( io_handle->is_encrypted != 0 )
+	if( is_encrypted != 0 )
 	{
 		read_count = libbfio_handle_read_buffer_at_offset(
 			      file_io_handle,
@@ -323,10 +311,6 @@ int libfvde_sector_data_read(
 			 0 );
 		}
 #endif
-		block_offset = file_offset - io_handle->logical_volume_offset;
-
-		block_number = (uint64_t) ( block_offset / io_handle->bytes_per_sector );
-
 		if( memory_set(
 		     tweak_value,
 		     0,

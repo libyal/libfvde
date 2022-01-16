@@ -33,6 +33,7 @@
 #include "fvde_test_memory.h"
 #include "fvde_test_unused.h"
 
+#include "../libfvde/libfvde_io_handle.h"
 #include "../libfvde/libfvde_volume_group.h"
 #include "../libfvde/libfvde_volume_header.h"
 
@@ -45,6 +46,7 @@ int fvde_test_volume_group_initialize(
      void )
 {
 	libcerror_error_t *error               = NULL;
+	libfvde_io_handle_t *io_handle         = NULL;
 	libfvde_volume_group_t *volume_group   = NULL;
 	libfvde_volume_header_t *volume_header = NULL;
 	int result                             = 0;
@@ -57,6 +59,23 @@ int fvde_test_volume_group_initialize(
 
 	/* Initialize test
 	 */
+	result = libfvde_io_handle_initialize(
+	          &io_handle,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = libfvde_volume_header_initialize(
 	          &volume_header,
 	          &error );
@@ -78,7 +97,10 @@ int fvde_test_volume_group_initialize(
 	 */
 	result = libfvde_volume_group_initialize(
 	          &volume_group,
+	          io_handle,
+	          NULL,
 	          volume_header,
+	          NULL,
 	          NULL,
 	          NULL,
 	          &error );
@@ -117,7 +139,10 @@ int fvde_test_volume_group_initialize(
 	 */
 	result = libfvde_volume_group_initialize(
 	          NULL,
+	          io_handle,
+	          NULL,
 	          volume_header,
+	          NULL,
 	          NULL,
 	          NULL,
 	          &error );
@@ -138,7 +163,10 @@ int fvde_test_volume_group_initialize(
 
 	result = libfvde_volume_group_initialize(
 	          &volume_group,
+	          io_handle,
+	          NULL,
 	          volume_header,
+	          NULL,
 	          NULL,
 	          NULL,
 	          &error );
@@ -159,6 +187,31 @@ int fvde_test_volume_group_initialize(
 
 	result = libfvde_volume_group_initialize(
 	          &volume_group,
+	          NULL,
+	          NULL,
+	          volume_header,
+	          NULL,
+	          NULL,
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_volume_group_initialize(
+	          &volume_group,
+	          io_handle,
+	          NULL,
+	          NULL,
 	          NULL,
 	          NULL,
 	          NULL,
@@ -188,7 +241,10 @@ int fvde_test_volume_group_initialize(
 
 		result = libfvde_volume_group_initialize(
 		          &volume_group,
+		          io_handle,
+		          NULL,
 		          volume_header,
+		          NULL,
 		          NULL,
 		          NULL,
 		          &error );
@@ -233,7 +289,10 @@ int fvde_test_volume_group_initialize(
 
 		result = libfvde_volume_group_initialize(
 		          &volume_group,
+		          io_handle,
+		          NULL,
 		          volume_header,
+		          NULL,
 		          NULL,
 		          NULL,
 		          &error );
@@ -289,6 +348,23 @@ int fvde_test_volume_group_initialize(
 	 "error",
 	 error );
 
+	result = libfvde_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	return( 1 );
 
 on_error:
@@ -297,16 +373,22 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
+	if( volume_group != NULL )
+	{
+		libfvde_volume_group_free(
+		 &volume_group,
+		 NULL );
+	}
 	if( volume_header != NULL )
 	{
 		libfvde_volume_header_free(
 		 &volume_header,
 		 NULL );
 	}
-	if( volume_group != NULL )
+	if( io_handle != NULL )
 	{
-		libfvde_volume_group_free(
-		 &volume_group,
+		libfvde_io_handle_free(
+		 &io_handle,
 		 NULL );
 	}
 	return( 0 );
