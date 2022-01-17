@@ -36,6 +36,7 @@
 #include "libfvde_libuna.h"
 #include "libfvde_logical_volume.h"
 #include "libfvde_logical_volume_descriptor.h"
+#include "libfvde_password.h"
 #include "libfvde_sector_data.h"
 #include "libfvde_types.h"
 #include "libfvde_volume_data_handle.h"
@@ -1296,7 +1297,6 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
 	size_t buffer_offset               = 0;
 	size_t read_size                   = 0;
 	size_t sector_data_offset          = 0;
-	ssize_t total_read_count           = 0;
 
 	if( internal_logical_volume == NULL )
 	{
@@ -2554,6 +2554,7 @@ int libfvde_logical_volume_set_utf8_password(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_set_utf8_password";
+	int result                                                 = 1;
 
 	if( logical_volume == NULL )
 	{
@@ -2597,7 +2598,7 @@ int libfvde_logical_volume_set_utf8_password(
 			 "%s: unable to clear user password.",
 			 function );
 
-			return( -1 );
+			result = -1;
 		}
 		memory_free(
 		 internal_logical_volume->user_password );
@@ -2605,78 +2606,34 @@ int libfvde_logical_volume_set_utf8_password(
 		internal_logical_volume->user_password      = NULL;
 		internal_logical_volume->user_password_size = 0;
 	}
-	if( libuna_byte_stream_size_from_utf8(
-	     utf8_string,
-	     utf8_string_length,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     &( internal_logical_volume->user_password_size ),
-	     error ) != 1 )
+	if( result == 1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set password size.",
-		 function );
+		if( libfvde_password_copy_from_utf8_string(
+		     &( internal_logical_volume->user_password ),
+		     &( internal_logical_volume->user_password_size ),
+		     utf8_string,
+		     utf8_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set user password.",
+			 function );
 
-		goto on_error;
-	}
-	if( ( internal_logical_volume->user_password_size == 0 )
-	 || ( internal_logical_volume->user_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid user password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->user_password_size += 1;
-
-	internal_logical_volume->user_password = (uint8_t *) memory_allocate(
-	                                                      sizeof( uint8_t ) * internal_logical_volume->user_password_size );
-
-	if( internal_logical_volume->user_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create user password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf8(
-	     internal_logical_volume->user_password,
-	     internal_logical_volume->user_password_size,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     utf8_string,
-	     utf8_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy user password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->user_password[ internal_logical_volume->user_password_size - 1 ] = 0;
-
+			result = -1;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: user password: %s\n",
-		 function,
-		 internal_logical_volume->user_password );
-	}
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: user password: %s\n",
+			 function,
+			 internal_logical_volume->user_password );
+		}
 #endif
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_logical_volume->read_write_lock,
@@ -2692,28 +2649,7 @@ int libfvde_logical_volume_set_utf8_password(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-	if( internal_logical_volume->user_password != NULL )
-	{
-		memory_set(
-		 internal_logical_volume->user_password,
-		 0,
-		 internal_logical_volume->user_password_size );
-		memory_free(
-		 internal_logical_volume->user_password );
-
-		internal_logical_volume->user_password = NULL;
-	}
-	internal_logical_volume->user_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_logical_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
 /* Sets an UTF-16 formatted password
@@ -2728,6 +2664,7 @@ int libfvde_logical_volume_set_utf16_password(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_set_utf16_password";
+	int result                                                 = 1;
 
 	if( logical_volume == NULL )
 	{
@@ -2771,7 +2708,7 @@ int libfvde_logical_volume_set_utf16_password(
 			 "%s: unable to clear user password.",
 			 function );
 
-			return( -1 );
+			result = -1;
 		}
 		memory_free(
 		 internal_logical_volume->user_password );
@@ -2779,78 +2716,34 @@ int libfvde_logical_volume_set_utf16_password(
 		internal_logical_volume->user_password      = NULL;
 		internal_logical_volume->user_password_size = 0;
 	}
-	if( libuna_byte_stream_size_from_utf16(
-	     utf16_string,
-	     utf16_string_length,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     &( internal_logical_volume->user_password_size ),
-	     error ) != 1 )
+	if( result == 1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set password length.",
-		 function );
+		if( libfvde_password_copy_from_utf16_string(
+		     &( internal_logical_volume->user_password ),
+		     &( internal_logical_volume->user_password_size ),
+		     utf16_string,
+		     utf16_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set user password.",
+			 function );
 
-		goto on_error;
-	}
-	if( ( internal_logical_volume->user_password_size == 0 )
-	 || ( internal_logical_volume->user_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid user password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->user_password_size += 1;
-
-	internal_logical_volume->user_password = (uint8_t *) memory_allocate(
-	                                                      sizeof( uint8_t ) * internal_logical_volume->user_password_size );
-
-	if( internal_logical_volume->user_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create user password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf16(
-	     internal_logical_volume->user_password,
-	     internal_logical_volume->user_password_size,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     utf16_string,
-	     utf16_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy user password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->user_password[ internal_logical_volume->user_password_size - 1 ] = 0;
-
+			result = -1;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: user password: %s\n",
-		 function,
-		 internal_logical_volume->user_password );
-	}
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: user password: %s\n",
+			 function,
+			 internal_logical_volume->user_password );
+		}
 #endif
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_logical_volume->read_write_lock,
@@ -2866,28 +2759,7 @@ int libfvde_logical_volume_set_utf16_password(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-	if( internal_logical_volume->user_password != NULL )
-	{
-		memory_set(
-		 internal_logical_volume->user_password,
-		 0,
-		 internal_logical_volume->user_password_size );
-		memory_free(
-		 internal_logical_volume->user_password );
-
-		internal_logical_volume->user_password = NULL;
-	}
-	internal_logical_volume->user_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_logical_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
 /* Sets an UTF-8 formatted recovery password
@@ -2902,6 +2774,7 @@ int libfvde_logical_volume_set_utf8_recovery_password(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_set_utf8_recovery_password";
+	int result                                                 = 1;
 
 	if( logical_volume == NULL )
 	{
@@ -2945,7 +2818,7 @@ int libfvde_logical_volume_set_utf8_recovery_password(
 			 "%s: unable to clear recovery password.",
 			 function );
 
-			return( -1 );
+			result = -1;
 		}
 		memory_free(
 		 internal_logical_volume->recovery_password );
@@ -2953,78 +2826,34 @@ int libfvde_logical_volume_set_utf8_recovery_password(
 		internal_logical_volume->recovery_password      = NULL;
 		internal_logical_volume->recovery_password_size = 0;
 	}
-	if( libuna_byte_stream_size_from_utf8(
-	     utf8_string,
-	     utf8_string_length,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     &( internal_logical_volume->recovery_password_size ),
-	     error ) != 1 )
+	if( result == 1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set recovery pasword size.",
-		 function );
+		if( libfvde_password_copy_from_utf8_string(
+		     &( internal_logical_volume->recovery_password ),
+		     &( internal_logical_volume->recovery_password_size ),
+		     utf8_string,
+		     utf8_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set recovery password.",
+			 function );
 
-		goto on_error;
-	}
-	if( ( internal_logical_volume->recovery_password_size == 0 )
-	 || ( internal_logical_volume->recovery_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid recovery password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->recovery_password_size += 1;
-
-	internal_logical_volume->recovery_password = (uint8_t *) memory_allocate(
-	                                                          sizeof( uint8_t ) * internal_logical_volume->recovery_password_size );
-
-	if( internal_logical_volume->recovery_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf8(
-	     internal_logical_volume->recovery_password,
-	     internal_logical_volume->recovery_password_size,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     utf8_string,
-	     utf8_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->recovery_password[ internal_logical_volume->recovery_password_size - 1 ] = 0;
-
+			result = -1;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: recovery password: %s\n",
-		 function,
-		 internal_logical_volume->recovery_password );
-	}
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: recovery password: %s\n",
+			 function,
+			 internal_logical_volume->recovery_password );
+		}
 #endif
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_logical_volume->read_write_lock,
@@ -3040,28 +2869,7 @@ int libfvde_logical_volume_set_utf8_recovery_password(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-	if( internal_logical_volume->recovery_password != NULL )
-	{
-		memory_set(
-		 internal_logical_volume->recovery_password,
-		 0,
-		 internal_logical_volume->recovery_password_size );
-		memory_free(
-		 internal_logical_volume->recovery_password );
-
-		internal_logical_volume->recovery_password = NULL;
-	}
-	internal_logical_volume->recovery_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_logical_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
 /* Sets an UTF-16 formatted recovery password
@@ -3076,6 +2884,7 @@ int libfvde_logical_volume_set_utf16_recovery_password(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_set_utf16_recovery_password";
+	int result                                                 = 1;
 
 	if( logical_volume == NULL )
 	{
@@ -3119,7 +2928,7 @@ int libfvde_logical_volume_set_utf16_recovery_password(
 			 "%s: unable to clear recovery password.",
 			 function );
 
-			return( -1 );
+			result = -1;
 		}
 		memory_free(
 		 internal_logical_volume->recovery_password );
@@ -3127,78 +2936,34 @@ int libfvde_logical_volume_set_utf16_recovery_password(
 		internal_logical_volume->recovery_password      = NULL;
 		internal_logical_volume->recovery_password_size = 0;
 	}
-	if( libuna_byte_stream_size_from_utf16(
-	     utf16_string,
-	     utf16_string_length,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     &(internal_logical_volume->recovery_password_size ),
-	     error ) != 1 )
+	if( result == 1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set recovery size.",
-		 function );
+		if( libfvde_password_copy_from_utf16_string(
+		     &( internal_logical_volume->recovery_password ),
+		     &( internal_logical_volume->recovery_password_size ),
+		     utf16_string,
+		     utf16_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set recovery password.",
+			 function );
 
-		goto on_error;
-	}
-	if( ( internal_logical_volume->recovery_password_size == 0 )
-	 || ( internal_logical_volume->recovery_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid recovery password size value out of bounds.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->recovery_password_size += 1;
-
-	internal_logical_volume->recovery_password = (uint8_t *) memory_allocate(
-	                                                          sizeof( uint8_t ) * internal_logical_volume->recovery_password_size );
-
-	if( internal_logical_volume->recovery_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to create recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	if( libuna_byte_stream_copy_from_utf16(
-	     internal_logical_volume->recovery_password,
-	     internal_logical_volume->recovery_password_size,
-	     LIBUNA_CODEPAGE_US_ASCII,
-	     utf16_string,
-	     utf16_string_length,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to copy recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	internal_logical_volume->recovery_password[ internal_logical_volume->recovery_password_size - 1 ] = 0;
-
+			result = -1;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: recovery password: %s\n",
-		 function,
-		 internal_logical_volume->recovery_password );
-	}
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: recovery password: %s\n",
+			 function,
+			 internal_logical_volume->recovery_password );
+		}
 #endif
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_logical_volume->read_write_lock,
@@ -3214,27 +2979,6 @@ int libfvde_logical_volume_set_utf16_recovery_password(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-	if( internal_logical_volume->recovery_password != NULL )
-	{
-		memory_set(
-		 internal_logical_volume->recovery_password,
-		 0,
-		 internal_logical_volume->recovery_password_size );
-		memory_free(
-		 internal_logical_volume->recovery_password );
-
-		internal_logical_volume->recovery_password = NULL;
-	}
-	internal_logical_volume->recovery_password_size = 0;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_logical_volume->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 

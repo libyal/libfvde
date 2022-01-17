@@ -40,7 +40,6 @@
 #include "libfvde_logical_volume.h"
 #include "libfvde_logical_volume_descriptor.h"
 #include "libfvde_metadata.h"
-#include "libfvde_password.h"
 #include "libfvde_volume.h"
 #include "libfvde_volume_group.h"
 #include "libfvde_volume_header.h"
@@ -222,22 +221,6 @@ int libfvde_volume_free(
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 				 "%s: unable to free encrypted root plist.",
-				 function );
-
-				result = -1;
-			}
-		}
-		if( internal_volume->logical_volume != NULL )
-		{
-			if( libfvde_logical_volume_free(
-			     &( internal_volume->logical_volume ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free logical volume.",
 				 function );
 
 				result = -1;
@@ -1113,6 +1096,66 @@ int libfvde_volume_close(
 			result = -1;
 		}
 	}
+	if( internal_volume->legacy_logical_volume != NULL )
+	{
+		if( libfvde_logical_volume_free(
+		     &( internal_volume->legacy_logical_volume ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free logical volume.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_volume->legacy_user_password != NULL )
+	{
+		if( memory_set(
+		     internal_volume->legacy_user_password,
+		     0,
+		     internal_volume->legacy_user_password_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear user password.",
+			 function );
+
+			result = -1;
+		}
+		memory_free(
+		 internal_volume->legacy_user_password );
+
+		internal_volume->legacy_user_password      = NULL;
+		internal_volume->legacy_user_password_size = 0;
+	}
+	if( internal_volume->legacy_recovery_password != NULL )
+	{
+		if( memory_set(
+		     internal_volume->legacy_recovery_password,
+		     0,
+		     internal_volume->legacy_recovery_password_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear recovery password.",
+			 function );
+
+			result = -1;
+		}
+		memory_free(
+		 internal_volume->legacy_recovery_password );
+
+		internal_volume->legacy_recovery_password      = NULL;
+		internal_volume->legacy_recovery_password_size = 0;
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -1607,7 +1650,7 @@ int libfvde_internal_volume_open_read(
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
 		if( libfvde_logical_volume_initialize(
-		      &( internal_volume->logical_volume ),
+		      &( internal_volume->legacy_logical_volume ),
 		      internal_volume->io_handle,
 		      file_io_handle,
 		      logical_volume_descriptor,
@@ -1624,8 +1667,44 @@ int libfvde_internal_volume_open_read(
 
 			goto on_error;
 		}
+		if( internal_volume->legacy_user_password != NULL )
+		{
+			if( libfvde_logical_volume_set_utf8_password(
+			     internal_volume->legacy_logical_volume,
+			     internal_volume->legacy_user_password,
+			     internal_volume->legacy_user_password_size - 1,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable set user password in logical volume.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		if( internal_volume->legacy_recovery_password != NULL )
+		{
+			if( libfvde_logical_volume_set_utf8_password(
+			     internal_volume->legacy_logical_volume,
+			     internal_volume->legacy_recovery_password,
+			     internal_volume->legacy_recovery_password_size - 1,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable set recovery password in logical volume.",
+				 function );
+
+				goto on_error;
+			}
+		}
 		if( libfvde_internal_logical_volume_open_read(
-		     (libfvde_internal_logical_volume_t *) internal_volume->logical_volume,
+		     (libfvde_internal_logical_volume_t *) internal_volume->legacy_logical_volume,
 		     file_io_handle,
 		     error ) != 1 )
 		{
@@ -1649,10 +1728,10 @@ int libfvde_internal_volume_open_read(
 	return( 1 );
 
 on_error:
-	if( internal_volume->logical_volume != NULL )
+	if( internal_volume->legacy_logical_volume != NULL )
 	{
 		libfvde_logical_volume_free(
-		 &( internal_volume->logical_volume ),
+		 &( internal_volume->legacy_logical_volume ),
 		 NULL );
 	}
 	if( internal_volume->secondary_encrypted_metadata != NULL )

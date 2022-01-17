@@ -21,12 +21,16 @@
  */
 
 #include <common.h>
+#include <memory.h>
 #include <types.h>
 
 #include "libfvde_debug.h"
 #include "libfvde_io_handle.h"
-#include "libfvde_volume.h"
+#include "libfvde_libcerror.h"
+#include "libfvde_libcnotify.h"
+#include "libfvde_password.h"
 #include "libfvde_types.h"
+#include "libfvde_volume.h"
 
 /* Unlocks the volume
  * Returns 1 if the volume is unlocked, 0 if not or -1 on error
@@ -68,7 +72,7 @@ int libfvde_volume_unlock(
 	}
 #endif
 	result = libfvde_logical_volume_unlock(
-	          internal_volume->logical_volume,
+	          internal_volume->legacy_logical_volume,
 	          error );
 
 	if( result == -1 )
@@ -140,7 +144,7 @@ int libfvde_volume_is_locked(
 	}
 #endif
 	result = libfvde_logical_volume_is_locked(
-	          internal_volume->logical_volume,
+	          internal_volume->legacy_logical_volume,
 	          error );
 
 	if( result == -1 )
@@ -214,7 +218,7 @@ ssize_t libfvde_volume_read_buffer(
 	}
 #endif
 	read_count = libfvde_logical_volume_read_buffer(
-		      internal_volume->logical_volume,
+		      internal_volume->legacy_logical_volume,
 		      buffer,
 		      buffer_size,
 		      error );
@@ -291,7 +295,7 @@ ssize_t libfvde_volume_read_buffer_at_offset(
 	}
 #endif
 	read_count = libfvde_logical_volume_read_buffer_at_offset(
-		      internal_volume->logical_volume,
+		      internal_volume->legacy_logical_volume,
 		      buffer,
 		      buffer_size,
 		      offset,
@@ -367,7 +371,7 @@ off64_t libfvde_volume_seek_offset(
 	}
 #endif
 	offset = libfvde_logical_volume_seek_offset(
-	          internal_volume->logical_volume,
+	          internal_volume->legacy_logical_volume,
 	          offset,
 	          whence,
 	          error );
@@ -442,7 +446,7 @@ int libfvde_volume_get_offset(
 	}
 #endif
 	if( libfvde_logical_volume_get_offset(
-	     internal_volume->logical_volume,
+	     internal_volume->legacy_logical_volume,
 	     offset,
 	     error ) == -1 )
 	{
@@ -514,7 +518,7 @@ int libfvde_volume_get_size(
 	}
 #endif
 	if( libfvde_logical_volume_get_size(
-	     internal_volume->logical_volume,
+	     internal_volume->legacy_logical_volume,
 	     size,
 	     error ) == -1 )
 	{
@@ -961,7 +965,7 @@ int libfvde_volume_get_logical_volume_size(
 	}
 #endif
 	if( libfvde_logical_volume_get_size(
-	     internal_volume->logical_volume,
+	     internal_volume->legacy_logical_volume,
 	     size,
 	     error ) == -1 )
 	{
@@ -1035,7 +1039,7 @@ int libfvde_volume_get_logical_volume_identifier(
 	}
 #endif
 	if( libfvde_logical_volume_get_identifier(
-	     internal_volume->logical_volume,
+	     internal_volume->legacy_logical_volume,
 	     uuid_data,
 	     uuid_data_size,
 	     error ) == -1 )
@@ -1110,7 +1114,7 @@ int libfvde_volume_set_keys(
 	}
 #endif
 	if( libfvde_logical_volume_set_keys(
-	     internal_volume->logical_volume,
+	     internal_volume->legacy_logical_volume,
 	     volume_master_key,
 	     volume_master_key_size,
 	     error ) == -1 )
@@ -1143,7 +1147,7 @@ int libfvde_volume_set_keys(
 }
 
 /* Sets an UTF-8 formatted password
- * This function needs to be used before one of the open or unlock functions
+ * This function needs to be used before the unlock function
  * Returns 1 if successful, 0 if password is invalid or -1 on error
  */
 int libfvde_volume_set_utf8_password(
@@ -1184,20 +1188,55 @@ int libfvde_volume_set_utf8_password(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_set_utf8_password(
-	     internal_volume->logical_volume,
-	     utf8_string,
-	     utf8_string_length,
-	     error ) == -1 )
+	if( internal_volume->legacy_user_password != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set UTF-8 formatted password in logical volume.",
-		 function );
+		if( memory_set(
+		     internal_volume->legacy_user_password,
+		     0,
+		     internal_volume->legacy_user_password_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear user password.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
+		memory_free(
+		 internal_volume->legacy_user_password );
+
+		internal_volume->legacy_user_password      = NULL;
+		internal_volume->legacy_user_password_size = 0;
+	}
+	if( result == 1 )
+	{
+		if( libfvde_password_copy_from_utf8_string(
+		     &( internal_volume->legacy_user_password ),
+		     &( internal_volume->legacy_user_password_size ),
+		     utf8_string,
+		     utf8_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set user password.",
+			 function );
+
+			result = -1;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: user password: %s\n",
+			 function,
+			 internal_volume->legacy_user_password );
+		}
+#endif
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -1218,7 +1257,7 @@ int libfvde_volume_set_utf8_password(
 }
 
 /* Sets an UTF-16 formatted password
- * This function needs to be used before one of the open or unlock functions
+ * This function needs to be used before the unlock function
  * Returns 1 if successful, 0 if password is invalid or -1 on error
  */
 int libfvde_volume_set_utf16_password(
@@ -1259,20 +1298,55 @@ int libfvde_volume_set_utf16_password(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_set_utf16_password(
-	     internal_volume->logical_volume,
-	     utf16_string,
-	     utf16_string_length,
-	     error ) == -1 )
+	if( internal_volume->legacy_user_password != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set UTF-16 formatted password in logical volume.",
-		 function );
+		if( memory_set(
+		     internal_volume->legacy_user_password,
+		     0,
+		     internal_volume->legacy_user_password_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear user password.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
+		memory_free(
+		 internal_volume->legacy_user_password );
+
+		internal_volume->legacy_user_password      = NULL;
+		internal_volume->legacy_user_password_size = 0;
+	}
+	if( result == 1 )
+	{
+		if( libfvde_password_copy_from_utf16_string(
+		     &( internal_volume->legacy_user_password ),
+		     &( internal_volume->legacy_user_password_size ),
+		     utf16_string,
+		     utf16_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set user password.",
+			 function );
+
+			result = -1;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: user password: %s\n",
+			 function,
+			 internal_volume->legacy_user_password );
+		}
+#endif
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -1293,7 +1367,7 @@ int libfvde_volume_set_utf16_password(
 }
 
 /* Sets an UTF-8 formatted recovery password
- * This function needs to be used before one of the open or unlock functions
+ * This function needs to be used before the unlock function
  * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
  */
 int libfvde_volume_set_utf8_recovery_password(
@@ -1334,20 +1408,55 @@ int libfvde_volume_set_utf8_recovery_password(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_set_utf8_recovery_password(
-	     internal_volume->logical_volume,
-	     utf8_string,
-	     utf8_string_length,
-	     error ) == -1 )
+	if( internal_volume->legacy_recovery_password != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set UTF-8 formatted recovery password in logical volume.",
-		 function );
+		if( memory_set(
+		     internal_volume->legacy_recovery_password,
+		     0,
+		     internal_volume->legacy_recovery_password_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear recovery password.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
+		memory_free(
+		 internal_volume->legacy_recovery_password );
+
+		internal_volume->legacy_recovery_password      = NULL;
+		internal_volume->legacy_recovery_password_size = 0;
+	}
+	if( result == 1 )
+	{
+		if( libfvde_password_copy_from_utf8_string(
+		     &( internal_volume->legacy_recovery_password ),
+		     &( internal_volume->legacy_recovery_password_size ),
+		     utf8_string,
+		     utf8_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set recovery password.",
+			 function );
+
+			result = -1;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: recovery password: %s\n",
+			 function,
+			 internal_volume->legacy_recovery_password );
+		}
+#endif
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -1368,7 +1477,7 @@ int libfvde_volume_set_utf8_recovery_password(
 }
 
 /* Sets an UTF-16 formatted recovery password
- * This function needs to be used before one of the open or unlock functions
+ * This function needs to be used before the unlock function
  * Returns 1 if successful, 0 if recovery password is invalid or -1 on error
  */
 int libfvde_volume_set_utf16_recovery_password(
@@ -1409,20 +1518,55 @@ int libfvde_volume_set_utf16_recovery_password(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_set_utf16_recovery_password(
-	     internal_volume->logical_volume,
-	     utf16_string,
-	     utf16_string_length,
-	     error ) == -1 )
+	if( internal_volume->legacy_recovery_password != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set UTF-16 formatted recovery password in logical volume.",
-		 function );
+		if( memory_set(
+		     internal_volume->legacy_recovery_password,
+		     0,
+		     internal_volume->legacy_recovery_password_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear recovery password.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
+		memory_free(
+		 internal_volume->legacy_recovery_password );
+
+		internal_volume->legacy_recovery_password      = NULL;
+		internal_volume->legacy_recovery_password_size = 0;
+	}
+	if( result == 1 )
+	{
+		if( libfvde_password_copy_from_utf16_string(
+		     &( internal_volume->legacy_recovery_password ),
+		     &( internal_volume->legacy_recovery_password_size ),
+		     utf16_string,
+		     utf16_string_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set recovery password.",
+			 function );
+
+			result = -1;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: recovery password: %s\n",
+			 function,
+			 internal_volume->legacy_recovery_password );
+		}
+#endif
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(

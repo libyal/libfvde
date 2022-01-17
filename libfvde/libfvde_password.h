@@ -42,6 +42,20 @@ int libfvde_password_pbkdf2(
      size_t output_data_size,
      libcerror_error_t **error );
 
+int libfvde_password_copy_from_utf8_string(
+     uint8_t **password,
+     size_t *password_size,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libcerror_error_t **error );
+
+int libfvde_password_copy_from_utf16_string(
+     uint8_t **password,
+     size_t *password_size,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

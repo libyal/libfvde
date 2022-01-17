@@ -97,7 +97,23 @@ struct libfvde_internal_volume
 
 	/* Logical volume for backwards compatibility
 	 */
-	libfvde_logical_volume_t *logical_volume;
+	libfvde_logical_volume_t *legacy_logical_volume;
+
+	/* The user password for backwards compatibility
+	 */
+	uint8_t *legacy_user_password;
+
+        /* User password size for backwards compatibility
+	 */
+	size_t legacy_user_password_size;
+
+	/* The recovery password for backwards compatibility
+	 */
+	uint8_t *legacy_recovery_password;
+
+        /* Recovery password size for backwards compatibility
+	 */
+	size_t legacy_recovery_password_size;
 
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	/* The read/write lock

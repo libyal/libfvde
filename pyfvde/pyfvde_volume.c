@@ -40,6 +40,7 @@
 #include "pyfvde_python.h"
 #include "pyfvde_unused.h"
 #include "pyfvde_volume.h"
+#include "pyfvde_volume_group.h"
 
 #if !defined( LIBFVDE_HAVE_BFIO )
 
@@ -178,6 +179,15 @@ PyMethodDef pyfvde_volume_object_methods[] = {
 	  "read_encrypted_root_plist(filename) -> None\n"
 	  "\n"
 	  "Reads the EncryptedRoot.plist from a file." },
+
+	/* Functions to access the volume group */
+
+	{ "get_volume_group",
+	  (PyCFunction) pyfvde_volume_get_volume_group,
+	  METH_NOARGS,
+	  "get_volume_group() -> Object\n"
+	  "\n"
+	  "Retrieves the volume group." },
 
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
@@ -892,6 +902,13 @@ PyObject *pyfvde_volume_is_locked(
 
 	PYFVDE_UNREFERENCED_PARAMETER( arguments )
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: is_locked",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -951,6 +968,13 @@ PyObject *pyfvde_volume_read_buffer(
 	ssize_t read_count          = 0;
 	int read_size               = -1;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: read_buffer",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1067,6 +1091,13 @@ PyObject *pyfvde_volume_read_buffer_at_offset(
 	ssize_t read_count          = 0;
 	int read_size               = 0;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: read_buffer_at_offset",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1193,6 +1224,13 @@ PyObject *pyfvde_volume_seek_offset(
 	off64_t offset              = 0;
 	int whence                  = 0;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: seek_offset",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1256,6 +1294,13 @@ PyObject *pyfvde_volume_get_offset(
 
 	PYFVDE_UNREFERENCED_PARAMETER( arguments )
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: get_offset",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1308,6 +1353,13 @@ PyObject *pyfvde_volume_get_size(
 
 	PYFVDE_UNREFERENCED_PARAMETER( arguments )
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: get_size",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1360,6 +1412,13 @@ PyObject *pyfvde_volume_set_keys(
 	size_t volume_encryption_key_string_length = 0;
 	int result                                 = 0;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: set_keys",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1438,6 +1497,13 @@ PyObject *pyfvde_volume_set_password(
 	size_t password_string_length       = 0;
 	int result                          = 0;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: set_password",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1601,6 +1667,13 @@ PyObject *pyfvde_volume_set_password(
 	size_t password_string_length = 0;
 	int result                    = 0;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: set_password",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1684,6 +1757,13 @@ PyObject *pyfvde_volume_set_recovery_password(
 	size_t recovery_password_string_length       = 0;
 	int result                                   = 0;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: set_recovery_password",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -1847,6 +1927,13 @@ PyObject *pyfvde_volume_set_recovery_password(
 	size_t recovery_password_string_length = 0;
 	int result                             = 0;
 
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: set_recovery_password",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
 	if( pyfvde_volume == NULL )
 	{
 		PyErr_Format(
@@ -2141,4 +2228,75 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 }
 
 #endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+/* Retrieves the volume group
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_volume_get_volume_group(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments PYFVDE_ATTRIBUTE_UNUSED )
+{
+	PyObject *volume_group_object        = NULL;
+	libcerror_error_t *error             = NULL;
+	libfvde_volume_group_t *volume_group = NULL;
+	static char *function                = "pyfvde_volume_get_volume_group";
+	int result                           = 0;
+
+	PYFVDE_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: invalid volume.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfvde_volume_get_volume_group(
+	          pyfvde_volume->volume,
+	          &volume_group,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve volume group.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	volume_group_object = pyfvde_volume_group_new(
+	                       volume_group,
+	                       (PyObject *) pyfvde_volume );
+
+	if( volume_group_object == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create volume group object.",
+		 function );
+
+		goto on_error;
+	}
+	return( volume_group_object );
+
+on_error:
+	if( volume_group != NULL )
+	{
+		libfvde_volume_group_free(
+		 &volume_group,
+		 NULL );
+	}
+	return( NULL );
+}
 

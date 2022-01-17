@@ -124,6 +124,10 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
            PyObject *arguments,
            PyObject *keywords );
 
+PyObject *pyfvde_volume_get_volume_group(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments );
+
 #if defined( __cplusplus )
 }
 #endif

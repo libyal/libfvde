@@ -33,9 +33,14 @@
 #include "pyfvde_libbfio.h"
 #include "pyfvde_libcerror.h"
 #include "pyfvde_libfvde.h"
+#include "pyfvde_logical_volume.h"
+#include "pyfvde_logical_volumes.h"
+#include "pyfvde_physical_volume.h"
+#include "pyfvde_physical_volumes.h"
 #include "pyfvde_python.h"
 #include "pyfvde_unused.h"
 #include "pyfvde_volume.h"
+#include "pyfvde_volume_group.h"
 
 #if !defined( LIBFVDE_HAVE_BFIO )
 
@@ -593,6 +598,74 @@ PyMODINIT_FUNC initpyfvde(
 #endif
 	gil_state = PyGILState_Ensure();
 
+	/* Setup the logical_volume type object
+	 */
+	pyfvde_logical_volume_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfvde_logical_volume_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfvde_logical_volume_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "logical_volume",
+	 (PyObject *) &pyfvde_logical_volume_type_object );
+
+	/* Setup the logical_volumes type object
+	 */
+	pyfvde_logical_volumes_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfvde_logical_volumes_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfvde_logical_volumes_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "logical_volumes",
+	 (PyObject *) &pyfvde_logical_volumes_type_object );
+
+	/* Setup the physical_volume type object
+	 */
+	pyfvde_physical_volume_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfvde_physical_volume_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfvde_physical_volume_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "physical_volume",
+	 (PyObject *) &pyfvde_physical_volume_type_object );
+
+	/* Setup the physical_volumes type object
+	 */
+	pyfvde_physical_volumes_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfvde_physical_volumes_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfvde_physical_volumes_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "physical_volumes",
+	 (PyObject *) &pyfvde_physical_volumes_type_object );
+
 	/* Setup the volume type object
 	 */
 	pyfvde_volume_type_object.tp_new = PyType_GenericNew;
@@ -609,6 +682,23 @@ PyMODINIT_FUNC initpyfvde(
 	 module,
 	 "volume",
 	 (PyObject *) &pyfvde_volume_type_object );
+
+	/* Setup the volume_group type object
+	 */
+	pyfvde_volume_group_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfvde_volume_group_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfvde_volume_group_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "volume_group",
+	 (PyObject *) &pyfvde_volume_group_type_object );
 
 	PyGILState_Release(
 	 gil_state );

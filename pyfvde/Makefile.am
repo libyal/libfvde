@@ -27,9 +27,14 @@ pyfvde_la_SOURCES = \
 	pyfvde_libclocale.h \
 	pyfvde_libfguid.h \
 	pyfvde_libfvde.h \
+	pyfvde_logical_volume.c pyfvde_logical_volume.h \
+	pyfvde_logical_volumes.c pyfvde_logical_volumes.h \
+	pyfvde_physical_volume.c pyfvde_physical_volume.h \
+	pyfvde_physical_volumes.c pyfvde_physical_volumes.h \
 	pyfvde_python.h \
 	pyfvde_unused.h \
-	pyfvde_volume.c pyfvde_volume.h
+	pyfvde_volume.c pyfvde_volume.h \
+	pyfvde_volume_group.c pyfvde_volume_group.h
 
 pyfvde_la_LIBADD = \
 	@LIBCERROR_LIBADD@ \

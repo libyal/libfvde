@@ -194,7 +194,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\pyfvde\pyfvde_logical_volume.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_logical_volumes.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_physical_volume.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_physical_volumes.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\pyfvde\pyfvde_volume.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_volume_group.c"
 				>
 			</File>
 		</Filter>
@@ -248,6 +268,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\pyfvde\pyfvde_logical_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_logical_volumes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_physical_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_physical_volumes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\pyfvde\pyfvde_python.h"
 				>
 			</File>
@@ -257,6 +293,10 @@
 			</File>
 			<File
 				RelativePath="..\..\pyfvde\pyfvde_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_volume_group.h"
 				>
 			</File>
 		</Filter>

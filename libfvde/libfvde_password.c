@@ -29,6 +29,7 @@
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
 #include "libfvde_libhmac.h"
+#include "libfvde_libuna.h"
 #include "libfvde_password.h"
 
 /* Compute a PBKDF2-derived key from the given input.
@@ -403,6 +404,236 @@ on_error:
 	{
 		memory_free(
 		 data_buffer );
+	}
+	return( -1 );
+}
+
+/* Copies the password from an UTF-8 formatted string
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_password_copy_from_utf8_string(
+     uint8_t **password,
+     size_t *password_size,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libcerror_error_t **error )
+{
+	uint8_t *safe_password    = NULL;
+	static char *function     = "libfvde_password_copy_from_utf8_string";
+	size_t safe_password_size = 0;
+
+	if( password == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid password.",
+		 function );
+
+		return( -1 );
+	}
+	if( password_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid password size.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_byte_stream_size_from_utf8(
+	     utf8_string,
+	     utf8_string_length,
+	     LIBUNA_CODEPAGE_US_ASCII,
+	     &safe_password_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine size of password from UTF-8 string.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( safe_password_size == 0 )
+	 || ( safe_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid password size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	safe_password = (uint8_t *) memory_allocate(
+	                             sizeof( uint8_t ) * ( safe_password_size + 1 ) );
+
+	if( safe_password == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to create password.",
+		 function );
+
+		goto on_error;
+	}
+	if( libuna_byte_stream_copy_from_utf8(
+	     safe_password,
+	     safe_password_size,
+	     LIBUNA_CODEPAGE_US_ASCII,
+	     utf8_string,
+	     utf8_string_length,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to copy password from UTF-8 string.",
+		 function );
+
+		goto on_error;
+	}
+	safe_password[ safe_password_size ] = 0;
+
+	*password      = safe_password;
+	*password_size = safe_password_size + 1;
+
+	return( 1 );
+
+on_error:
+	if( safe_password != NULL )
+	{
+		memory_set(
+		 safe_password,
+		 0,
+		 safe_password_size );
+		memory_free(
+		 safe_password );
+	}
+	return( -1 );
+}
+
+/* Copies the password from an UTF-16 formatted string
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_password_copy_from_utf16_string(
+     uint8_t **password,
+     size_t *password_size,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libcerror_error_t **error )
+{
+	uint8_t *safe_password    = NULL;
+	static char *function     = "libfvde_password_copy_from_utf16_string";
+	size_t safe_password_size = 0;
+
+	if( password == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid password.",
+		 function );
+
+		return( -1 );
+	}
+	if( password_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid password size.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_byte_stream_size_from_utf16(
+	     utf16_string,
+	     utf16_string_length,
+	     LIBUNA_CODEPAGE_US_ASCII,
+	     &safe_password_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine size of password from UTF-16 string.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( safe_password_size == 0 )
+	 || ( safe_password_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid password size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	safe_password = (uint8_t *) memory_allocate(
+	                             sizeof( uint8_t ) * ( safe_password_size + 1 ) );
+
+	if( safe_password == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to create password.",
+		 function );
+
+		goto on_error;
+	}
+	if( libuna_byte_stream_copy_from_utf16(
+	     safe_password,
+	     safe_password_size,
+	     LIBUNA_CODEPAGE_US_ASCII,
+	     utf16_string,
+	     utf16_string_length,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to copy password from UTF-16 string.",
+		 function );
+
+		goto on_error;
+	}
+	safe_password[ safe_password_size ] = 0;
+
+	*password      = safe_password;
+	*password_size = safe_password_size + 1;
+
+	return( 1 );
+
+on_error:
+	if( safe_password != NULL )
+	{
+		memory_set(
+		 safe_password,
+		 0,
+		 safe_password_size );
+		memory_free(
+		 safe_password );
 	}
 	return( -1 );
 }

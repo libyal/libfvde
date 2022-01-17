@@ -106,6 +106,8 @@ The following version of programs were used to test the information within this 
 * Mac OS X El Capitan (10.11)
 * macOS Sierra (10.12)
 * macOS High Sierra (10.13)
+* macOS Mojave (10.14)
+* macOS Catalina (10.15)
 
 == Keys
 

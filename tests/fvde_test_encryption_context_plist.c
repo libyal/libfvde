@@ -429,11 +429,15 @@ int main(
 
 	/* TODO: add tests for libfvde_encryption_context_plist_read_xml */
 
+#if !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 )
+
 	/* TODO: add tests for libfvde_encryption_context_plist_get_conversion_status */
 
 	/* TODO: add tests for libfvde_encryption_context_plist_get_passphrase_wrapped_kek */
 
 	/* TODO: add tests for libfvde_encryption_context_plist_get_kek_wrapped_volume_key */
+
+#endif /* !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 ) */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
