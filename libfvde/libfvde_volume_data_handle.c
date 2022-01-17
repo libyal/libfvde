@@ -187,7 +187,7 @@ int libfvde_volume_data_handle_read_sector(
      int element_index,
      int element_data_file_index LIBFVDE_ATTRIBUTE_UNUSED,
      off64_t element_data_offset,
-     size64_t element_data_size,
+     size64_t element_data_size LIBFVDE_ATTRIBUTE_UNUSED,
      uint32_t element_data_flags,
      uint8_t read_flags LIBFVDE_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
@@ -198,6 +198,7 @@ int libfvde_volume_data_handle_read_sector(
 	uint8_t is_encrypted               = 0;
 
 	LIBFVDE_UNREFERENCED_PARAMETER( element_data_file_index );
+	LIBFVDE_UNREFERENCED_PARAMETER( element_data_size );
 	LIBFVDE_UNREFERENCED_PARAMETER( read_flags );
 
 	if( volume_data_handle == NULL )
@@ -222,7 +223,7 @@ int libfvde_volume_data_handle_read_sector(
 
 		return( -1 );
 	}
-	if( element_data_flags == LIBFVDE_RANGE_FLAG_ENCRYPTED )
+	if( ( element_data_flags & LIBFVDE_RANGE_FLAG_ENCRYPTED ) != 0 )
 	{
 		is_encrypted = 1;
 	}

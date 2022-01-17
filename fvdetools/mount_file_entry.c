@@ -51,12 +51,12 @@
 int mount_file_entry_initialize(
      mount_file_entry_t **file_entry,
      mount_file_system_t *file_system,
+     int logical_volume_index,
      const system_character_t *name,
-     size_t name_length,
-     libfvde_volume_t *fvde_volume,
      libcerror_error_t **error )
 {
 	static char *function = "mount_file_entry_initialize";
+	size_t name_length    = 0;
 
 	if( file_entry == NULL )
 	{
@@ -87,17 +87,6 @@ int mount_file_entry_initialize(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid file system.",
-		 function );
-
-		return( -1 );
-	}
-	if( name_length > (size_t) ( SSIZE_MAX - 1 ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid name length value exceeds maximum.",
 		 function );
 
 		return( -1 );
@@ -135,10 +124,16 @@ int mount_file_entry_initialize(
 
 		return( -1 );
 	}
-	( *file_entry )->file_system = file_system;
-
-	if( name != NULL )
+	if( name == NULL )
 	{
+		( *file_entry )->name      = NULL;
+		( *file_entry )->name_size = 0;
+	}
+	else
+	{
+		name_length = system_string_length(
+		               name );
+
 		( *file_entry )->name = system_string_allocate(
 		                         name_length + 1 );
 
@@ -153,28 +148,27 @@ int mount_file_entry_initialize(
 
 			goto on_error;
 		}
-		if( name_length > 0 )
+		if( system_string_copy(
+		     ( *file_entry )->name,
+		     name,
+		     name_length ) == NULL )
 		{
-			if( system_string_copy(
-			     ( *file_entry )->name,
-			     name,
-			     name_length ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-				 "%s: unable to copy name.",
-				 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+			 "%s: unable to copy name.",
+			 function );
 
-				goto on_error;
-			}
+			goto on_error;
 		}
 		( *file_entry )->name[ name_length ] = 0;
 
 		( *file_entry )->name_size = name_length + 1;
 	}
-	( *file_entry )->fvde_volume = fvde_volume;
+	( *file_entry )->file_system = file_system;
+
+	( *file_entry )->logical_volume_index = logical_volume_index;
 
 	return( 1 );
 
@@ -272,14 +266,13 @@ int mount_file_entry_get_parent_file_entry(
 
 		return( -1 );
 	}
-	if( file_entry->fvde_volume != NULL )
+	if( file_entry->logical_volume_index != -1 )
 	{
 		if( mount_file_entry_initialize(
 		     parent_file_entry,
 		     file_entry->file_system,
-		     _SYSTEM_STRING( "" ),
-		     0,
-		     NULL,
+		     -1,
+		     "",
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -488,7 +481,7 @@ int mount_file_entry_get_file_mode(
 
 		return( -1 );
 	}
-	if( file_entry->fvde_volume == NULL )
+	if( file_entry->logical_volume_index == -1 )
 	{
 		*file_mode = S_IFDIR | 0555;
 	}
@@ -631,8 +624,8 @@ int mount_file_entry_get_number_of_sub_file_entries(
      int *number_of_sub_file_entries,
      libcerror_error_t **error )
 {
-	static char *function = "mount_file_entry_get_number_of_sub_file_entries";
-	int number_of_volumes = 0;
+	static char *function         = "mount_file_entry_get_number_of_sub_file_entries";
+	int number_of_logical_volumes = 0;
 
 	if( file_entry == NULL )
 	{
@@ -656,36 +649,36 @@ int mount_file_entry_get_number_of_sub_file_entries(
 
 		return( -1 );
 	}
-	if( file_entry->fvde_volume == NULL )
+	if( file_entry->logical_volume_index == -1 )
 	{
-		if( mount_file_system_get_number_of_volumes(
+		if( mount_file_system_get_number_of_logical_volumes(
 		     file_entry->file_system,
-		     &number_of_volumes,
+		     &number_of_logical_volumes,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve number of volumes.",
+			 "%s: unable to retrieve number of logical volumes.",
 			 function );
 
 			return( -1 );
 		}
-		if( ( number_of_volumes < 0 )
-		 || ( number_of_volumes > 99 ) )
+		if( ( number_of_logical_volumes < 0 )
+		 || ( number_of_logical_volumes > 99 ) )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-			 "%s: unsupported number of volumes.",
+			 "%s: unsupported number of logical volumes.",
 			 function );
 
 			return( -1 );
 		}
 	}
-	*number_of_sub_file_entries = number_of_volumes;
+	*number_of_sub_file_entries = number_of_logical_volumes;
 
 	return( 1 );
 }
@@ -701,9 +694,7 @@ int mount_file_entry_get_sub_file_entry_by_index(
 {
 	system_character_t path[ 32 ];
 
-	libfvde_volume_t *fvde_volume  = NULL;
 	static char *function          = "mount_file_entry_get_sub_file_entry_by_index";
-	size_t path_length             = 0;
 	int number_of_sub_file_entries = 0;
 
 	if( file_entry == NULL )
@@ -765,7 +756,7 @@ int mount_file_entry_get_sub_file_entry_by_index(
 
 		return( -1 );
 	}
-	if( mount_file_system_get_path_from_volume_index(
+	if( mount_file_system_get_path_from_logical_volume_index(
 	     file_entry->file_system,
 	     sub_file_entry_index,
 	     path,
@@ -782,43 +773,11 @@ int mount_file_entry_get_sub_file_entry_by_index(
 
 		return( -1 );
 	}
-	if( mount_file_system_get_volume_by_index(
-	     file_entry->file_system,
-	     sub_file_entry_index,
-	     &fvde_volume,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve volume: %d from file system.",
-		 function,
-		 sub_file_entry_index );
-
-		return( -1 );
-	}
-	if( fvde_volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing volume: %d.",
-		 function,
-		 sub_file_entry_index );
-
-		return( -1 );
-	}
-	path_length = system_string_length(
-	               path );
-
 	if( mount_file_entry_initialize(
 	     sub_file_entry,
 	     file_entry->file_system,
+	     sub_file_entry_index,
 	     &( path[ 1 ] ),
-	     path_length - 1,
-	     fvde_volume,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -844,8 +803,9 @@ ssize_t mount_file_entry_read_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error )
 {
-	static char *function = "mount_file_entry_read_buffer_at_offset";
-	ssize_t read_count    = 0;
+	libfvde_logical_volume_t *logical_volume = NULL;
+	static char *function                     = "mount_file_entry_read_buffer_at_offset";
+	ssize_t read_count                        = 0;
 
 	if( file_entry == NULL )
 	{
@@ -858,8 +818,24 @@ ssize_t mount_file_entry_read_buffer_at_offset(
 
 		return( -1 );
 	}
-	read_count = libfvde_volume_read_buffer_at_offset(
-	              file_entry->fvde_volume,
+	if( mount_file_system_get_logical_volume_by_index(
+	     file_entry->file_system,
+	     file_entry->logical_volume_index,
+	     &logical_volume,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume: %d from file system.",
+		 function,
+		 file_entry->logical_volume_index );
+
+		return( -1 );
+	}
+	read_count = libfvde_logical_volume_read_buffer_at_offset(
+	              logical_volume,
 	              buffer,
 	              buffer_size,
 	              offset,
@@ -871,10 +847,11 @@ ssize_t mount_file_entry_read_buffer_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read buffer at offset: %" PRIi64 " (0x%08" PRIx64 ") from volume.",
+		 "%s: unable to read buffer at offset: %" PRIi64 " (0x%08" PRIx64 ") from logical volume: %d.",
 		 function,
 		 offset,
-		 offset );
+		 offset,
+		 file_entry->logical_volume_index );
 
 		return( -1 );
 	}
@@ -889,7 +866,8 @@ int mount_file_entry_get_size(
      size64_t *size,
      libcerror_error_t **error )
 {
-	static char *function = "mount_file_entry_get_size";
+	libfvde_logical_volume_t *logical_volume = NULL;
+	static char *function                     = "mount_file_entry_get_size";
 
 	if( file_entry == NULL )
 	{
@@ -902,7 +880,7 @@ int mount_file_entry_get_size(
 
 		return( -1 );
 	}
-	if( file_entry->fvde_volume == NULL )
+	if( file_entry->logical_volume_index == -1 )
 	{
 		if( size == NULL )
 		{
@@ -919,8 +897,24 @@ int mount_file_entry_get_size(
 	}
 	else
 	{
-		if( libfvde_volume_get_logical_volume_size(
-		     file_entry->fvde_volume,
+		if( mount_file_system_get_logical_volume_by_index(
+		     file_entry->file_system,
+		     file_entry->logical_volume_index,
+		     &logical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume: %d from file system.",
+			 function,
+			 file_entry->logical_volume_index );
+
+			return( -1 );
+		}
+		if( libfvde_logical_volume_get_size(
+		     logical_volume,
 		     size,
 		     error ) != 1 )
 		{
@@ -928,8 +922,9 @@ int mount_file_entry_get_size(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve logical volume size from volume.",
-			 function );
+			 "%s: unable to retrieve size from logical volume: %d.",
+			 function,
+			 file_entry->logical_volume_index );
 
 			return( -1 );
 		}

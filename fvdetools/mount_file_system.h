@@ -37,10 +37,6 @@ typedef struct mount_file_system mount_file_system_t;
 
 struct mount_file_system
 {
-	/* The mounted timestamp
-	 */
-	uint64_t mounted_timestamp;
-
 	/* The path prefix
 	 */
 	system_character_t *path_prefix;
@@ -49,9 +45,13 @@ struct mount_file_system
 	 */
 	size_t path_prefix_size;
 
-	/* The volumes array
+	/* The mounted timestamp
 	 */
-	libcdata_array_t *volumes_array;
+	uint64_t mounted_timestamp;
+
+	/* The logical_volumes array
+	 */
+	libcdata_array_t *logical_volumes_array;
 };
 
 int mount_file_system_initialize(
@@ -60,10 +60,6 @@ int mount_file_system_initialize(
 
 int mount_file_system_free(
      mount_file_system_t **file_system,
-     libcerror_error_t **error );
-
-int mount_file_system_signal_abort(
-     mount_file_system_t *file_system,
      libcerror_error_t **error );
 
 int mount_file_system_set_path_prefix(
@@ -77,32 +73,32 @@ int mount_file_system_get_mounted_timestamp(
      uint64_t *mounted_timestamp,
      libcerror_error_t **error );
 
-int mount_file_system_get_number_of_volumes(
+int mount_file_system_get_number_of_logical_volumes(
      mount_file_system_t *file_system,
-     int *number_of_volumes,
+     int *number_of_logical_volumes,
      libcerror_error_t **error );
 
-int mount_file_system_get_volume_by_index(
+int mount_file_system_get_logical_volume_by_index(
      mount_file_system_t *file_system,
-     int volume_index,
-     libfvde_volume_t **fvde_volume,
+     int logical_volume_index,
+     libfvde_logical_volume_t **logical_volume,
      libcerror_error_t **error );
 
-int mount_file_system_get_volume_by_path(
+int mount_file_system_append_logical_volume(
+     mount_file_system_t *file_system,
+     libfvde_logical_volume_t *logical_volume,
+     libcerror_error_t **error );
+
+int mount_file_system_get_logical_volume_index_from_path(
      mount_file_system_t *file_system,
      const system_character_t *path,
      size_t path_length,
-     libfvde_volume_t **fvde_volume,
+     int *logical_volume_index,
      libcerror_error_t **error );
 
-int mount_file_system_append_volume(
+int mount_file_system_get_path_from_logical_volume_index(
      mount_file_system_t *file_system,
-     libfvde_volume_t *fvde_volume,
-     libcerror_error_t **error );
-
-int mount_file_system_get_path_from_volume_index(
-     mount_file_system_t *file_system,
-     int volume_index,
+     int logical_volume_index,
      system_character_t *path,
      size_t path_size,
      libcerror_error_t **error );

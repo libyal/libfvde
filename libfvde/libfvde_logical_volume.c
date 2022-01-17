@@ -261,12 +261,13 @@ int libfvde_internal_logical_volume_open_read(
 {
 	uint8_t volume_header_data[ 512 ];
 
-	static char *function = "libfvde_internal_logical_volume_open_read";
-	size64_t volume_size  = 0;
-	ssize_t read_count    = 0;
-	off64_t volume_offset = 0;
-	int result            = 0;
-	int segment_index     = 0;
+	static char *function  = "libfvde_internal_logical_volume_open_read";
+	size64_t volume_size   = 0;
+	ssize_t read_count     = 0;
+	off64_t volume_offset  = 0;
+	uint32_t segment_flags = 0;
+	int result             = 0;
+	int segment_index      = 0;
 
 	if( internal_logical_volume == NULL )
 	{
@@ -451,13 +452,17 @@ int libfvde_internal_logical_volume_open_read(
 
 		goto on_error;
 	}
+	if( internal_logical_volume->volume_data_handle->is_encrypted != 0 )
+	{
+		segment_flags = LIBFVDE_RANGE_FLAG_ENCRYPTED;
+	}
 	if( libfdata_vector_append_segment(
 	     internal_logical_volume->sectors_vector,
 	     &segment_index,
 	     0,
 	     volume_offset,
 	     volume_size,
-	     LIBFVDE_RANGE_FLAG_ENCRYPTED,
+	     segment_flags,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1380,7 +1385,7 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
 	}
 	sector_data_offset = (size_t) ( internal_logical_volume->current_offset % internal_logical_volume->io_handle->bytes_per_sector );
 
-	while( buffer_size > 0 )
+	while( buffer_offset < buffer_size )
 	{
 		if( libfdata_vector_get_element_value_at_offset(
 		     internal_logical_volume->sectors_vector,
@@ -1416,9 +1421,9 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
 		}
 		read_size = sector_data->data_size - sector_data_offset;
 
-		if( read_size > buffer_size )
+		if( read_size > ( buffer_size - buffer_offset ) )
 		{
-			read_size = buffer_size;
+			read_size = buffer_size - buffer_offset;
 		}
 		if( read_size == 0 )
 		{
@@ -1439,8 +1444,6 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
 			return( -1 );
 		}
 		buffer_offset     += read_size;
-		buffer_size       -= read_size;
-		total_read_count  += (ssize_t) read_size;
 		sector_data_offset = 0;
 
 		internal_logical_volume->current_offset += (off64_t) read_size;
@@ -1454,7 +1457,7 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
 			break;
 		}
 	}
-	return( total_read_count );
+	return( (ssize_t) buffer_offset );
 }
 
 /* Reads data at the current offset into a buffer

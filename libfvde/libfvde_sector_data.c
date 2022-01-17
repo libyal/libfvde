@@ -308,7 +308,7 @@ int libfvde_sector_data_read(
 			libcnotify_print_data(
 			 sector_data->encrypted_data,
 			 sector_data->data_size,
-			 0 );
+			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 		}
 #endif
 		if( memory_set(
@@ -382,7 +382,7 @@ int libfvde_sector_data_read(
 		libcnotify_print_data(
 		 sector_data->data,
 		 sector_data->data_size,
-		 0 );
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
 	return( 1 );

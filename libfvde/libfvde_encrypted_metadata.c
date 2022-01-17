@@ -260,6 +260,55 @@ int libfvde_encrypted_metadata_free(
 	return( result );
 }
 
+/* Reads the encrypted metadata block type 0x0011
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0011(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error )
+{
+	const uint8_t *xml_plist_data = NULL;
+	static char *function         = "libfvde_encrypted_metadata_read_type_0x0011";
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( block_data_size < 54 )
+	 || ( block_data_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid block data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
 /* Reads the encrypted metadata block type 0x0012
  * Returns 1 if successful or -1 on error
  */

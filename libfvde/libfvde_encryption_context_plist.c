@@ -1052,12 +1052,14 @@ int libfvde_encryption_context_plist_read_xml(
 			return( 0 );
 		}
 	}
-	if( libfplist_property_get_sub_property_by_utf8_name(
-	     encryption_context_property,
-	     (uint8_t *) "ConversionInfo",
-	     14,
-	     &( internal_plist->conversion_info_property ),
-	     error ) != 1 )
+	result = libfplist_property_get_sub_property_by_utf8_name(
+	          encryption_context_property,
+	          (uint8_t *) "ConversionInfo",
+	          14,
+	          &( internal_plist->conversion_info_property ),
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1187,7 +1189,7 @@ on_error:
 }
 
 /* Retrieves the conversion status from the given plist data.
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_encryption_context_plist_get_conversion_status(
      libfvde_encryption_context_plist_t *plist,
@@ -1195,9 +1197,10 @@ int libfvde_encryption_context_plist_get_conversion_status(
      size_t *conversion_status_size,
      libcerror_error_t **error )
 {
-	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
 	libfplist_property_t *sub_property                          = NULL;
+	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_get_conversion_status";
+	int result                                                  = 0;
 
 	if( plist == NULL )
 	{
@@ -1212,17 +1215,6 @@ int libfvde_encryption_context_plist_get_conversion_status(
 	}
 	internal_plist = (libfvde_internal_encryption_context_plist_t *) plist;
 
-	if( internal_plist->conversion_info_property == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid plist - missing XML plist conversion info property.",
-		 function );
-
-		return( -1 );
-	}
 	if( conversion_status == NULL )
 	{
 		libcerror_error_set(
@@ -1256,63 +1248,67 @@ int libfvde_encryption_context_plist_get_conversion_status(
 
 		return( -1 );
 	}
-	if( libfplist_property_get_sub_property_by_utf8_name(
-	     internal_plist->conversion_info_property,
-	     (uint8_t *) "ConversionStatus",
-	     16,
-	     &sub_property,
-	     error ) != 1 )
+	if( internal_plist->conversion_info_property != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve ConversionStatus sub property.",
-		 function );
+		if( libfplist_property_get_sub_property_by_utf8_name(
+		     internal_plist->conversion_info_property,
+		     (uint8_t *) "ConversionStatus",
+		     16,
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve ConversionStatus sub property.",
+			 function );
 
-		goto on_error;
-	}
-	if( libfplist_property_get_value_string(
-	     sub_property,
-	     conversion_status,
-	     conversion_status_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve conversation status.",
-		 function );
+			goto on_error;
+		}
+		if( libfplist_property_get_value_string(
+		     sub_property,
+		     conversion_status,
+		     conversion_status_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve conversation status.",
+			 function );
 
-		goto on_error;
-	}
+			goto on_error;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: conversion status:\n",
-		 function );
-		libcnotify_print_data(
-		 *conversion_status,
-		 *conversion_status_size,
-		 0 );
-	}
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: conversion status:\n",
+			 function );
+			libcnotify_print_data(
+			 *conversion_status,
+			 *conversion_status_size,
+			 0 );
+		}
 #endif
-	if( libfplist_property_free(
-	     &sub_property,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free ConversionStatus property.",
-		 function );
+		if( libfplist_property_free(
+		     &sub_property,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free ConversionStatus property.",
+			 function );
 
-		goto on_error;
+			goto on_error;
+		}
+		result = 1;
 	}
-	return( 1 );
+	return( result );
 
 on_error:
 	if( sub_property != NULL )

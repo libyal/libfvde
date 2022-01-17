@@ -1,4 +1,6 @@
 MSVSCPP_FILES = \
+	fvde_test_checksum/fvde_test_checksum.vcproj \
+	fvde_test_compression/fvde_test_compression.vcproj \
 	fvde_test_data_area_descriptor/fvde_test_data_area_descriptor.vcproj \
 	fvde_test_deflate/fvde_test_deflate.vcproj \
 	fvde_test_encrypted_metadata/fvde_test_encrypted_metadata.vcproj \

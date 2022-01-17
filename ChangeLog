@@ -2,6 +2,8 @@ TODO
 * volume group refactor
   - fix libfvde_volume_get_logical_volume_encryption_method
   - fix libfvde_volume_set functions
+  - fix python bindings
+  - update mount_handle_input_unlock
 
 * libfvde
   - optimize XML plist parser to directly generate keys

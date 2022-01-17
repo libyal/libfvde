@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fvde_test_encrypted_metadata"
-	ProjectGUID="{86DA3A2E-BD38-41CD-BEC5-0CCDB8212E9D}"
-	RootNamespace="fvde_test_encrypted_metadata"
+	Name="fvde_test_checksum"
+	ProjectGUID="{1C90AC92-3764-40AB-B299-F766CEE01BBB}"
+	RootNamespace="fvde_test_checksum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,11 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\fvde_test_encrypted_metadata.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fvde_test_memory.c"
+				RelativePath="..\..\tests\fvde_test_checksum.c"
 				>
 			</File>
 		</Filter>
@@ -189,10 +185,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\tests\fvde_test_libcdata.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\tests\fvde_test_libcerror.h"
 				>
@@ -203,10 +195,6 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\fvde_test_macros.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fvde_test_memory.h"
 				>
 			</File>
 			<File

@@ -195,7 +195,7 @@ int libfvde_decompress_data(
 			result = -1;
 		}
 #else
-		result = libfvde_deflate_decompress(
+		result = libfvde_deflate_decompress_zlib(
 		          compressed_data,
 		          compressed_data_size,
 		          uncompressed_data,
@@ -208,7 +208,7 @@ int libfvde_decompress_data(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
 			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-			 "%s: unable to decompress deflate compressed data.",
+			 "%s: unable to decompress DEFLATE compressed data.",
 			 function );
 
 			return( -1 );

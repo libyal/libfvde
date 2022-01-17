@@ -784,6 +784,275 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libfvde_volume_header_get_physical_volume_identifier function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_volume_header_get_physical_volume_identifier(
+     libfvde_volume_header_t *volume_header )
+{
+	uint8_t uuid_data[ 16 ];
+
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfvde_volume_header_get_physical_volume_identifier(
+	          volume_header,
+	          uuid_data,
+	          16,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfvde_volume_header_get_physical_volume_identifier(
+	          NULL,
+	          uuid_data,
+	          16,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_volume_header_get_physical_volume_identifier(
+	          volume_header,
+	          NULL,
+	          16,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_volume_header_get_physical_volume_identifier(
+	          volume_header,
+	          uuid_data,
+	          0,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_volume_header_get_physical_volume_identifier(
+	          volume_header,
+	          uuid_data,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfvde_volume_header_get_physical_volume_encryption_method function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_volume_header_get_physical_volume_encryption_method(
+     libfvde_volume_header_t *volume_header )
+{
+	libcerror_error_t *error   = NULL;
+	uint32_t encryption_method = 0;
+	int result                 = 0;
+
+	/* Test regular cases
+	 */
+	result = libfvde_volume_header_get_physical_volume_encryption_method(
+	          volume_header,
+	          &encryption_method,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT32(
+	 "encryption_method",
+	 encryption_method,
+	 (uint32_t) 2 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfvde_volume_header_get_physical_volume_encryption_method(
+	          NULL,
+	          &encryption_method,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_volume_header_get_physical_volume_encryption_method(
+	          volume_header,
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfvde_volume_header_get_physical_volume_size function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_volume_header_get_physical_volume_size(
+     libfvde_volume_header_t *volume_header )
+{
+	libcerror_error_t *error = NULL;
+	size64_t volume_size     = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfvde_volume_header_get_physical_volume_size(
+	          volume_header,
+	          &volume_size,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "volume_size",
+	 volume_size,
+	 (uint64_t) 262103040 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfvde_volume_header_get_physical_volume_size(
+	          NULL,
+	          &volume_size,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_volume_header_get_physical_volume_size(
+	          volume_header,
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 /* The main program
@@ -798,6 +1067,14 @@ int main(
      char * const argv[] FVDE_TEST_ATTRIBUTE_UNUSED )
 #endif
 {
+#if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
+
+	libcerror_error_t *error               = NULL;
+	libfvde_volume_header_t *volume_header = NULL;
+	int result                             = 0;
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
+
 	FVDE_TEST_UNREFERENCED_PARAMETER( argc )
 	FVDE_TEST_UNREFERENCED_PARAMETER( argv )
 
@@ -819,6 +1096,80 @@ int main(
 	 "libfvde_volume_header_read_file_io_handle",
 	 fvde_test_volume_header_read_file_io_handle );
 
+#if !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 )
+
+	/* Initialize volume_header for tests
+	 */
+	result = libfvde_volume_header_initialize(
+	          &volume_header,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "volume_header",
+	 volume_header );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfvde_volume_header_read_data(
+	          volume_header,
+	          fvde_test_volume_header_data1,
+	          512,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* TODO add tests for libfvde_volume_header_get_logical_volume_group_identifier */
+
+	FVDE_TEST_RUN_WITH_ARGS(
+	 "libfvde_volume_header_get_physical_volume_identifier",
+	 fvde_test_volume_header_get_physical_volume_identifier,
+	 volume_header );
+
+	FVDE_TEST_RUN_WITH_ARGS(
+	 "libfvde_volume_header_get_physical_volume_encryption_method",
+	 fvde_test_volume_header_get_physical_volume_encryption_method,
+	 volume_header );
+
+	FVDE_TEST_RUN_WITH_ARGS(
+	 "libfvde_volume_header_get_physical_volume_size",
+	 fvde_test_volume_header_get_physical_volume_size,
+	 volume_header );
+
+	/* Clean up
+	 */
+	result = libfvde_volume_header_free(
+	          &volume_header,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "volume_header",
+	 volume_header );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+#endif /* !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 ) */
+
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
@@ -826,6 +1177,17 @@ int main(
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( volume_header != NULL )
+	{
+		libfvde_volume_header_free(
+		 &volume_header,
+		 NULL );
+	}
 	return( EXIT_FAILURE );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */

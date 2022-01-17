@@ -48,6 +48,8 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	fvde_test_checksum \
+	fvde_test_compression \
 	fvde_test_data_area_descriptor \
 	fvde_test_deflate \
 	fvde_test_encrypted_metadata \
@@ -69,6 +71,29 @@ check_PROGRAMS = \
 	fvde_test_volume_data_handle \
 	fvde_test_volume_group \
 	fvde_test_volume_header
+
+fvde_test_checksum_SOURCES = \
+	fvde_test_checksum.c \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_unused.h
+
+fvde_test_checksum_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_compression_SOURCES = \
+	fvde_test_compression.c \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_compression_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
 
 fvde_test_data_area_descriptor_SOURCES = \
 	fvde_test_data_area_descriptor.c \
@@ -97,6 +122,7 @@ fvde_test_deflate_LDADD = \
 
 fvde_test_encrypted_metadata_SOURCES = \
 	fvde_test_encrypted_metadata.c \
+	fvde_test_libcdata.h \
 	fvde_test_libcerror.h \
 	fvde_test_libfvde.h \
 	fvde_test_macros.h \
@@ -104,6 +130,7 @@ fvde_test_encrypted_metadata_SOURCES = \
 	fvde_test_unused.h
 
 fvde_test_encrypted_metadata_LDADD = \
+	@LIBCDATA_LIBADD@ \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 

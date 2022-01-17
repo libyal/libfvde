@@ -25,11 +25,18 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfvde_extern.h"
 #include "libfvde_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
+
+LIBFVDE_EXTERN_VARIABLE \
+uint32_t libfvde_checksum_crc32_table[ 256 ];
+
+LIBFVDE_EXTERN_VARIABLE \
+int libfvde_checksum_crc32_table_computed;
 
 void libfvde_checksum_initialize_crc32_table(
       uint32_t polynomial );

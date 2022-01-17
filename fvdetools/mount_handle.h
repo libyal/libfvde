@@ -41,6 +41,14 @@ typedef struct mount_handle mount_handle_t;
 
 struct mount_handle
 {
+	/* The basename
+	 */
+	system_character_t *basename;
+
+	/* The basename size
+	 */
+	size_t basename_size;
+
 	/* The file system
 	 */
 	mount_file_system_t *file_system;
@@ -60,10 +68,6 @@ struct mount_handle
 	/* The volume offset
 	 */
 	off64_t volume_offset;
-
-	/* The libbfio file IO handle
-	 */
-	libbfio_handle_t *file_io_handle;
 
 	/* The password
 	 */
@@ -85,9 +89,29 @@ struct mount_handle
 	 */
 	int is_locked;
 
+	/* The libbfio file IO handle
+	 */
+	libbfio_handle_t *file_io_handle;
+
+	/* The libbfio physical volume file IO pool
+	 */
+	libbfio_pool_t *physical_volume_file_io_pool;
+
+	/* The libfvde volume
+	 */
+	libfvde_volume_t *volume;
+
+	/* The volume group
+	 */
+	libfvde_volume_group_t *volume_group;
+
 	/* The notification output stream
 	 */
 	FILE *notify_stream;
+
+	/* Value to indicate if abort was signalled
+	 */
+	int abort;
 };
 
 int mount_handle_system_string_copy_from_64_bit_in_decimal(
@@ -106,6 +130,12 @@ int mount_handle_free(
 
 int mount_handle_signal_abort(
      mount_handle_t *mount_handle,
+     libcerror_error_t **error );
+
+int mount_handle_set_basename(
+     mount_handle_t *mount_handle,
+     const system_character_t *basename,
+     size_t basename_size,
      libcerror_error_t **error );
 
 int mount_handle_set_encrypted_root_plist(
@@ -154,6 +184,13 @@ int mount_handle_input_unlock(
 
 int mount_handle_is_locked(
      mount_handle_t *mount_handle,
+     libcerror_error_t **error );
+
+int mount_handle_get_logical_volume_by_index(
+     mount_handle_t *mount_handle,
+     libfvde_volume_group_t *fvde_volume_group,
+     int logical_volume_index,
+     libfvde_logical_volume_t **fvde_logical_volume,
      libcerror_error_t **error );
 
 int mount_handle_get_file_entry_by_path(
