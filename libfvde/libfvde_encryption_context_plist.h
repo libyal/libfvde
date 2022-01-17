@@ -118,6 +118,8 @@ int libfvde_encryption_context_plist_decrypt(
 
 int libfvde_encryption_context_plist_read_xml(
      libfvde_encryption_context_plist_t *plist,
+     const uint8_t *data,
+     size_t data_size,
      libcerror_error_t **error );
 
 int libfvde_encryption_context_plist_get_conversion_status(

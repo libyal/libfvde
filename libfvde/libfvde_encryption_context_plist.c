@@ -391,6 +391,10 @@ int libfvde_encryption_context_plist_set_data(
 
 		return( -1 );
 	}
+	if( data[ data_size - 1 ] != 0 )
+	{
+		data_size += 1;
+	}
 	internal_plist->data_decrypted = memory_allocate(
 	                                  sizeof( uint8_t ) * data_size );
 
@@ -419,10 +423,17 @@ int libfvde_encryption_context_plist_set_data(
 
 		goto on_error;
 	}
+	/* Make sure the plist data has a trailing 0 byte before passing it
+	 * to libfvde_encryption_context_plist_read_xml
+	 */
+	internal_plist->data_decrypted[ data_size - 1 ] = 0;
+
 	internal_plist->data_size = (size64_t) data_size;
 
 	result = libfvde_encryption_context_plist_read_xml(
 	          plist,
+	          internal_plist->data_decrypted,
+	          internal_plist->data_size,
 	          error );
 
 	if( result == -1 )
@@ -641,7 +652,6 @@ int libfvde_encryption_context_plist_decrypt(
 	libcaes_tweaked_context_t *xts_context                      = NULL;
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_decrypt";
-	size_t data_size                                            = 0;
 	int result                                                  = 0;
 
 	if( plist == NULL )
@@ -761,9 +771,7 @@ int libfvde_encryption_context_plist_decrypt(
 
 		goto on_error;
 	}
-	data_size = (size_t) internal_plist->data_size;
-
-	if( data_size > 0 )
+	if( internal_plist->data_size > 0 )
 	{
 		/* The tweak value is 0 and the block size is the size of the data
 		 */
@@ -787,9 +795,9 @@ int libfvde_encryption_context_plist_decrypt(
 		     tweak_value,
 		     16,
 		     internal_plist->data_encrypted,
-		     data_size,
+		     (size_t) internal_plist->data_size,
 		     internal_plist->data_decrypted,
-		     data_size,
+		     (size_t) internal_plist->data_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -802,6 +810,11 @@ int libfvde_encryption_context_plist_decrypt(
 			goto on_error;
 		}
 	}
+	/* Make sure the plist data has a trailing 0 byte before passing it
+	 * to libfvde_encryption_context_plist_read_xml
+	 */
+	internal_plist->data_decrypted[ internal_plist->data_size ] = 0;
+
 	if( libcaes_tweaked_context_free(
 	     &xts_context,
 	     error ) != 1 )
@@ -823,6 +836,8 @@ int libfvde_encryption_context_plist_decrypt(
 	{
 		result = libfvde_encryption_context_plist_read_xml(
 			  plist,
+			  internal_plist->data_decrypted,
+			  internal_plist->data_size + 1,
 			  error );
 
 		if( result == -1 )
@@ -875,6 +890,8 @@ on_error:
  */
 int libfvde_encryption_context_plist_read_xml(
      libfvde_encryption_context_plist_t *plist,
+     const uint8_t *data,
+     size_t data_size,
      libcerror_error_t **error )
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
@@ -896,13 +913,25 @@ int libfvde_encryption_context_plist_read_xml(
 	}
 	internal_plist = (libfvde_internal_encryption_context_plist_t *) plist;
 
-	if( internal_plist->data_decrypted == NULL )
+	if( data == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid plist - missing decrypted data.",
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( data_size == 0 )
+	 || ( data_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid data size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -918,15 +947,13 @@ int libfvde_encryption_context_plist_read_xml(
 
 		return( -1 );
 	}
-	internal_plist->data_decrypted[ internal_plist->data_size - 1 ] = 0;
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "%s: decrypted data:\n%s\n\n",
 		 function,
-		 internal_plist->data_decrypted );
+		 data );
 	}
 #endif
 	if( internal_plist->data_size > (size64_t) SSIZE_MAX )
@@ -955,8 +982,8 @@ int libfvde_encryption_context_plist_read_xml(
 	}
 	if( libfplist_property_list_copy_from_byte_stream(
 	     internal_plist->property_list,
-	     internal_plist->data_decrypted,
-	     (size_t) internal_plist->data_size,
+	     data,
+	     data_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1070,12 +1097,14 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfplist_property_get_sub_property_by_utf8_name(
-	     encryption_context_property,
-	     (uint8_t *) "CryptoUsers",
-	     11,
-	     &( internal_plist->crypto_users_property ),
-	     error ) != 1 )
+	result = libfplist_property_get_sub_property_by_utf8_name(
+	          encryption_context_property,
+	          (uint8_t *) "CryptoUsers",
+	          11,
+	          &( internal_plist->crypto_users_property ),
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1086,26 +1115,31 @@ int libfvde_encryption_context_plist_read_xml(
 
 		goto on_error;
 	}
-	if( libfplist_property_get_array_number_of_entries(
-	     internal_plist->crypto_users_property,
-	     &( internal_plist->number_of_crypto_users_entries ),
-	     error ) != 1 )
+	else if( result != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of CryptoUsers entries.",
-		 function );
+		if( libfplist_property_get_array_number_of_entries(
+		     internal_plist->crypto_users_property,
+		     &( internal_plist->number_of_crypto_users_entries ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of CryptoUsers entries.",
+			 function );
 
-		goto on_error;
+			goto on_error;
+		}
 	}
-	if( libfplist_property_get_sub_property_by_utf8_name(
-	     encryption_context_property,
-	     (uint8_t *) "WrappedVolumeKeys",
-	     17,
-	     &( internal_plist->wrapped_volume_keys_property ),
-	     error ) != 1 )
+	result = libfplist_property_get_sub_property_by_utf8_name(
+	          encryption_context_property,
+	          (uint8_t *) "WrappedVolumeKeys",
+	          17,
+	          &( internal_plist->wrapped_volume_keys_property ),
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,

@@ -68,6 +68,12 @@ int libfvde_encrypted_metadata_free(
      libfvde_encrypted_metadata_t **encrypted_metadata,
      libcerror_error_t **error );
 
+int libfvde_encrypted_metadata_read_type_0x0010(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
 int libfvde_encrypted_metadata_read_type_0x0011(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
@@ -153,6 +159,12 @@ int libfvde_encrypted_metadata_read_type_0x0025(
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read_type_0x0105(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_read_type_0x0205(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,

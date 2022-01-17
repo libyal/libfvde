@@ -4,6 +4,7 @@ TODO
   - fix libfvde_volume_set functions
   - fix python bindings
   - update mount_handle_input_unlock
+  - add legacy logical volume support for libfvde_logical_volume_set_keys
 
 * libfvde
   - optimize XML plist parser to directly generate keys

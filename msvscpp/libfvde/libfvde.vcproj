@@ -218,10 +218,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libfvde\libfvde_legacy.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\libfvde\libfvde_logical_volume.c"
 				>
 			</File>
@@ -349,10 +345,6 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_keyring.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libfvde\libfvde_legacy.h"
 				>
 			</File>
 			<File

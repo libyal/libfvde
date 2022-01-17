@@ -43,7 +43,6 @@ libfvde_la_SOURCES = \
 	libfvde_extern.h \
 	libfvde_io_handle.c libfvde_io_handle.h \
 	libfvde_keyring.c libfvde_keyring.h \
-	libfvde_legacy.c libfvde_legacy.h \
 	libfvde_libbfio.h \
 	libfvde_libcaes.h \
 	libfvde_libcdata.h \

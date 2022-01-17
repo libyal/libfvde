@@ -23,6 +23,7 @@ Supported encryption volume types:
 
 * removable media volume - with encrypted context (initial support as of 20121113 version)
 * system volume
+* multiple logical volumes
 
 Supported protection methods:
 

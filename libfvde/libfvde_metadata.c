@@ -581,13 +581,16 @@ int libfvde_metadata_read_type_0x0011(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		libcnotify_printf(
-		 "%s: remaining data:\n",
-		 function );
-		libcnotify_print_data(
-		 &( block_data[ 8192 - 64 ] ),
-		 io_handle->metadata_size - 8192,
-		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+		if( block_data_offset < ( io_handle->metadata_size - 64 ) )
+		{
+			libcnotify_printf(
+			 "%s: remaining data:\n",
+			 function );
+			libcnotify_print_data(
+			 &( block_data[ block_data_offset ] ),
+			 io_handle->metadata_size - ( block_data_offset + 64 ),
+			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+		}
 	}
 #endif
 	/* The offset is relative to the start of the metadata block */

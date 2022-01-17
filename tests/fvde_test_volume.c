@@ -47,7 +47,6 @@
 #include "fvde_test_macros.h"
 #include "fvde_test_memory.h"
 
-#include "../libfvde/libfvde_legacy.h"
 #include "../libfvde/libfvde_volume.h"
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
