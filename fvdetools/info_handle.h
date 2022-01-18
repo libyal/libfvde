@@ -40,47 +40,47 @@ typedef struct info_handle info_handle_t;
 
 struct info_handle
 {
-	/* The volume master key
+	/* The key data
 	 */
-	uint8_t volume_master_key[ 16 ];
+	uint8_t key_data[ 16 ];
 
-	/* Value to indicate the volume master key is set
+	/* The key data size
 	 */
-	uint8_t volume_master_key_is_set;
-
-	/* The recovery password
-	 */
-	system_character_t *recovery_password;
-
-	/* The recovery password size
-	 */
-	size_t recovery_password_size;
-
-	/* The user password
-	 */
-	system_character_t *user_password;
-
-	/* The user password size
-	 */
-	size_t user_password_size;
+	size_t key_data_size;
 
 	/* The volume offset
 	 */
 	off64_t volume_offset;
 
+	/* The recovery password
+	 */
+	const system_character_t *recovery_password;
+
+	/* The recovery password length
+	 */
+	size_t recovery_password_length;
+
+	/* The user password
+	 */
+	const system_character_t *user_password;
+
+	/* The user password length
+	 */
+	size_t user_password_length;
+
 	/* The libbfio physical volume file IO pool
 	 */
 	libbfio_pool_t *physical_volume_file_io_pool;
 
-	/* The libfvde input volume
+	/* The libfvde volume
 	 */
-	libfvde_volume_t *input_volume;
+	libfvde_volume_t *volume;
 
-	/* The volume group
+	/* The libfvde volume group
 	 */
 	libfvde_volume_group_t *volume_group;
 
-	/* The logical_volumes array
+	/* The logical volumes array
 	 */
 	libcdata_array_t *logical_volumes_array;
 
@@ -141,13 +141,13 @@ int info_handle_set_volume_offset(
      const system_character_t *string,
      libcerror_error_t **error );
 
-int info_handle_open_input(
+int info_handle_open(
      info_handle_t *info_handle,
      system_character_t * const * filenames,
      int number_of_filenames,
      libcerror_error_t **error );
 
-int info_handle_close_input(
+int info_handle_close(
      info_handle_t *info_handle,
      libcerror_error_t **error );
 

@@ -70,9 +70,9 @@ void usage_fprint(
 
 	fprintf( stream, "Usage: fvdemount [ -e plist_path ] [ -k keys ] [ -o offset ] [ -p password ]\n"
 	                 "                 [ -r recovery_password ] [ -X extended_options ] [ -hvV ]\n"
-	                 "                 volume mount_point\n\n" );
+	                 "                 sources mount_point\n\n" );
 
-	fprintf( stream, "\tvolume:      a FileVault Drive Encrypted (FVDE) volume\n\n" );
+	fprintf( stream, "\tsources:     one or more source files or devices\n\n" );
 	fprintf( stream, "\tmount_point: the directory to serve as mount point\n\n" );
 
 	fprintf( stream, "\t-e:          specify the path of the EncryptedRoot.plist.wipekey file\n" );
@@ -139,8 +139,7 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	system_character_t password[ 64 ];
-
+	system_character_t * const *sources                  = NULL;
 	libfvde_error_t *error                               = NULL;
 	system_character_t *mount_point                      = NULL;
 	system_character_t *option_encrypted_root_plist_path = NULL;
@@ -150,10 +149,10 @@ int main( int argc, char * const argv[] )
 	system_character_t *option_password                  = NULL;
 	system_character_t *option_recovery_password         = NULL;
 	const system_character_t *path_prefix                = NULL;
-	system_character_t *source                           = NULL;
 	char *program                                        = "fvdemount";
 	system_integer_t option                              = 0;
 	size_t path_prefix_size                              = 0;
+	int number_of_sources                                = 0;
 	int result                                           = 0;
 	int verbose                                          = 0;
 
@@ -277,7 +276,8 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
-	source = argv[ optind++ ];
+	sources           = &( argv[ optind ] );
+	number_of_sources = argc - optind - 1;
 
 	if( optind == argc )
 	{
@@ -290,7 +290,7 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
-	mount_point = argv[ optind ];
+	mount_point = argv[ argc - 1 ];
 
 	libcnotify_verbose_set(
 	 verbose );
@@ -402,78 +402,16 @@ int main( int argc, char * const argv[] )
 	}
 	if( mount_handle_open(
 	     fvdemount_mount_handle,
-	     source,
+	     sources,
+	     number_of_sources,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to open source volume\n" );
+		 "Unable to open: %" PRIs_SYSTEM ".\n",
+		 sources[ 0 ] );
 
 		goto on_error;
-	}
-	result = mount_handle_is_locked(
-	          fvdemount_mount_handle,
-	          &error );
-
-	if( result == -1 )
-	{
-		fprintf(
-		 stderr,
-		 "Unable to determine if source volume is locked\n" );
-
-		goto on_error;
-	}
-	if( ( result != 0 )
-	 && ( option_keys == NULL )
-	 && ( option_password == NULL )
-	 && ( option_recovery_password == NULL ) )
-	{
-		fprintf(
-		 stdout,
-		 "The source volume is locked and a password is needed to unlock it.\n\n" );
-
-		if( fvdetools_prompt_for_password(
-		     stdout,
-		     "Password",
-		     password,
-		     64,
-		     &error ) != 1 )
-		{
-			fprintf(
-			 stderr,
-			 "Unable to retrieve password.\n" );
-
-			goto on_error;
-		}
-		if( mount_handle_set_password(
-		     fvdemount_mount_handle,
-		     password,
-		     &error ) != 1 )
-		{
-			fprintf(
-			 stderr,
-			 "Unable to set password.\n" );
-
-			goto on_error;
-		}
-		fprintf(
-		 stdout,
-		 "\n\n" );
-
-		if( mount_handle_input_unlock(
-		     fvdemount_mount_handle,
-		     &error ) != 1 )
-		{
-			fprintf(
-			 stderr,
-			 "Unable to unlock volume.\n" );
-
-			goto on_error;
-		}
-		memory_set(
-		 password,
-		 0,
-		 64 );
 	}
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
 	if( option_extended_options != NULL )
@@ -771,11 +709,6 @@ on_error:
 		 &fvdemount_mount_handle,
 		 NULL );
 	}
-	memory_set(
-	 password,
-	 0,
-	 64 );
-
 	return( EXIT_FAILURE );
 }
 

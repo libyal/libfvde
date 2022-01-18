@@ -48,7 +48,7 @@ int libfvde_volume_open_file_io_handle(
      int access_flags,
      libfvde_error_t **error );
 
-LIBFVDE_EXTERN \
+extern \
 int libfvde_volume_open_physical_volume_files_file_io_pool(
      libfvde_volume_t *handle,
      libbfio_pool_t *file_io_pool,
@@ -289,7 +289,7 @@ int info_handle_free(
 	{
 		if( ( *info_handle )->physical_volume_file_io_pool != NULL )
 		{
-			if( info_handle_close_input(
+			if( info_handle_close(
 			     *info_handle,
 			     error ) != 0 )
 			{
@@ -297,7 +297,7 @@ int info_handle_free(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-				 "%s: unable to close input.",
+				 "%s: unable to close info handle.",
 				 function );
 
 				result = -1;
@@ -318,7 +318,7 @@ int info_handle_free(
 			result = -1;
 		}
 		if( memory_set(
-		     ( *info_handle )->volume_master_key,
+		     ( *info_handle )->key_data,
 		     0,
 		     16 ) == NULL )
 		{
@@ -326,54 +326,10 @@ int info_handle_free(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_MEMORY,
 			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear volume master key.",
+			 "%s: unable to clear key data.",
 			 function );
 
 			result = -1;
-		}
-		if( ( *info_handle )->recovery_password != NULL )
-		{
-			if( memory_set(
-			     ( *info_handle )->recovery_password,
-			     0,
-			     ( *info_handle )->recovery_password_size ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-				 "%s: unable to clear recovery password.",
-				 function );
-
-				result = -1;
-			}
-			memory_free(
-			 ( *info_handle )->recovery_password );
-
-			( *info_handle )->recovery_password      = NULL;
-			( *info_handle )->recovery_password_size = 0;
-		}
-		if( ( *info_handle )->user_password != NULL )
-		{
-			if( memory_set(
-			     ( *info_handle )->user_password,
-			     0,
-			     ( *info_handle )->user_password_size ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-				 "%s: unable to clear user password.",
-				 function );
-
-				result = -1;
-			}
-			memory_free(
-			 ( *info_handle )->user_password );
-
-			( *info_handle )->user_password      = NULL;
-			( *info_handle )->user_password_size = 0;
 		}
 		memory_free(
 		 *info_handle );
@@ -403,17 +359,17 @@ int info_handle_signal_abort(
 
 		return( -1 );
 	}
-	if( info_handle->input_volume != NULL )
+	if( info_handle->volume != NULL )
 	{
 		if( libfvde_volume_signal_abort(
-		     info_handle->input_volume,
+		     info_handle->volume,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to signal input volume to abort.",
+			 "%s: unable to signal volume to abort.",
 			 function );
 
 			return( -1 );
@@ -451,7 +407,7 @@ int info_handle_set_keys(
 	                 string );
 
 	if( memory_set(
-	     info_handle->volume_master_key,
+	     info_handle->key_data,
 	     0,
 	     16 ) == NULL )
 	{
@@ -459,7 +415,7 @@ int info_handle_set_keys(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear volume master key.",
+		 "%s: unable to clear key data.",
 		 function );
 
 		goto on_error;
@@ -490,7 +446,7 @@ int info_handle_set_keys(
 	if( libuna_base16_stream_copy_to_byte_stream(
 	     (uint8_t *) string,
 	     string_length,
-	     info_handle->volume_master_key,
+	     info_handle->key_data,
 	     16,
 	     base16_variant,
 	     0,
@@ -500,20 +456,22 @@ int info_handle_set_keys(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy volume master key.",
+		 "%s: unable to copy key data.",
 		 function );
 
 		goto on_error;
 	}
-	info_handle->volume_master_key_is_set = 1;
+	info_handle->key_data_size = 16;
 
 	return( 1 );
 
 on_error:
 	memory_set(
-	 info_handle->volume_master_key,
+	 info_handle->key_data,
 	 0,
 	 16 );
+
+	info_handle->key_data_size = 0;
 
 	return( -1 );
 }
@@ -535,18 +493,7 @@ int info_handle_set_password(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid info handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( info_handle->user_password != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid info handle - user password value already set.",
+		 "%s: invalid mount handle.",
 		 function );
 
 		return( -1 );
@@ -565,49 +512,10 @@ int info_handle_set_password(
 	string_length = system_string_length(
 	                 string );
 
-	info_handle->user_password_size = string_length + 1;
+	info_handle->user_password        = string;
+	info_handle->user_password_length = string_length;
 
-	info_handle->user_password = system_string_allocate(
-	                              info_handle->user_password_size );
-
-	if( info_handle->user_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create user password.",
-		 function );
-
-		goto on_error;
-	}
-	if( system_string_copy(
-	     info_handle->user_password,
-	     string,
-	     info_handle->user_password_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy user password.",
-		 function );
-
-		goto on_error;
-	}
 	return( 1 );
-
-on_error:
-	if( info_handle->user_password != NULL )
-	{
-		memory_free(
-		 info_handle->user_password );
-
-		info_handle->user_password = NULL;
-	}
-	info_handle->user_password_size = 0;
-
-	return( -1 );
 }
 
 /* Sets the recovery password
@@ -627,18 +535,7 @@ int info_handle_set_recovery_password(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid info handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( info_handle->recovery_password != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid info handle - recovery password value already set.",
+		 "%s: invalid mount handle.",
 		 function );
 
 		return( -1 );
@@ -657,49 +554,10 @@ int info_handle_set_recovery_password(
 	string_length = system_string_length(
 	                 string );
 
-	info_handle->recovery_password_size = string_length + 1;
+	info_handle->recovery_password        = string;
+	info_handle->recovery_password_length = string_length;
 
-	info_handle->recovery_password = system_string_allocate(
-	                                  info_handle->recovery_password_size );
-
-	if( info_handle->recovery_password == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create recovery password.",
-		 function );
-
-		goto on_error;
-	}
-	if( system_string_copy(
-	     info_handle->recovery_password,
-	     string,
-	     info_handle->recovery_password_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy recovery password.",
-		 function );
-
-		goto on_error;
-	}
 	return( 1 );
-
-on_error:
-	if( info_handle->recovery_password != NULL )
-	{
-		memory_free(
-		 info_handle->recovery_password );
-
-		info_handle->recovery_password = NULL;
-	}
-	info_handle->recovery_password_size = 0;
-
-	return( -1 );
 }
 
 /* Reads the encrypted root plist file
@@ -725,12 +583,12 @@ int info_handle_read_encrypted_root_plist(
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libfvde_volume_read_encrypted_root_plist_wide(
-	     info_handle->input_volume,
+	     info_handle->volume,
 	     filename,
 	     error ) != 1 )
 #else
 	if( libfvde_volume_read_encrypted_root_plist(
-	     info_handle->input_volume,
+	     info_handle->volume,
 	     filename,
 	     error ) != 1 )
 #endif
@@ -796,7 +654,7 @@ int info_handle_set_volume_offset(
 /* Opens the info handle
  * Returns 1 if successful or -1 on error
  */
-int info_handle_open_input(
+int info_handle_open(
      info_handle_t *info_handle,
      system_character_t * const * filenames,
      int number_of_filenames,
@@ -806,7 +664,7 @@ int info_handle_open_input(
 
 	libbfio_handle_t *file_io_handle         = NULL;
 	libfvde_logical_volume_t *logical_volume = NULL;
-	static char *function                    = "info_handle_open_input";
+	static char *function                    = "info_handle_open";
 	size_t filename_length                   = 0;
 	size_t password_length                   = 0;
 	int entry_index                          = 0;
@@ -837,13 +695,13 @@ int info_handle_open_input(
 
 		return( -1 );
 	}
-	if( info_handle->input_volume != NULL )
+	if( info_handle->volume != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid info handle - input volume value already set.",
+		 "%s: invalid info handle - volume value already set.",
 		 function );
 
 		return( -1 );
@@ -914,20 +772,20 @@ int info_handle_open_input(
 		goto on_error;
 	}
 	if( libfvde_volume_initialize(
-	     &( info_handle->input_volume ),
+	     &( info_handle->volume ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize input volume.",
+		 "%s: unable to initialize volume.",
 		 function );
 
 		goto on_error;
 	}
 	result = libfvde_volume_open_file_io_handle(
-	          info_handle->input_volume,
+	          info_handle->volume,
 	          file_io_handle,
 	          LIBFVDE_OPEN_READ,
 	          error );
@@ -938,7 +796,7 @@ int info_handle_open_input(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open input volume.",
+		 "%s: unable to open volume.",
 		 function );
 
 		goto on_error;
@@ -1062,7 +920,7 @@ int info_handle_open_input(
 		file_io_handle = NULL;
 	}
 	if( libfvde_volume_open_physical_volume_files_file_io_pool(
-	     info_handle->input_volume,
+	     info_handle->volume,
 	     info_handle->physical_volume_file_io_pool,
 	     error ) != 1 )
 	{
@@ -1076,7 +934,7 @@ int info_handle_open_input(
 		goto on_error;
 	}
 	if( libfvde_volume_get_volume_group(
-	     info_handle->input_volume,
+	     info_handle->volume,
 	     &( info_handle->volume_group ),
 	     error ) != 1 )
 	{
@@ -1123,11 +981,11 @@ int info_handle_open_input(
 
 			goto on_error;
 		}
-		if( info_handle->volume_master_key_is_set != 0 )
+		if( info_handle->key_data_size != 0 )
 		{
 			if( libfvde_logical_volume_set_keys(
 			     logical_volume,
-			     info_handle->volume_master_key,
+			     info_handle->key_data,
 			     16,
 			     error ) != 1 )
 			{
@@ -1147,13 +1005,13 @@ int info_handle_open_input(
 			if( libfvde_logical_volume_set_utf16_password(
 			     logical_volume,
 			     (uint16_t *) info_handle->user_password,
-			     info_handle->user_password_size - 1,
+			     info_handle->user_password_length,
 			     error ) != 1 )
 #else
 			if( libfvde_logical_volume_set_utf8_password(
 			     logical_volume,
 			     (uint8_t *) info_handle->user_password,
-			     info_handle->user_password_size - 1,
+			     info_handle->user_password_length,
 			     error ) != 1 )
 #endif
 			{
@@ -1173,13 +1031,13 @@ int info_handle_open_input(
 			if( libfvde_logical_volume_set_utf16_recovery_password(
 			     logical_volume,
 			     (uint16_t *) info_handle->recovery_password,
-			     info_handle->recovery_password_size - 1,
+			     info_handle->recovery_password_length,
 			     error ) != 1 )
 #else
 			if( libfvde_logical_volume_set_utf8_recovery_password(
 			     logical_volume,
 			     (uint8_t *) info_handle->recovery_password,
-			     info_handle->recovery_password_size - 1,
+			     info_handle->recovery_password_length,
 			     error ) != 1 )
 #endif
 			{
@@ -1340,13 +1198,13 @@ on_error:
 		 &( info_handle->volume_group ),
 		 NULL );
 	}
-	if( info_handle->input_volume != NULL )
+	if( info_handle->volume != NULL )
 	{
 		libfvde_volume_free(
-		 &( info_handle->input_volume ),
+		 &( info_handle->volume ),
 		 NULL );
 	}
-	/* The file IO pool must be freed after the input volume
+	/* The file IO pool must be freed after the volume
 	 */
 	if( info_handle->physical_volume_file_io_pool != NULL )
 	{
@@ -1371,11 +1229,11 @@ on_error:
 /* Closes the info handle
  * Returns the 0 if succesful or -1 on error
  */
-int info_handle_close_input(
+int info_handle_close(
      info_handle_t *info_handle,
      libcerror_error_t **error )
 {
-	static char *function = "info_handle_close_input";
+	static char *function = "info_handle_close";
 	int result            = 0;
 
 	if( info_handle == NULL )
@@ -1400,13 +1258,13 @@ int info_handle_close_input(
 
 		return( -1 );
 	}
-	if( info_handle->input_volume == NULL )
+	if( info_handle->volume == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid info handle - missing input volume.",
+		 "%s: invalid info handle - missing volume.",
 		 function );
 
 		return( -1 );
@@ -1442,27 +1300,27 @@ int info_handle_close_input(
 		}
 	}
 	if( libfvde_volume_close(
-	     info_handle->input_volume,
+	     info_handle->volume,
 	     error ) != 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close input volume.",
+		 "%s: unable to close volume.",
 		 function );
 
 		result = -1;
 	}
 	if( libfvde_volume_free(
-	     &( info_handle->input_volume ),
+	     &( info_handle->volume ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free input volume.",
+		 "%s: unable to free volume.",
 		 function );
 
 		result = -1;

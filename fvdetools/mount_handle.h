@@ -28,6 +28,7 @@
 #include <types.h>
 
 #include "fvdetools_libbfio.h"
+#include "fvdetools_libcdata.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libfvde.h"
 #include "mount_file_entry.h"
@@ -41,14 +42,6 @@ typedef struct mount_handle mount_handle_t;
 
 struct mount_handle
 {
-	/* The basename
-	 */
-	system_character_t *basename;
-
-	/* The basename size
-	 */
-	size_t basename_size;
-
 	/* The file system
 	 */
 	mount_file_system_t *file_system;
@@ -61,21 +54,13 @@ struct mount_handle
 	 */
 	uint8_t key_data[ 16 ];
 
-	/* The key size
+	/* The key data size
 	 */
-	uint8_t key_size;
+	size_t key_data_size;
 
 	/* The volume offset
 	 */
 	off64_t volume_offset;
-
-	/* The password
-	 */
-	const system_character_t *password;
-
-	/* The password length
-	 */
-	size_t password_length;
 
 	/* The recovery password
 	 */
@@ -85,9 +70,13 @@ struct mount_handle
 	 */
 	size_t recovery_password_length;
 
-	/* Value to indicate the mount handle is locked
+	/* The user password
 	 */
-	int is_locked;
+	const system_character_t *user_password;
+
+	/* The user password length
+	 */
+	size_t user_password_length;
 
 	/* The libbfio file IO handle
 	 */
@@ -132,12 +121,6 @@ int mount_handle_signal_abort(
      mount_handle_t *mount_handle,
      libcerror_error_t **error );
 
-int mount_handle_set_basename(
-     mount_handle_t *mount_handle,
-     const system_character_t *basename,
-     size_t basename_size,
-     libcerror_error_t **error );
-
 int mount_handle_set_encrypted_root_plist(
      mount_handle_t *mount_handle,
      const system_character_t *filename,
@@ -171,26 +154,12 @@ int mount_handle_set_path_prefix(
 
 int mount_handle_open(
      mount_handle_t *mount_handle,
-     const system_character_t *filename,
+     system_character_t * const * filenames,
+     int number_of_filenames,
      libcerror_error_t **error );
 
 int mount_handle_close(
      mount_handle_t *mount_handle,
-     libcerror_error_t **error );
-
-int mount_handle_input_unlock(
-     mount_handle_t *mount_handle,
-     libcerror_error_t **error );
-
-int mount_handle_is_locked(
-     mount_handle_t *mount_handle,
-     libcerror_error_t **error );
-
-int mount_handle_get_logical_volume_by_index(
-     mount_handle_t *mount_handle,
-     libfvde_volume_group_t *fvde_volume_group,
-     int logical_volume_index,
-     libfvde_logical_volume_t **fvde_logical_volume,
      libcerror_error_t **error );
 
 int mount_handle_get_file_entry_by_path(

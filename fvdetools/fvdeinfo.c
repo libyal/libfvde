@@ -343,7 +343,7 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 	}
-	if( info_handle_open_input(
+	if( info_handle_open(
 	     fvdeinfo_info_handle,
 	     sources,
 	     number_of_sources,
@@ -366,7 +366,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( info_handle_close_input(
+	if( info_handle_close(
 	     fvdeinfo_info_handle,
 	     &error ) != 0 )
 	{

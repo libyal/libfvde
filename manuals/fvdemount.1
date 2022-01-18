@@ -1,4 +1,4 @@
-.Dd March 16, 2019
+.Dd January 18, 2022
 .Dt fvdemount
 .Os libfvde
 .Sh NAME
@@ -12,7 +12,7 @@
 .Op Fl r Ar password
 .Op Fl X Ar extended_options
 .Op Fl hvV
-.Ar source
+.Ar sources
 .Sh DESCRIPTION
 .Nm fvdemount
 is a utility to mount a FileVault Drive Encrypted (FVDE) volume
@@ -24,8 +24,8 @@ package.
 .Nm libfvde
 is a library to acess the FileVault Drive Encryption (FVDE) format
 .Pp
-.Ar source
-is the source file.
+.Ar sources
+one or more source files or devices.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds

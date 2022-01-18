@@ -6,8 +6,7 @@ TODO
   - handle metadata physical volume index
   - read and check volume headers, pool entries should match physical volume IDs
   - create pool if not set?
-* volume group refactor
-  - update mount_handle_input_unlock
+  - change python bindings
 
 * libfvde
   - optimize XML plist parser to directly generate keys
