@@ -422,7 +422,8 @@ Typically stored in the next block containing the volume group descriptor
 | 164 | 4 | | Volume group XML plist data size
 | 168 | 4 | | [yellow-background]*Unknown (Copy of volume group XML plist data size?)* +
 [yellow-background]*Could this be used for compression similar as for metadata block type 0x0019?*
-| 172 | 4 | | [yellow-background]*Unknown*
+| 172 | 2 | | [yellow-background]*Unknown (empty values)*
+| 174 | 2 | | [yellow-background]*Unknown (physical volume index, where 0 is the first physical volume)*
 | 176 | 8 | | Volume group number of blocks +
 [yellow-background]*Or physical volume number of blocks?* +
 [yellow-background]*Or block number of backup physical volume header?*
@@ -467,9 +468,9 @@ Seen: 0, 1
 | 16 | 8 | | [yellow-background]*Unknown (empty values)*
 | 24 | 8 | | [yellow-background]*Unknown*
 | 32 | 6 | | primary encrypted metadata (physical volume) block number
-| 38 | 2 | | primary encrypted metadata physical volume index, where 0 is the first physical volume
+| 38 | 2 | | primary encrypted metadata (physical) volume index, where 0 is the first physical volume
 | 40 | 6 | | secondary encrypted metadata (physical volume) block number
-| 46 | 2 | | secondary encrypted metadata physical volume index, where 0 is the first physical volume
+| 46 | 2 | | secondary encrypted metadata (physical) volume index, where 0 is the first physical volume
 | 48 | ... | | volume group XML plist data
 |===
 
@@ -1763,10 +1764,9 @@ consists of:
 Seen: 0, 0x00400000
 | 24 | 4 | | [yellow-background]*Unknown (empty values)*
 | 28 | 4 | | [yellow-background]*Unknown (empty values)*
-| 32 | 4 | | Physical volume block number +
-Contains the first block number relative from the start of the Core Storage volume of the logical volume data +
-[yellow-background]*0 if not set e.g. non-removable?*
-| 36 | 4 | | [yellow-background]*Unknown (empty values)*
+| 32 | 6 | | Physical volume block number +
+Contains the first block number relative from the start of the Core Storage volume of the logical volume data
+| 36 | 2 | | Physical volume index
 |===
 
 [yellow-background]*TODO: could this be used as volume offset of removable media?*

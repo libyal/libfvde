@@ -69,7 +69,7 @@ int libfvde_volume_data_handle_free(
 
 int libfvde_volume_data_handle_read_sector(
      libfvde_volume_data_handle_t *volume_data_handle,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libfdata_vector_t *vector,
      libfdata_cache_t *cache,
      int element_index,

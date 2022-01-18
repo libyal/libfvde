@@ -264,6 +264,10 @@ int libfvde_metadata_read_type_0x0011(
 	 &( block_data[ 160 ] ),
 	 xml_offset );
 
+	byte_stream_copy_to_uint16_little_endian(
+	 &( block_data[ 174 ] ),
+	 metadata->physical_volume_index );
+
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -466,13 +470,18 @@ int libfvde_metadata_read_type_0x0011(
 		 function,
 		 value_32bit );
 
-		byte_stream_copy_to_uint32_little_endian(
+		byte_stream_copy_to_uint16_little_endian(
 		 &( block_data[ 172 ] ),
-		 value_32bit );
+		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown18\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown18\t\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
-		 value_32bit );
+		 value_16bit );
+
+		libcnotify_printf(
+		 "%s: physical volume index\t\t\t: %" PRIu16 "\n",
+		 function,
+		 metadata->physical_volume_index );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ 176 ] ),
@@ -614,9 +623,15 @@ int libfvde_metadata_read_type_0x0011(
 	 &( block_data[ volume_groups_descriptor_offset + 32 ] ),
 	 metadata->primary_encrypted_metadata_offset );
 
+	metadata->primary_encrypted_metadata_volume_index = (uint16_t) ( metadata->primary_encrypted_metadata_offset >> 48 );
+	metadata->primary_encrypted_metadata_offset      &= 0x0000ffffffffffffUL;
+
 	byte_stream_copy_to_uint64_little_endian(
 	 &( block_data[ volume_groups_descriptor_offset + 40 ] ),
 	 metadata->secondary_encrypted_metadata_offset );
+
+	metadata->secondary_encrypted_metadata_volume_index = (uint16_t) ( metadata->secondary_encrypted_metadata_offset >> 48 );
+	metadata->secondary_encrypted_metadata_offset      &= 0x0000ffffffffffffUL;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -653,22 +668,22 @@ int libfvde_metadata_read_type_0x0011(
 		libcnotify_printf(
 		 "%s: primary encrypted metadata block number\t: %" PRIu64 "\n",
 		 function,
-		 metadata->primary_encrypted_metadata_offset & 0x0000ffffffffffffUL );
+		 metadata->primary_encrypted_metadata_offset );
 
 		libcnotify_printf(
-		 "%s: primary encrypted metadata physical volume\t: %" PRIu64 "\n",
+		 "%s: primary encrypted metadata volume index\t: %" PRIu16 "\n",
 		 function,
-		 metadata->primary_encrypted_metadata_offset >> 48 );
+		 metadata->primary_encrypted_metadata_volume_index );
 
 		libcnotify_printf(
 		 "%s: secondary encrypted metadata block number\t: %" PRIu64 "\n",
 		 function,
-		 metadata->secondary_encrypted_metadata_offset & 0x0000ffffffffffffUL );
+		 metadata->secondary_encrypted_metadata_offset );
 
 		libcnotify_printf(
-		 "%s: secondary encrypted metadata physical volume\t: %" PRIu64 "\n",
+		 "%s: secondary encrypted metadata volume index\t: %" PRIu16 "\n",
 		 function,
-		 metadata->secondary_encrypted_metadata_offset >> 48 );
+		 metadata->secondary_encrypted_metadata_volume_index );
 
 		libcnotify_printf(
 		 "\n" );

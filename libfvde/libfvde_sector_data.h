@@ -40,10 +40,6 @@ typedef struct libfvde_sector_data libfvde_sector_data_t;
 
 struct libfvde_sector_data
 {
-	/* The encrypted data
-	 */
-	uint8_t *encrypted_data;
-
 	/* The data
 	 */
 	uint8_t *data;
@@ -65,7 +61,8 @@ int libfvde_sector_data_free(
 int libfvde_sector_data_read(
      libfvde_sector_data_t *sector_data,
      libcaes_tweaked_context_t *xts_context,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      off64_t file_offset,
      uint64_t block_number,
      uint8_t is_encrypted,

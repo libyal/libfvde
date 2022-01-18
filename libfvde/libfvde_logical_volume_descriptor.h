@@ -120,6 +120,7 @@ int libfvde_logical_volume_descriptor_get_size(
 
 int libfvde_logical_volume_descriptor_get_first_block_number(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     uint16_t *volume_index,
      uint64_t *block_number,
      libcerror_error_t **error );
 

@@ -52,9 +52,9 @@ struct libfvde_internal_logical_volume
 	 */
 	libfvde_io_handle_t *io_handle;
 
-	/* The file IO handle
+	/* The file IO pool
 	 */
-	libbfio_handle_t *file_io_handle;
+	libbfio_pool_t *file_io_pool;
 
 	/* The logical volume descriptor
 	 */
@@ -122,7 +122,7 @@ struct libfvde_internal_logical_volume
 int libfvde_logical_volume_initialize(
      libfvde_logical_volume_t **logical_volume,
      libfvde_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
      libfvde_encrypted_metadata_t *encrypted_metadata,
      libfvde_encryption_context_plist_t *encrypted_root_plist,
@@ -135,7 +135,7 @@ int libfvde_logical_volume_free(
 
 int libfvde_internal_logical_volume_open_read(
      libfvde_internal_logical_volume_t *internal_logical_volume,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error );
 
 int libfvde_internal_logical_volume_open_read_keys(
@@ -150,7 +150,8 @@ int libfvde_internal_logical_volume_open_read_volume_header_data(
 
 int libfvde_internal_logical_volume_open_read_volume_header(
      libfvde_internal_logical_volume_t *internal_logical_volume,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      off64_t file_offset,
      libcerror_error_t **error );
 
@@ -160,7 +161,7 @@ int libfvde_internal_logical_volume_close(
 
 int libfvde_internal_logical_volume_unlock(
      libfvde_internal_logical_volume_t *internal_logical_volume,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
@@ -168,9 +169,9 @@ int libfvde_logical_volume_unlock(
      libfvde_logical_volume_t *logical_volume,
      libcerror_error_t **error );
 
-ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
          libfvde_internal_logical_volume_t *internal_logical_volume,
-         libbfio_handle_t *file_io_handle,
+         libbfio_pool_t *file_io_pool,
          void *buffer,
          size_t buffer_size,
          libcerror_error_t **error );

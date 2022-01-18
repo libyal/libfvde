@@ -63,19 +63,19 @@ void usage_fprint(
 
 	fprintf( stream, "Usage: fvdeinfo [ -e filename ] [ -k keys ] [ -o offset ]\n"
 	                 "                [ -p password ] [ -r password ] [ -huvV ]\n"
-	                 "                source\n\n" );
+	                 "                sources\n\n" );
 
-	fprintf( stream, "\tsource: the source file or device\n\n" );
+	fprintf( stream, "\tsources: one or more source files or devices\n\n" );
 
-	fprintf( stream, "\t-e:     specify the name of the EncryptedRoot.plist.wipekey file\n" );
-	fprintf( stream, "\t-h:     shows this help\n" );
-	fprintf( stream, "\t-k:     the volume master key formatted in base16\n" );
-	fprintf( stream, "\t-o:     specify the volume offset\n" );
-	fprintf( stream, "\t-p:     specify the password\n" );
-	fprintf( stream, "\t-r:     specify the recovery password\n" );
-	fprintf( stream, "\t-u:     unattended mode (disables user interaction)\n" );
-	fprintf( stream, "\t-v:     verbose output to stderr\n" );
-	fprintf( stream, "\t-V:     print version\n" );
+	fprintf( stream, "\t-e:      specify the name of the EncryptedRoot.plist.wipekey file\n" );
+	fprintf( stream, "\t-h:      shows this help\n" );
+	fprintf( stream, "\t-k:      the volume master key formatted in base16\n" );
+	fprintf( stream, "\t-o:      specify the volume offset\n" );
+	fprintf( stream, "\t-p:      specify the password\n" );
+	fprintf( stream, "\t-r:      specify the recovery password\n" );
+	fprintf( stream, "\t-u:      unattended mode (disables user interaction)\n" );
+	fprintf( stream, "\t-v:      verbose output to stderr\n" );
+	fprintf( stream, "\t-V:      print version\n" );
 }
 
 /* Signal handler for fvdeinfo
@@ -130,15 +130,16 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
+	system_character_t * const *sources                      = NULL;
 	libfvde_error_t *error                                   = NULL;
 	system_character_t *option_encrypted_root_plist_filename = NULL;
 	system_character_t *option_keys                          = NULL;
 	system_character_t *option_password                      = NULL;
 	system_character_t *option_recovery_password             = NULL;
 	system_character_t *option_volume_offset                 = NULL;
-	system_character_t *source                               = NULL;
 	char *program                                            = "fvdeinfo";
 	system_integer_t option                                  = 0;
+	int number_of_sources                                    = 0;
 	int unattend_mode                                        = 0;
 	int verbose                                              = 0;
 
@@ -250,7 +251,8 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
-	source = argv[ optind ];
+	sources           = &( argv[ optind ] );
+	number_of_sources = argc - optind;
 
 	libcnotify_verbose_set(
 	 verbose );
@@ -343,13 +345,14 @@ int main( int argc, char * const argv[] )
 	}
 	if( info_handle_open_input(
 	     fvdeinfo_info_handle,
-	     source,
+	     sources,
+	     number_of_sources,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
 		 "Unable to open: %" PRIs_SYSTEM ".\n",
-		 source );
+		 sources[ 0 ] );
 
 		goto on_error;
 	}

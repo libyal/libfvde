@@ -846,13 +846,21 @@ int libfvde_encrypted_metadata_read_type_0x0011(
 		 function,
 		 value_32bit );
 
-		byte_stream_copy_to_uint32_little_endian(
+		byte_stream_copy_to_uint16_little_endian(
 		 &( block_data[ 172 ] ),
-		 value_32bit );
+		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown18\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown18\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
-		 value_32bit );
+		 value_16bit );
+
+		byte_stream_copy_to_uint16_little_endian(
+		 &( block_data[ 174 ] ),
+		 value_16bit );
+		libcnotify_printf(
+		 "%s: physical volume index\t\t\t: %" PRIu16 "\n",
+		 function,
+		 value_16bit );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ 176 ] ),
@@ -3210,7 +3218,7 @@ int libfvde_encrypted_metadata_read_type_0x001d(
 			 value_64bit & 0x0000ffffffffffffUL );
 
 			libcnotify_printf(
-			 "%s: entry: %03d physical volume\t\t: %" PRIu64 "\n",
+			 "%s: entry: %03d physical volume index\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit >> 48 );
@@ -4123,6 +4131,20 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 
 		goto on_error;
 	}
+	if( libcdata_array_empty(
+	     logical_volume_descriptor->segment_descriptors,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_segment_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty segment descriptors array.",
+		 function );
+
+		goto on_error;
+	}
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 0 ] ),
 	 number_of_entries );
@@ -4186,9 +4208,12 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 		 &( block_data[ block_data_offset + 16 ] ),
 		 segment_descriptor->number_of_blocks );
 
-		byte_stream_copy_to_uint32_little_endian(
+		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ block_data_offset + 32 ] ),
 		 segment_descriptor->physical_block_number );
+
+		segment_descriptor->physical_volume_index  = (uint16_t) ( segment_descriptor->physical_block_number >> 48 );
+		segment_descriptor->physical_block_number &= 0x0000ffffffffffffUL;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -4242,19 +4267,16 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 			 value_32bit );
 
 			libcnotify_printf(
-			 "%s: entry: %03d physical block number\t: %" PRIu32 "\n",
+			 "%s: entry: %03d physical block number\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 segment_descriptor->physical_block_number );
 
-			byte_stream_copy_to_uint32_little_endian(
-			 &( block_data[ block_data_offset + 36 ] ),
-			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown6\t\t: 0x%08" PRIx32 "\n",
+			 "%s: entry: %03d physical volume index\t: %" PRIu16 "\n",
 			 function,
 			 entry_index,
-			 value_32bit );
+			 segment_descriptor->physical_volume_index );
 
 			libcnotify_printf(
 			 "\n" );
@@ -4382,6 +4404,20 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 
 		return( -1 );
 	}
+	if( libcdata_array_empty(
+	     encrypted_metadata->data_area_descriptors,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty data area descriptors array.",
+		 function );
+
+		goto on_error;
+	}
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 0 ] ),
 	 number_of_entries );
@@ -4419,20 +4455,6 @@ int libfvde_encrypted_metadata_read_type_0x0404(
 		 function );
 
 		return( -1 );
-	}
-	if( libcdata_array_empty(
-	     encrypted_metadata->data_area_descriptors,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to empty data area descriptors array.",
-		 function );
-
-		goto on_error;
 	}
 	for( entry_index = 0;
 	     entry_index < number_of_entries;
@@ -4637,6 +4659,20 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 
 		return( -1 );
 	}
+	if( libcdata_array_empty(
+	     encrypted_metadata->data_area_descriptors,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty data area descriptors array.",
+		 function );
+
+		goto on_error;
+	}
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 0 ] ),
 	 number_of_entries );
@@ -4664,139 +4700,122 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 
 	block_data_offset = 8;
 
-	if( libcdata_array_empty(
-	     encrypted_metadata->data_area_descriptors,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_data_area_descriptor_free,
-	     error ) != 1 )
+	if( ( (size_t) number_of_entries * 48 ) > ( block_data_size - block_data_offset ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to empty data area descriptors array.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of entries value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	if( number_of_entries > 0 )
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
 	{
-		if( ( (size_t) number_of_entries * 48 ) > ( block_data_size - block_data_offset ) )
+		if( libfvde_data_area_descriptor_initialize(
+		     &data_area_descriptor,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+			 "%s: unable to create data area descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset ] ),
+		 data_area_descriptor->offset );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset + 8 ] ),
+		 data_area_descriptor->size );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset + 16 ] ),
+		 data_area_descriptor->object_identifier );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset + 40 ] ),
+		 unknown2 );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: entry: %03d physical block number\t: %" PRIi64 "\n",
+			 function,
+			 entry_index,
+			 data_area_descriptor->offset );
+
+			libcnotify_printf(
+			 "%s: entry: %03d number of blocks\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 data_area_descriptor->size );
+
+			libcnotify_printf(
+			 "%s: entry: %03d object identifier\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 entry_index,
+			 (int64_t) data_area_descriptor->object_identifier,
+			 data_area_descriptor->object_identifier );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 24 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d copy number\t\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 32 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			libcnotify_printf(
+			 "%s: entry: %03d logical block number\t: %" PRIi64 "\n",
+			 function,
+			 entry_index,
+			 unknown2 );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		block_data_offset += 48;
+
+		data_area_descriptor->offset *= io_handle->block_size;
+		data_area_descriptor->size   *= io_handle->block_size;
+
+		if( libcdata_array_append_entry(
+		     encrypted_metadata->data_area_descriptors,
+		     &data_area_descriptor_index,
+		     (intptr_t *) data_area_descriptor,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid number of entries value out of bounds.",
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append data area descriptor to array.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
-		for( entry_index = 0;
-		     entry_index < number_of_entries;
-		     entry_index++ )
-		{
-			if( libfvde_data_area_descriptor_initialize(
-			     &data_area_descriptor,
-			     error ) == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-				 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-				 "%s: unable to create data area descriptor.",
-				 function );
-
-				goto on_error;
-			}
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset ] ),
-			 data_area_descriptor->offset );
-
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 8 ] ),
-			 data_area_descriptor->size );
-
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 16 ] ),
-			 data_area_descriptor->object_identifier );
-
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 40 ] ),
-			 unknown2 );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: entry: %03d physical block number\t: %" PRIi64 "\n",
-				 function,
-				 entry_index,
-				 data_area_descriptor->offset );
-
-				libcnotify_printf(
-				 "%s: entry: %03d number of blocks\t: %" PRIu64 "\n",
-				 function,
-				 entry_index,
-				 data_area_descriptor->size );
-
-				libcnotify_printf(
-				 "%s: entry: %03d object identifier\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
-				 function,
-				 entry_index,
-				 (int64_t) data_area_descriptor->object_identifier,
-				 data_area_descriptor->object_identifier );
-
-				byte_stream_copy_to_uint64_little_endian(
-				 &( block_data[ block_data_offset + 24 ] ),
-				 value_64bit );
-				libcnotify_printf(
-				 "%s: entry: %03d copy number\t\t: %" PRIu64 "\n",
-				 function,
-				 entry_index,
-				 value_64bit );
-
-				byte_stream_copy_to_uint64_little_endian(
-				 &( block_data[ block_data_offset + 32 ] ),
-				 value_64bit );
-				libcnotify_printf(
-				 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
-				 function,
-				 entry_index,
-				 value_64bit );
-
-				libcnotify_printf(
-				 "%s: entry: %03d logical block number\t: %" PRIi64 "\n",
-				 function,
-				 entry_index,
-				 unknown2 );
-
-				libcnotify_printf(
-				 "\n" );
-			}
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
-
-			block_data_offset += 48;
-
-			data_area_descriptor->offset *= io_handle->block_size;
-			data_area_descriptor->size   *= io_handle->block_size;
-
-			if( libcdata_array_append_entry(
-			     encrypted_metadata->data_area_descriptors,
-			     &data_area_descriptor_index,
-			     (intptr_t *) data_area_descriptor,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to append data area descriptor to array.",
-				 function );
-
-				goto on_error;
-			}
-			data_area_descriptor = NULL;
-		}
+		data_area_descriptor = NULL;
 	}
 	return( 1 );
 

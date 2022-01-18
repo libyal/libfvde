@@ -1,4 +1,4 @@
-.Dd January 16, 2022
+.Dd January 18, 2022
 .Dt libfvde 3
 .Os libfvde
 .Sh NAME
@@ -59,6 +59,8 @@ Volume functions
 .Ft int
 .Fn libfvde_volume_open "libfvde_volume_t *volume" "const char *filename" "int access_flags" "libfvde_error_t **error"
 .Ft int
+.Fn libfvde_volume_open_physical_volume_files "libfvde_volume_t *volume" "char * const filenames[]" "int number_of_filenames" "libfvde_error_t **error"
+.Ft int
 .Fn libfvde_volume_close "libfvde_volume_t *volume" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_get_logical_volume_encryption_method "libfvde_volume_t *volume" "uint32_t *encryption_method" "libfvde_error_t **error"
@@ -71,11 +73,15 @@ Available when compiled with wide character string support:
 .Ft int
 .Fn libfvde_volume_open_wide "libfvde_volume_t *volume" "const wchar_t *filename" "int access_flags" "libfvde_error_t **error"
 .Ft int
+.Fn libfvde_volume_open_physical_volume_files_wide "libfvde_volume_t *volume" "wchar_t * const filenames[]" "int number_of_filenames" "libfvde_error_t **error"
+.Ft int
 .Fn libfvde_volume_read_encrypted_root_plist_wide "libfvde_volume_t *volume" "const wchar_t *filename" "libfvde_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
 .Fn libfvde_volume_open_file_io_handle "libfvde_volume_t *volume" "libbfio_handle_t *file_io_handle" "int access_flags" "libfvde_error_t **error"
+.Ft int
+.Fn libfvde_volume_open_physical_volume_files_file_io_pool "libfvde_volume_t *volume" "libbfio_pool_t *file_io_pool" "libfvde_error_t **error"
 .Ft int
 .Fn libfvde_volume_read_encrypted_root_plist_file_io_handle "libfvde_volume_t *volume" "libbfio_handle_t *file_io_handle" "libfvde_error_t **error"
 .Pp

@@ -49,9 +49,9 @@ struct libfvde_internal_volume_group
 	 */
 	libfvde_io_handle_t *io_handle;
 
-	/* The file IO handle
+	/* The file IO pool
 	 */
-	libbfio_handle_t *file_io_handle;
+	libbfio_pool_t *file_io_pool;
 
 	/* The volume header
 	 */
@@ -79,7 +79,7 @@ struct libfvde_internal_volume_group
 int libfvde_volume_group_initialize(
      libfvde_volume_group_t **volume_group,
      libfvde_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libfvde_volume_header_t *volume_header,
      libfvde_metadata_t *metadata,
      libfvde_encrypted_metadata_t *encrypted_metadata,

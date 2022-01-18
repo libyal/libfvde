@@ -1,4 +1,11 @@
 TODO
+* fvdeinfo
+  - print information about current physical volume, such as the volume index and UUID?
+
+* physical volume file IO pool refactor
+  - handle metadata physical volume index
+  - read and check volume headers, pool entries should match physical volume IDs
+  - create pool if not set?
 * volume group refactor
   - update mount_handle_input_unlock
 

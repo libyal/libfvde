@@ -49,7 +49,7 @@
 int libfvde_logical_volume_initialize(
      libfvde_logical_volume_t **logical_volume,
      libfvde_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
      libfvde_encrypted_metadata_t *encrypted_metadata,
      libfvde_encryption_context_plist_t *encrypted_root_plist,
@@ -165,7 +165,7 @@ int libfvde_logical_volume_initialize(
 	}
 #endif
 	internal_logical_volume->io_handle                 = io_handle;
-	internal_logical_volume->file_io_handle            = file_io_handle;
+	internal_logical_volume->file_io_pool              = file_io_pool;
 	internal_logical_volume->logical_volume_descriptor = logical_volume_descriptor;
 	internal_logical_volume->encrypted_metadata        = encrypted_metadata;
 	internal_logical_volume->encrypted_root_plist      = encrypted_root_plist;
@@ -245,7 +245,7 @@ int libfvde_logical_volume_free(
 			result = -1;
 		}
 #endif
-		/* The io_handle, file_io_handle and logical_volume_descriptor references are freed elsewhere
+		/* The io_handle, file_io_pool, logical_volume_descriptor, encrypted_metadata and encrypted_root_plist references are freed elsewhere
 		 */
 		memory_free(
 		 internal_logical_volume );
@@ -258,7 +258,7 @@ int libfvde_logical_volume_free(
  */
 int libfvde_internal_logical_volume_open_read(
      libfvde_internal_logical_volume_t *internal_logical_volume,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error )
 {
 	uint8_t volume_header_data[ 512 ];
@@ -269,7 +269,9 @@ int libfvde_internal_logical_volume_open_read(
 	ssize_t read_count                               = 0;
 	off64_t segment_offset                           = 0;
 	off64_t volume_offset                            = 0;
+	uint64_t expected_logical_block_number           = 0;
 	uint32_t segment_flags                           = 0;
+	int file_io_pool_entry                           = 0;
 	int number_of_segment_descriptors                = 0;
 	int result                                       = 0;
 	int segment_descriptor_index                     = 0;
@@ -332,6 +334,7 @@ int libfvde_internal_logical_volume_open_read(
 	}
 	if( libfvde_logical_volume_descriptor_get_first_block_number(
 	     internal_logical_volume->logical_volume_descriptor,
+	     (uint16_t *) &file_io_pool_entry,
 	     (uint64_t *) &volume_offset,
 	     error ) == -1 )
 	{
@@ -355,8 +358,9 @@ int libfvde_internal_logical_volume_open_read(
 		 volume_offset + 1024 );
 	}
 #endif
-	read_count = libbfio_handle_read_buffer_at_offset(
-		      file_io_handle,
+	read_count = libbfio_pool_read_buffer_at_offset(
+		      file_io_pool,
+		      file_io_pool_entry,
 		      volume_header_data,
 		      512,
 		      volume_offset + 1024,
@@ -425,7 +429,7 @@ int libfvde_internal_logical_volume_open_read(
 	{
 		result = libfvde_internal_logical_volume_unlock(
 		          internal_logical_volume,
-		          file_io_handle,
+		          file_io_pool,
 		          error );
 
 		if( result == -1 )
@@ -460,10 +464,6 @@ int libfvde_internal_logical_volume_open_read(
 
 		goto on_error;
 	}
-	if( internal_logical_volume->volume_data_handle->is_encrypted != 0 )
-	{
-		segment_flags = LIBFVDE_RANGE_FLAG_ENCRYPTED;
-	}
 	if( libfvde_logical_volume_descriptor_get_number_of_segment_descriptors(
 	     internal_logical_volume->logical_volume_descriptor,
 	     &number_of_segment_descriptors,
@@ -477,6 +477,12 @@ int libfvde_internal_logical_volume_open_read(
 		 function );
 
 		goto on_error;
+	}
+	expected_logical_block_number = 0;
+
+	if( internal_logical_volume->volume_data_handle->is_encrypted != 0 )
+	{
+		segment_flags = LIBFVDE_RANGE_FLAG_IS_ENCRYPTED;
 	}
 	for( segment_descriptor_index = 0;
 	     segment_descriptor_index < number_of_segment_descriptors;
@@ -498,7 +504,7 @@ int libfvde_internal_logical_volume_open_read(
 
 			goto on_error;
 		}
-		if( internal_logical_volume->logical_volume_descriptor == NULL )
+		if( segment_descriptor == NULL )
 		{
 			libcerror_error_set(
 			 error,
@@ -510,14 +516,50 @@ int libfvde_internal_logical_volume_open_read(
 
 			goto on_error;
 		}
+		if( segment_descriptor->logical_block_number < expected_logical_block_number )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported logical block number of segment descriptor: %d.",
+			 function,
+			 segment_descriptor_index );
+
+			goto on_error;
+		}
+		else if( segment_descriptor->logical_block_number > expected_logical_block_number )
+		{
+			segment_size  = segment_descriptor->logical_block_number - expected_logical_block_number;
+			segment_size *= internal_logical_volume->io_handle->block_size;
+
+			if( libfdata_vector_append_segment(
+			     internal_logical_volume->sectors_vector,
+			     &segment_index,
+			     0,
+			     0,
+			     segment_size,
+			     LIBFVDE_RANGE_FLAG_IS_SPARSE,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to append sparse segment to sectors vector.",
+				 function );
+
+				goto on_error;
+			}
+			expected_logical_block_number = segment_descriptor->logical_block_number;
+		}
 		segment_offset = segment_descriptor->physical_block_number * internal_logical_volume->io_handle->block_size;
 		segment_size   = segment_descriptor->number_of_blocks * internal_logical_volume->io_handle->block_size;
 
-/* TODO add support for file IO pool entry */
 		if( libfdata_vector_append_segment(
 		     internal_logical_volume->sectors_vector,
 		     &segment_index,
-		     0,
+		     (int) segment_descriptor->physical_volume_index,
 		     segment_offset,
 		     segment_size,
 		     segment_flags,
@@ -532,6 +574,7 @@ int libfvde_internal_logical_volume_open_read(
 
 			goto on_error;
 		}
+		expected_logical_block_number += segment_descriptor->number_of_blocks;
 	}
 	if( libfcache_cache_initialize(
 	     &( internal_logical_volume->sectors_cache ),
@@ -917,7 +960,8 @@ int libfvde_internal_logical_volume_open_read_volume_header_data(
  */
 int libfvde_internal_logical_volume_open_read_volume_header(
      libfvde_internal_logical_volume_t *internal_logical_volume,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      off64_t file_offset,
      libcerror_error_t **error )
 {
@@ -988,7 +1032,8 @@ int libfvde_internal_logical_volume_open_read_volume_header(
 	if( libfvde_sector_data_read(
 	     sector_data,
 	     internal_logical_volume->volume_data_handle->xts_context,
-	     file_io_handle,
+	     file_io_pool,
+	     file_io_pool_entry,
 	     file_offset,
 	     block_number,
 	     internal_logical_volume->volume_data_handle->is_encrypted,
@@ -1169,12 +1214,13 @@ int libfvde_internal_logical_volume_close(
  */
 int libfvde_internal_logical_volume_unlock(
      libfvde_internal_logical_volume_t *internal_logical_volume,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error )
 {
-	static char *function = "libfvde_internal_logical_volume_unlock";
-	off64_t volume_offset = 0;
-	int result            = 0;
+	static char *function  = "libfvde_internal_logical_volume_unlock";
+	off64_t volume_offset  = 0;
+	int file_io_pool_entry = 0;
+	int result             = 0;
 
 	if( internal_logical_volume == NULL )
 	{
@@ -1228,6 +1274,7 @@ int libfvde_internal_logical_volume_unlock(
 	{
 		if( libfvde_logical_volume_descriptor_get_first_block_number(
 		     internal_logical_volume->logical_volume_descriptor,
+		     (uint16_t *) &file_io_pool_entry,
 		     (uint64_t *) &volume_offset,
 		     error ) == -1 )
 		{
@@ -1253,7 +1300,8 @@ int libfvde_internal_logical_volume_unlock(
 #endif
 		result = libfvde_internal_logical_volume_open_read_volume_header(
 			  internal_logical_volume,
-			  file_io_handle,
+			  file_io_pool,
+			  file_io_pool_entry,
 			  volume_offset + 1024,
 			  error );
 
@@ -1319,7 +1367,7 @@ int libfvde_logical_volume_unlock(
 	{
 		result = libfvde_internal_logical_volume_unlock(
 		          internal_logical_volume,
-		          internal_logical_volume->file_io_handle,
+		          internal_logical_volume->file_io_pool,
 		          error );
 
 		if( result == -1 )
@@ -1352,19 +1400,19 @@ int libfvde_logical_volume_unlock(
 	return( result );
 }
 
-/* Reads data from the last current into a buffer using a Basic File IO (bfio) handle
+/* Reads data from the last current into a buffer using a Basic File IO (bfio) pool
  * This function is not multi-thread safe acquire write lock before call
  * Returns the number of bytes read or -1 on error
  */
-ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
          libfvde_internal_logical_volume_t *internal_logical_volume,
-         libbfio_handle_t *file_io_handle,
+         libbfio_pool_t *file_io_pool,
          void *buffer,
          size_t buffer_size,
          libcerror_error_t **error )
 {
 	libfvde_sector_data_t *sector_data = NULL;
-	static char *function              = "libfvde_internal_logical_volume_read_buffer_from_file_io_handle";
+	static char *function              = "libfvde_internal_logical_volume_read_buffer_from_file_io_pool";
 	off64_t element_data_offset        = 0;
 	size_t buffer_offset               = 0;
 	size_t read_size                   = 0;
@@ -1461,7 +1509,7 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
 	{
 		if( libfdata_vector_get_element_value_at_offset(
 		     internal_logical_volume->sectors_vector,
-		     (intptr_t *) file_io_handle,
+		     (intptr_t *) file_io_pool,
 		     (libfdata_cache_t *) internal_logical_volume->sectors_cache,
 		     internal_logical_volume->current_offset,
 		     &element_data_offset,
@@ -1573,9 +1621,9 @@ ssize_t libfvde_logical_volume_read_buffer(
 		return( -1 );
 	}
 #endif
-	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 		      internal_logical_volume,
-		      internal_logical_volume->file_io_handle,
+		      internal_logical_volume->file_io_pool,
 		      buffer,
 		      buffer_size,
 		      error );
@@ -1668,9 +1716,9 @@ ssize_t libfvde_logical_volume_read_buffer_at_offset(
 	}
 	else
 	{
-		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 			      internal_logical_volume,
-			      internal_logical_volume->file_io_handle,
+			      internal_logical_volume->file_io_pool,
 			      buffer,
 			      buffer_size,
 			      error );

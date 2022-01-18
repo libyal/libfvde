@@ -68,9 +68,9 @@ struct info_handle
 	 */
 	off64_t volume_offset;
 
-	/* The libbfio input file IO handle
+	/* The libbfio physical volume file IO pool
 	 */
-	libbfio_handle_t *input_file_io_handle;
+	libbfio_pool_t *physical_volume_file_io_pool;
 
 	/* The libfvde input volume
 	 */
@@ -143,7 +143,8 @@ int info_handle_set_volume_offset(
 
 int info_handle_open_input(
      info_handle_t *info_handle,
-     const system_character_t *filename,
+     system_character_t * const * filenames,
+     int number_of_filenames,
      libcerror_error_t **error );
 
 int info_handle_close_input(

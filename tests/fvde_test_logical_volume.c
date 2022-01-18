@@ -431,10 +431,10 @@ on_error:
 
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
-/* Tests the libfvde_internal_logical_volume_read_buffer_from_file_io_handle function
+/* Tests the libfvde_internal_logical_volume_read_buffer_from_file_io_pool function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
+int fvde_test_internal_logical_volume_read_buffer_from_file_io_pool(
      libfvde_logical_volume_t *logical_volume )
 {
 	uint8_t buffer[ FVDE_TEST_LOGICAL_VOLUME_READ_BUFFER_SIZE ];
@@ -493,9 +493,9 @@ int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
 	{
 		read_size = (size_t) size;
 	}
-	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 	              (libfvde_internal_logical_volume_t *) logical_volume,
-	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_handle,
+	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_pool,
 	              buffer,
 	              FVDE_TEST_LOGICAL_VOLUME_READ_BUFFER_SIZE,
 	              &error );
@@ -530,9 +530,9 @@ int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
 
 		/* Read buffer on size boundary
 		 */
-		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 		              (libfvde_internal_logical_volume_t *) logical_volume,
-		              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_handle,
+		              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_pool,
 		              buffer,
 		              FVDE_TEST_LOGICAL_VOLUME_READ_BUFFER_SIZE,
 		              &error );
@@ -548,9 +548,9 @@ int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
 
 		/* Read buffer beyond size boundary
 		 */
-		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 		              (libfvde_internal_logical_volume_t *) logical_volume,
-		              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_handle,
+		              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_pool,
 		              buffer,
 		              FVDE_TEST_LOGICAL_VOLUME_READ_BUFFER_SIZE,
 		              &error );
@@ -610,9 +610,9 @@ int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
 		 read_offset,
 		 read_size );
 #endif
-		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+		read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 		              (libfvde_internal_logical_volume_t *) logical_volume,
-		              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_handle,
+		              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_pool,
 		              buffer,
 		              read_size,
 		              &error );
@@ -694,9 +694,9 @@ int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
 
 	/* Test error cases
 	 */
-	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 	              NULL,
-	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_handle,
+	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_pool,
 	              buffer,
 	              FVDE_TEST_LOGICAL_VOLUME_READ_BUFFER_SIZE,
 	              &error );
@@ -713,9 +713,9 @@ int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
 	libcerror_error_free(
 	 &error );
 
-	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 	              (libfvde_internal_logical_volume_t *) logical_volume,
-	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_handle,
+	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_pool,
 	              NULL,
 	              FVDE_TEST_LOGICAL_VOLUME_READ_BUFFER_SIZE,
 	              &error );
@@ -732,9 +732,9 @@ int fvde_test_internal_logical_volume_read_buffer_from_file_io_handle(
 	libcerror_error_free(
 	 &error );
 
-	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_handle(
+	read_count = libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 	              (libfvde_internal_logical_volume_t *) logical_volume,
-	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_handle,
+	              ( (libfvde_internal_logical_volume_t *) logical_volume )->file_io_pool,
 	              buffer,
 	              (size_t) SSIZE_MAX + 1,
 	              &error );
@@ -804,8 +804,8 @@ int main(
 
 /* TODO
 		FVDE_TEST_RUN_WITH_ARGS(
-		 "libfvde_internal_logical_volume_read_buffer_from_file_io_handle",
-		 fvde_test_internal_logical_volume_read_buffer_from_file_io_handle,
+		 "libfvde_internal_logical_volume_read_buffer_from_file_io_pool",
+		 fvde_test_internal_logical_volume_read_buffer_from_file_io_pool,
 		 logical_volume );
 */
 

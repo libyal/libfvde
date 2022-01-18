@@ -504,6 +504,7 @@ int libfvde_logical_volume_descriptor_get_size(
  */
 int libfvde_logical_volume_descriptor_get_first_block_number(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     uint16_t *volume_index,
      uint64_t *block_number,
      libcerror_error_t **error )
 {
@@ -517,6 +518,17 @@ int libfvde_logical_volume_descriptor_get_first_block_number(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid logical volume descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( volume_index == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume index.",
 		 function );
 
 		return( -1 );
@@ -558,6 +570,7 @@ int libfvde_logical_volume_descriptor_get_first_block_number(
 
 		return( -1 );
 	}
+	*volume_index = segment_descriptor->physical_volume_index;
 	*block_number = segment_descriptor->physical_block_number;
 
 	return( 1 );

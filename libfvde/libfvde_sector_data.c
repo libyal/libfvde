@@ -112,48 +112,27 @@ int libfvde_sector_data_initialize(
 
 		return( -1 );
 	}
-	if( data_size > 0 )
+	( *sector_data )->data = (uint8_t *) memory_allocate(
+	                                      sizeof( uint8_t ) * data_size );
+
+	if( ( *sector_data )->data == NULL )
 	{
-		( *sector_data )->encrypted_data = (uint8_t *) memory_allocate(
-		                                                sizeof( uint8_t ) * data_size );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create data.",
+		 function );
 
-		if( ( *sector_data )->encrypted_data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create encrypted data.",
-			 function );
-
-			goto on_error;
-		}
-		( *sector_data )->data = (uint8_t *) memory_allocate(
-		                                      sizeof( uint8_t ) * data_size );
-
-		if( ( *sector_data )->data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create data.",
-			 function );
-
-			goto on_error;
-		}
-		( *sector_data )->data_size = data_size;
+		goto on_error;
 	}
+	( *sector_data )->data_size = data_size;
+
 	return( 1 );
 
 on_error:
 	if( *sector_data != NULL )
 	{
-		if( ( *sector_data )->encrypted_data != NULL )
-		{
-			memory_free(
-			 ( *sector_data )->encrypted_data );
-		}
 		memory_free(
 		 *sector_data );
 
@@ -204,11 +183,6 @@ int libfvde_sector_data_free(
 			memory_free(
 			 ( *sector_data )->data );
 		}
-		if( ( *sector_data )->encrypted_data != NULL )
-		{
-			memory_free(
-			 ( *sector_data )->encrypted_data );
-		}
 		memory_free(
 		 *sector_data );
 
@@ -223,7 +197,8 @@ int libfvde_sector_data_free(
 int libfvde_sector_data_read(
      libfvde_sector_data_t *sector_data,
      libcaes_tweaked_context_t *xts_context,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      off64_t file_offset,
      uint64_t block_number,
      uint8_t is_encrypted,
@@ -231,8 +206,9 @@ int libfvde_sector_data_read(
 {
 	uint8_t tweak_value[ 16 ];
 
-	static char *function = "libfvde_sector_data_read";
-	ssize_t read_count    = 0;
+	uint8_t *encrypted_data = NULL;
+	static char *function   = "libfvde_sector_data_read";
+	ssize_t read_count      = 0;
 
 	if( sector_data == NULL )
 	{
@@ -241,17 +217,6 @@ int libfvde_sector_data_read(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid sector data.",
-		 function );
-
-		return( -1 );
-	}
-	if( sector_data->encrypted_data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid sector data - missing encrypted data.",
 		 function );
 
 		return( -1 );
@@ -279,9 +244,24 @@ int libfvde_sector_data_read(
 #endif
 	if( is_encrypted != 0 )
 	{
-		read_count = libbfio_handle_read_buffer_at_offset(
-			      file_io_handle,
-			      sector_data->encrypted_data,
+		encrypted_data = (uint8_t *) memory_allocate(
+		                              sizeof( uint8_t ) * sector_data->data_size );
+
+		if( encrypted_data == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create encrypted data.",
+			 function );
+
+			goto on_error;
+		}
+		read_count = libbfio_pool_read_buffer_at_offset(
+			      file_io_pool,
+			      file_io_pool_entry,
+			      encrypted_data,
 			      sector_data->data_size,
 			      file_offset,
 			      error );
@@ -292,21 +272,21 @@ int libfvde_sector_data_read(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read encrypted sector data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 "%s: unable to read encrypted data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 			 function,
 			 file_offset,
 			 file_offset );
 
-			return( -1 );
+			goto on_error;
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: encrypted sector data:\n",
+			 "%s: encrypted data:\n",
 			 function );
 			libcnotify_print_data(
-			 sector_data->encrypted_data,
+			 encrypted_data,
 			 sector_data->data_size,
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 		}
@@ -323,7 +303,7 @@ int libfvde_sector_data_read(
 			 "%s: unable to copy block number to tweak value.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		byte_stream_copy_from_uint64_little_endian(
 		 tweak_value,
@@ -334,7 +314,7 @@ int libfvde_sector_data_read(
 		     LIBCAES_CRYPT_MODE_DECRYPT,
 		     tweak_value,
 		     16,
-		     sector_data->encrypted_data,
+		     encrypted_data,
 		     sector_data->data_size,
 		     sector_data->data,
 		     sector_data->data_size,
@@ -344,16 +324,21 @@ int libfvde_sector_data_read(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
 			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-			 "%s: unable to decrypt sector data.",
+			 "%s: unable to decrypt data.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
+		memory_free(
+		 encrypted_data );
+
+		encrypted_data = NULL;
 	}
 	else
 	{
-		read_count = libbfio_handle_read_buffer_at_offset(
-			      file_io_handle,
+		read_count = libbfio_pool_read_buffer_at_offset(
+			      file_io_pool,
+			      file_io_pool_entry,
 			      sector_data->data,
 			      sector_data->data_size,
 			      file_offset,
@@ -370,7 +355,7 @@ int libfvde_sector_data_read(
 			 file_offset,
 			 file_offset );
 
-			return( -1 );
+			goto on_error;
 		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -386,5 +371,13 @@ int libfvde_sector_data_read(
 	}
 #endif
 	return( 1 );
+
+on_error:
+	if( encrypted_data != NULL )
+	{
+		memory_free(
+		 encrypted_data );
+	}
+	return( -1 );
 }
 

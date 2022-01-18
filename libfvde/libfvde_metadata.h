@@ -40,6 +40,10 @@ typedef struct libfvde_metadata libfvde_metadata_t;
 
 struct libfvde_metadata
 {
+	/* The physical volume index
+	 */
+	uint16_t physical_volume_index;
+
 	/* The encrypted metadata size
 	 */
 	uint64_t encrypted_metadata_size;
@@ -48,9 +52,17 @@ struct libfvde_metadata
 	 */
 	uint64_t primary_encrypted_metadata_offset;
 
+	/* The primary encrypted metadata (physical) volume index
+	 */
+	uint16_t primary_encrypted_metadata_volume_index;
+
 	/* The secondary encrypted metadata offset
 	 */
 	uint64_t secondary_encrypted_metadata_offset;
+
+	/* The secondary encrypted metadata (physical) volume index
+	 */
+	uint16_t secondary_encrypted_metadata_volume_index;
 
 	/* The volume group name
 	 */

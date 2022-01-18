@@ -44,7 +44,7 @@
 int libfvde_volume_group_initialize(
      libfvde_volume_group_t **volume_group,
      libfvde_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libfvde_volume_header_t *volume_header,
      libfvde_metadata_t *metadata,
      libfvde_encrypted_metadata_t *encrypted_metadata,
@@ -149,7 +149,7 @@ int libfvde_volume_group_initialize(
 	}
 #endif
 	internal_volume_group->io_handle            = io_handle;
-	internal_volume_group->file_io_handle       = file_io_handle;
+	internal_volume_group->file_io_pool         = file_io_pool;
 	internal_volume_group->volume_header        = volume_header;
 	internal_volume_group->metadata             = metadata;
 	internal_volume_group->encrypted_metadata   = encrypted_metadata;
@@ -945,7 +945,7 @@ int libfvde_volume_group_get_logical_volume_by_index(
 		if( libfvde_logical_volume_initialize(
 		      logical_volume,
 		      internal_volume_group->io_handle,
-		      internal_volume_group->file_io_handle,
+		      internal_volume_group->file_io_pool,
 		      logical_volume_descriptor,
 		      internal_volume_group->encrypted_metadata,
 		      internal_volume_group->encrypted_root_plist,
@@ -962,7 +962,7 @@ int libfvde_volume_group_get_logical_volume_by_index(
 		}
 		else if( libfvde_internal_logical_volume_open_read(
 		          (libfvde_internal_logical_volume_t *) *logical_volume,
-		          internal_volume_group->file_io_handle,
+		          internal_volume_group->file_io_pool,
 		          error ) != 1 )
 		{
 			libcerror_error_set(

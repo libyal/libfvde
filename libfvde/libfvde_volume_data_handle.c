@@ -181,11 +181,11 @@ int libfvde_volume_data_handle_free(
  */
 int libfvde_volume_data_handle_read_sector(
      libfvde_volume_data_handle_t *volume_data_handle,
-     libbfio_handle_t *file_io_handle,
+     libbfio_pool_t *file_io_pool,
      libfdata_vector_t *vector,
      libfdata_cache_t *cache,
      int element_index,
-     int element_data_file_index LIBFVDE_ATTRIBUTE_UNUSED,
+     int element_data_file_index,
      off64_t element_data_offset,
      size64_t element_data_size LIBFVDE_ATTRIBUTE_UNUSED,
      uint32_t element_data_flags,
@@ -197,7 +197,6 @@ int libfvde_volume_data_handle_read_sector(
 	uint64_t block_number              = 0;
 	uint8_t is_encrypted               = 0;
 
-	LIBFVDE_UNREFERENCED_PARAMETER( element_data_file_index );
 	LIBFVDE_UNREFERENCED_PARAMETER( element_data_size );
 	LIBFVDE_UNREFERENCED_PARAMETER( read_flags );
 
@@ -223,10 +222,6 @@ int libfvde_volume_data_handle_read_sector(
 
 		return( -1 );
 	}
-	if( ( element_data_flags & LIBFVDE_RANGE_FLAG_ENCRYPTED ) != 0 )
-	{
-		is_encrypted = 1;
-	}
 	if( libfvde_sector_data_initialize(
 	     &sector_data,
 	     (size_t) volume_data_handle->io_handle->bytes_per_sector,
@@ -241,29 +236,54 @@ int libfvde_volume_data_handle_read_sector(
 
 		goto on_error;
 	}
-	block_number = (uint64_t) ( element_data_offset - volume_data_handle->logical_volume_offset ) / volume_data_handle->io_handle->bytes_per_sector;
-
-	if( libfvde_sector_data_read(
-	     sector_data,
-	     volume_data_handle->xts_context,
-	     file_io_handle,
-	     element_data_offset,
-	     block_number,
-	     is_encrypted,
-	     error ) != 1 )
+	if( ( element_data_flags & LIBFVDE_RANGE_FLAG_IS_SPARSE ) != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read sector data.",
-		 function );
+		if( memory_set(
+		     sector_data->data,
+		     0,
+		     sector_data->data_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear sector data.",
+			 function );
 
-		goto on_error;
+			goto on_error;
+		}
+	}
+	else
+	{
+		if( ( element_data_flags & LIBFVDE_RANGE_FLAG_IS_ENCRYPTED ) != 0 )
+		{
+			is_encrypted = 1;
+		}
+		block_number = (uint64_t) ( element_data_offset - volume_data_handle->logical_volume_offset ) / volume_data_handle->io_handle->bytes_per_sector;
+
+		if( libfvde_sector_data_read(
+		     sector_data,
+		     volume_data_handle->xts_context,
+		     file_io_pool,
+		     element_data_file_index,
+		     element_data_offset,
+		     block_number,
+		     is_encrypted,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read sector data.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	if( libfdata_vector_set_element_value_by_index(
 	     vector,
-	     (intptr_t *) file_io_handle,
+	     (intptr_t *) file_io_pool,
 	     cache,
 	     element_index,
 	     (intptr_t *) sector_data,

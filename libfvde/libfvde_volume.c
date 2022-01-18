@@ -178,7 +178,8 @@ int libfvde_volume_free(
 	{
 		internal_volume = (libfvde_internal_volume_t *) *volume;
 
-		if( internal_volume->file_io_handle != NULL )
+		if( ( internal_volume->file_io_handle != NULL )
+		 || ( internal_volume->physical_volume_file_io_pool != NULL ) )
 		{
 			if( libfvde_volume_close(
 			     *volume,
@@ -893,6 +894,7 @@ int libfvde_volume_open_file_io_handle(
 	{
 		internal_volume->file_io_handle                   = file_io_handle;
 		internal_volume->file_io_handle_opened_in_library = file_io_handle_opened_in_library;
+		internal_volume->access_flags                     = access_flags;
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -925,6 +927,921 @@ on_error:
 	return( -1 );
 }
 
+/* Opens the physical volume files
+ * This function assumes the physical volume files are in same order as defined by the metadata
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_open_physical_volume_files(
+     libfvde_volume_t *volume,
+     char * const filenames[],
+     int number_of_filenames,
+     libcerror_error_t **error )
+{
+        libbfio_pool_t *file_io_pool               = NULL;
+	libfvde_internal_volume_t *internal_volume = NULL;
+	static char *function                      = "libfvde_volume_open_physical_volume_files";
+	int number_of_physical_volumes             = 0;
+	int physical_volume_index                  = 0;
+	int result                                 = 0;
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfvde_internal_volume_t *) volume;
+
+	if( internal_volume->physical_volume_file_io_pool != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - physical volume file IO pool already exists.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	result = libfvde_metadata_get_number_of_physical_volume_descriptors(
+	          internal_volume->primary_metadata,
+	          &number_of_physical_volumes,
+	          error );
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volumes - from metadata.",
+		 function );
+
+		goto on_error;
+	}
+	if( number_of_physical_volumes == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing physical volumes.",
+		 function );
+
+		goto on_error;
+	}
+	if( number_of_physical_volumes != number_of_filenames )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: mismatch between number of filenames and physical volumes in metadata.",
+		 function );
+
+		goto on_error;
+	}
+	if( libbfio_pool_initialize(
+	     &file_io_pool,
+	     number_of_physical_volumes,
+	     internal_volume->maximum_number_of_open_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file IO pool.",
+		 function );
+
+		goto on_error;
+	}
+	for( physical_volume_index = 0;
+	     physical_volume_index < number_of_physical_volumes;
+	     physical_volume_index++ )
+	{
+		if( filenames[ physical_volume_index ] == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing filename for physical volume: %d.",
+			 function,
+			 physical_volume_index );
+
+			goto on_error;
+		}
+		if( libfvde_internal_volume_open_physical_volume_file(
+		     internal_volume,
+		     file_io_pool,
+		     physical_volume_index,
+		     filenames[ physical_volume_index ],
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open physical volume file: %" PRIs_SYSTEM ".",
+			 function,
+			 filenames[ physical_volume_index ] );
+
+			goto on_error;
+		}
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	internal_volume->physical_volume_file_io_pool                    = file_io_pool;
+	internal_volume->physical_volume_file_io_pool_created_in_library = 1;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	return( 1 );
+
+on_error:
+	if( file_io_pool != NULL )
+	{
+		libbfio_pool_close_all(
+		 file_io_pool,
+		 NULL );
+		libbfio_pool_free(
+		 &file_io_pool,
+		 NULL );
+	}
+	return( -1 );
+}
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+/* Opens the physical volume files
+ * This function assumes the physical volume files are in same order as defined by the metadata
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_open_physical_volume_files_wide(
+     libfvde_volume_t *volume,
+     wchar_t * const filenames[],
+     int number_of_filenames,
+     libcerror_error_t **error )
+{
+        libbfio_pool_t *file_io_pool               = NULL;
+	libfvde_internal_volume_t *internal_volume = NULL;
+	static char *function                      = "libfvde_volume_open_physical_volume_files_wide";
+	int number_of_physical_volumes             = 0;
+	int physical_volume_index                  = 0;
+	int result                                 = 0;
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfvde_internal_volume_t *) volume;
+
+	if( internal_volume->physical_volume_file_io_pool != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - physical volume file IO pool already exists.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	result = libfvde_metadata_get_number_of_physical_volume_descriptors(
+	          internal_volume->primary_metadata,
+	          &number_of_physical_volumes,
+	          error );
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volumes - from metadata.",
+		 function );
+
+		goto on_error;
+	}
+	if( number_of_physical_volumes == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing physical volumes.",
+		 function );
+
+		goto on_error;
+	}
+	if( number_of_physical_volumes != number_of_filenames )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: mismatch between number of filenames and physical volumes in metadata.",
+		 function );
+
+		goto on_error;
+	}
+	if( libbfio_pool_initialize(
+	     &file_io_pool,
+	     number_of_physical_volumes,
+	     internal_volume->maximum_number_of_open_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file IO pool.",
+		 function );
+
+		goto on_error;
+	}
+	for( physical_volume_index = 0;
+	     physical_volume_index < number_of_physical_volumes;
+	     physical_volume_index++ )
+	{
+		if( filenames[ physical_volume_index ] == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing filename for physical volume: %d.",
+			 function,
+			 physical_volume_index );
+
+			goto on_error;
+		}
+		if( libfvde_internal_volume_open_physical_volume_file_wide(
+		     internal_volume,
+		     file_io_pool,
+		     physical_volume_index,
+		     filenames[ physical_volume_index ],
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open physical volume file: %" PRIs_SYSTEM ".",
+			 function,
+			 filenames[ physical_volume_index ] );
+
+			goto on_error;
+		}
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	internal_volume->physical_volume_file_io_pool                    = file_io_pool;
+	internal_volume->physical_volume_file_io_pool_created_in_library = 1;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		goto on_error;
+	}
+#endif
+	return( 1 );
+
+on_error:
+	if( file_io_pool != NULL )
+	{
+		libbfio_pool_close_all(
+		 file_io_pool,
+		 NULL );
+		libbfio_pool_free(
+		 &file_io_pool,
+		 NULL );
+	}
+	return( -1 );
+}
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+/* Opens the physical volume files using a Basic File IO (bfio) pool
+ * This function assumes the physical volume files are in same order as defined by the metadata
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_volume_open_physical_volume_files_file_io_pool(
+     libfvde_volume_t *volume,
+     libbfio_pool_t *file_io_pool,
+     libcerror_error_t **error )
+{
+	libfvde_internal_volume_t *internal_volume = NULL;
+	static char *function                      = "libfvde_volume_open_physical_volume_files_file_io_pool";
+	int number_of_file_io_handles              = 0;
+	int number_of_physical_volumes             = 0;
+	int result                                 = 0;
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfvde_internal_volume_t *) volume;
+
+	if( internal_volume->physical_volume_file_io_pool != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - physical volume file IO pool already exists.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfvde_metadata_get_number_of_physical_volume_descriptors(
+	          internal_volume->primary_metadata,
+	          &number_of_physical_volumes,
+	          error );
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volumes - from metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_physical_volumes == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing physical volumes.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_pool_get_number_of_handles(
+	     file_io_pool,
+	     &number_of_file_io_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of handles in file IO pool.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_physical_volumes != number_of_file_io_handles )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: mismatch between number of filenames and physical volumes in metadata.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	internal_volume->physical_volume_file_io_pool = file_io_pool;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( 1 );
+}
+
+/* Opens a specific physical volume file
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_internal_volume_open_physical_volume_file(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     int physical_volume_index,
+     const char *filename,
+     libcerror_error_t **error )
+{
+	libbfio_handle_t *file_io_handle = NULL;
+	static char *function            = "libfvde_internal_volume_open_physical_volume_file";
+	size_t filename_length           = 0;
+
+	if( internal_volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	if( filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_file_initialize(
+	     &file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file IO handle.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libbfio_handle_set_track_offsets_read(
+	     file_io_handle,
+	     1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set track offsets read in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+#endif
+	filename_length = narrow_string_length(
+	                   filename );
+
+	if( libbfio_file_set_name(
+	     file_io_handle,
+	     filename,
+	     filename_length + 1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set filename in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+	if( libfvde_internal_volume_open_physical_volume_file_io_handle(
+	     internal_volume,
+	     file_io_pool,
+	     physical_volume_index,
+	     file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open physical volume file: %s.",
+		 function,
+		 filename );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
+	return( -1 );
+}
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+/* Opens a specific physical volume file
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_internal_volume_open_physical_volume_file_wide(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     int physical_volume_index,
+     const wchar_t *filename,
+     libcerror_error_t **error )
+{
+	libbfio_handle_t *file_io_handle = NULL;
+	static char *function            = "libfvde_internal_volume_open_physical_volume_file_wide";
+	size_t filename_length           = 0;
+
+	if( internal_volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	if( filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_file_initialize(
+	     &file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file IO handle.",
+		 function );
+
+                goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libbfio_handle_set_track_offsets_read(
+	     file_io_handle,
+	     1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set track offsets read in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+#endif
+	filename_length = wide_string_length(
+	                   filename );
+
+	if( libbfio_file_set_name_wide(
+	     file_io_handle,
+	     filename,
+	     filename_length + 1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set filename in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+	if( libfvde_internal_volume_open_physical_volume_file_io_handle(
+	     internal_volume,
+	     file_io_pool,
+	     physical_volume_index,
+	     file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open physical volume file: %ls.",
+		 function,
+		 filename );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
+	return( -1 );
+}
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+/* Opens an physical volume file using a Basic File IO (bfio) handle
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_internal_volume_open_physical_volume_file_io_handle(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     int physical_volume_index,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error )
+{
+	static char *function                = "libfvde_internal_volume_open_physical_volume_file_io_handle";
+	int bfio_access_flags                = 0;
+	int file_io_handle_is_open           = 0;
+	int file_io_handle_opened_in_library = 0;
+
+	if( internal_volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( ( internal_volume->access_flags & LIBFVDE_ACCESS_FLAG_READ ) == 0 )
+	 && ( ( internal_volume->access_flags & LIBFVDE_ACCESS_FLAG_WRITE ) == 0 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported access flags.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( internal_volume->access_flags & LIBFVDE_ACCESS_FLAG_WRITE ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: write access currently not supported.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( internal_volume->access_flags & LIBFVDE_ACCESS_FLAG_READ ) != 0 )
+	{
+		bfio_access_flags = LIBBFIO_ACCESS_FLAG_READ;
+	}
+	file_io_handle_is_open = libbfio_handle_is_open(
+	                          file_io_handle,
+	                          error );
+
+	if( file_io_handle_is_open == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to determine if file IO handle is open.",
+		 function );
+
+		goto on_error;
+	}
+	else if( file_io_handle_is_open == 0 )
+	{
+		if( libbfio_handle_open(
+		     file_io_handle,
+		     bfio_access_flags,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open file IO handle.",
+			 function );
+
+			goto on_error;
+		}
+		file_io_handle_opened_in_library = 1;
+	}
+	if( libbfio_pool_set_handle(
+	     file_io_pool,
+	     physical_volume_index,
+	     file_io_handle,
+	     bfio_access_flags,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set file IO handle: %d in pool.",
+		 function,
+		 physical_volume_index );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_io_handle_opened_in_library != 0 )
+	{
+		libbfio_handle_close(
+		 file_io_handle,
+		 error );
+	}
+	return( -1 );
+}
+
 /* Closes a volume
  * Returns 0 if successful or -1 on error
  */
@@ -932,6 +1849,7 @@ int libfvde_volume_close(
      libfvde_volume_t *volume,
      libcerror_error_t **error )
 {
+	libbfio_handle_t *legacy_file_io_handle    = NULL;
 	libfvde_internal_volume_t *internal_volume = NULL;
 	static char *function                      = "libfvde_volume_close";
 	int result                                 = 0;
@@ -1029,6 +1947,38 @@ int libfvde_volume_close(
 		internal_volume->file_io_handle_created_in_library = 0;
 	}
 	internal_volume->file_io_handle = NULL;
+
+	if( internal_volume->physical_volume_file_io_pool_created_in_library != 0 )
+	{
+		if( libbfio_pool_close_all(
+		     internal_volume->physical_volume_file_io_pool,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close physical volume file IO pool.",
+			 function );
+
+			result = -1;
+		}
+		if( libbfio_pool_free(
+		     &( internal_volume->physical_volume_file_io_pool ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free physical volume file IO pool.",
+			 function );
+
+			result = -1;
+		}
+		internal_volume->physical_volume_file_io_pool_created_in_library = 0;
+	}
+	internal_volume->physical_volume_file_io_pool = NULL;
 
 	if( libfvde_io_handle_clear(
 	     internal_volume->io_handle,
@@ -1171,6 +2121,50 @@ int libfvde_volume_close(
 			result = -1;
 		}
 	}
+	if( internal_volume->legacy_file_io_pool != NULL )
+	{
+		if( libbfio_pool_remove_handle(
+		     internal_volume->legacy_file_io_pool,
+		     0,
+		     &legacy_file_io_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set file IO handle in pool.",
+			 function );
+
+			result = -1;
+		}
+		if( libbfio_pool_close_all(
+		     internal_volume->legacy_file_io_pool,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close legacy file IO pool.",
+			 function );
+
+			result = -1;
+		}
+		if( libbfio_pool_free(
+		     &( internal_volume->legacy_file_io_pool ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free legacy file IO pool.",
+			 function );
+
+			result = -1;
+		}
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -1199,6 +2193,7 @@ int libfvde_internal_volume_open_read(
 {
 	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
 	static char *function                                          = "libfvde_internal_volume_open_read";
+	int file_io_pool_entry                                         = 0;
 	int number_of_logical_volumes                                  = 0;
 	int number_of_physical_volumes                                 = 0;
 
@@ -1491,6 +2486,7 @@ int libfvde_internal_volume_open_read(
 		goto on_error;
 	}
 /* TODO compare information in metadata */
+/* TODO compare all 4 metadata offsets for the primary and secondary encrypted metadata */
 
 	if( libfvde_metadata_get_number_of_physical_volume_descriptors(
 	     internal_volume->primary_metadata,
@@ -1506,7 +2502,7 @@ int libfvde_internal_volume_open_read(
 
 		goto on_error;
 	}
-	if( number_of_physical_volumes != 1 )
+	if( number_of_physical_volumes == 0 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1525,7 +2521,6 @@ int libfvde_internal_volume_open_read(
 		 "Reading encrypted metadata:\n" );
 	}
 #endif
-/* TODO compare all 4 metadata offsets for the primary and secondary encrypted metadata */
 	if( libfvde_encrypted_metadata_initialize(
 	     &( internal_volume->primary_encrypted_metadata ),
 	     error ) != 1 )
@@ -1594,20 +2589,6 @@ int libfvde_internal_volume_open_read(
 
 		goto on_error;
 	}
-	if( libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
-	     internal_volume->primary_encrypted_metadata,
-	     &number_of_logical_volumes,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of logical volume descriptors from primary encrypted metadata.",
-		 function );
-
-		goto on_error;
-	}
 	if( internal_volume->encrypted_root_plist != NULL )
 	{
 		if( libfvde_encryption_context_plist_decrypt(
@@ -1636,6 +2617,20 @@ int libfvde_internal_volume_open_read(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
+	if( libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
+	     internal_volume->primary_encrypted_metadata,
+	     &number_of_logical_volumes,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of logical volume descriptors from primary encrypted metadata.",
+		 function );
+
+		goto on_error;
+	}
 	if( number_of_logical_volumes > 0 )
 	{
 		if( libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
@@ -1658,6 +2653,7 @@ int libfvde_internal_volume_open_read(
 		{
 			if( libfvde_logical_volume_descriptor_get_first_block_number(
 			     logical_volume_descriptor,
+			     (uint16_t *) &file_io_pool_entry,
 			     (uint64_t *) &logical_volume_offset,
 			     error ) == -1 )
 			{
@@ -1699,10 +2695,41 @@ int libfvde_internal_volume_open_read(
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
+		if( libbfio_pool_initialize(
+		     &( internal_volume->legacy_file_io_pool ),
+		     1,
+		     1,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file IO pool.",
+			 function );
+
+			goto on_error;
+		}
+		if( libbfio_pool_set_handle(
+		     internal_volume->legacy_file_io_pool,
+		     0,
+		     file_io_handle,
+		     LIBBFIO_ACCESS_FLAG_READ,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set file IO handle in pool.",
+			 function );
+
+			goto on_error;
+		}
 		if( libfvde_logical_volume_initialize(
 		      &( internal_volume->legacy_logical_volume ),
 		      internal_volume->io_handle,
-		      file_io_handle,
+		      internal_volume->legacy_file_io_pool,
 		      logical_volume_descriptor,
 		      internal_volume->primary_encrypted_metadata,
 		      internal_volume->encrypted_root_plist,
@@ -1773,7 +2800,7 @@ int libfvde_internal_volume_open_read(
 		}
 		if( libfvde_internal_logical_volume_open_read(
 		     (libfvde_internal_logical_volume_t *) internal_volume->legacy_logical_volume,
-		     file_io_handle,
+		     internal_volume->legacy_file_io_pool,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1800,6 +2827,12 @@ on_error:
 	{
 		libfvde_logical_volume_free(
 		 &( internal_volume->legacy_logical_volume ),
+		 NULL );
+	}
+	if( internal_volume->legacy_file_io_pool != NULL )
+	{
+		libbfio_pool_free(
+		 &( internal_volume->legacy_file_io_pool ),
 		 NULL );
 	}
 	if( internal_volume->secondary_encrypted_metadata != NULL )
@@ -2347,7 +3380,7 @@ int libfvde_volume_get_volume_group(
 	if( libfvde_volume_group_initialize(
 	      volume_group,
 	      internal_volume->io_handle,
-	      internal_volume->file_io_handle,
+	      internal_volume->physical_volume_file_io_pool,
 	      internal_volume->volume_header,
 	      internal_volume->primary_metadata,
 	      internal_volume->primary_encrypted_metadata,

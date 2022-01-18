@@ -95,6 +95,26 @@ struct libfvde_internal_volume
 	 */
 	uint8_t file_io_handle_opened_in_library;
 
+	/* The physical volume file IO pool
+	 */
+	libbfio_pool_t *physical_volume_file_io_pool;
+
+	/* Value to indicate if the file IO pool was created inside the library
+	 */
+	uint8_t physical_volume_file_io_pool_created_in_library;
+
+	/* The access flags
+	 */
+	int access_flags;
+
+	/* The maximum number of open handles in the pool
+	 */
+	int maximum_number_of_open_handles;
+
+	/* The file IO pool for backwards compatibility
+	 */
+	libbfio_pool_t *legacy_file_io_pool;
+
 	/* Logical volume for backwards compatibility
 	 */
 	libfvde_logical_volume_t *legacy_logical_volume;
@@ -168,6 +188,55 @@ int libfvde_volume_open_file_io_handle(
      libfvde_volume_t *volume,
      libbfio_handle_t *file_io_handle,
      int access_flags,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_open_physical_volume_files(
+     libfvde_volume_t *volume,
+     char * const filenames[],
+     int number_of_filenames,
+     libcerror_error_t **error );
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+LIBFVDE_EXTERN \
+int libfvde_volume_open_physical_volume_files_wide(
+     libfvde_volume_t *volume,
+     wchar_t * const filenames[],
+     int number_of_filenames,
+     libcerror_error_t **error );
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+LIBFVDE_EXTERN \
+int libfvde_volume_open_physical_volume_files_file_io_pool(
+     libfvde_volume_t *volume,
+     libbfio_pool_t *file_io_pool,
+     libcerror_error_t **error );
+
+int libfvde_internal_volume_open_physical_volume_file(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     int physical_volume_index,
+     const char *filename,
+     libcerror_error_t **error );
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+int libfvde_internal_volume_open_physical_volume_file_wide(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     int physical_volume_index,
+     const wchar_t *filename,
+     libcerror_error_t **error );
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+int libfvde_internal_volume_open_physical_volume_file_io_handle(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     int physical_volume_index,
+     libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
