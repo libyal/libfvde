@@ -58,7 +58,7 @@ Added secondary encrypted metadata block.
 Additional information about partially compressed volumes.
 | 0.0.9 | J.B. Metz | October 2015 | Additional information about DEFLATE compressed XML plist, with thanks toi A. Rubtsov.
 | 0.0.10 | J.B. Metz | October 2015 | Additional information about metadata.
-| 0.0.11 | J.B. Metz | June 2016 | Additional information about Core Storage XML plist.
+| 0.0.11 | J.B. Metz | June 2016 | Additional information about volume group XML plist.
 | 0.0.12 | J.B. Metz | July 2016 | Additional information about metadata.
 | 0.0.13 | J.B. Metz | May 2017 | Additional information about metadata.
 | 0.0.14 | J.B. Metz | October 2017 | Additional information about metadata.
@@ -374,13 +374,15 @@ The block number relative from the start of the metadata or encrypted metadata
 Metadata is updated in transcations. A transaction can be broken up in
 multiple fragments where:
 
-* the first fragment starts with a metadata block data type 0x0013
-* the second fragment starts with a metadata block data type 0x0014
+* primary transaction fragment starts with a metadata block data type 0x0013
+* secondary transaction fragment starts with a metadata block data type 0x0014
 
 Both metadata block data type 0x0013 and 0x0014 define transaction specific
 object identifiers.
 
-=== Metadata block data type 0x0011
+[yellow-background]*If not present in the transaction do object identifiers reference previous transactions?*
+
+=== [[metadata_block_type_0x0011]]Metadata block data type 0x0011
 
 Metadata block data type 0x0011 contains information about [yellow-background]*TODO: describe*
 
@@ -415,9 +417,10 @@ Including the metadata block header
 0x00000800 | [yellow-background]*Unknown*
 | 132 | 24 | | [yellow-background]*Unknown (Empty values)*
 | 156 | 4 | | Volume groups descriptor offset
-| 160 | 4 | | XML offset
-| 164 | 4 | | XML size
-| 168 | 4 | | [yellow-background]*Unknown (XML size copy)* +
+| 160 | 4 | | Volume group XML plist data offset +
+Typically stored in the next block containing the volume group descriptor
+| 164 | 4 | | Volume group XML plist data size
+| 168 | 4 | | [yellow-background]*Unknown (Copy of volume group XML plist data size?)* +
 [yellow-background]*Could this be used for compression similar as for metadata block type 0x0019?*
 | 172 | 4 | | [yellow-background]*Unknown*
 | 176 | 8 | | Volume group number of blocks +
@@ -435,19 +438,6 @@ Contains 0 if not set
 | ... | 8 | | [yellow-background]*Unknown*
 | ... | 8 | | [yellow-background]*Unknown*
 | ... | 16 | | [yellow-background]*Unknown (empty values)*
-4+| _next block_
-| ... | 8 | | [yellow-background]*Unknown*
-[yellow-background]*0x00 => unencrypted* +
-[yellow-background]*0x01 => encrypted* +
-[yellow-background]*0x02 => decrypting*
-| ... | 8 | | Encrypted metadata size in number of blocks
-| ... | 8 | | [yellow-background]*Unknown*
-| ... | 8 | | [yellow-background]*Unknown*
-| ... | 6 | | primary encrypted metadata (physical volume) block number
-| ... | 2 | | primary encrypted metadata physical volume index, where 0 is the first physical volume
-| ... | 6 | | secondary encrypted metadata (physical volume) block number
-| ... | 2 | | secondary encrypted metadata physical volume index, where 0 is the first physical volume
-| ... | ... | | XML data
 |===
 
 The metadata block data type 0x0011 unknown value is 24 bytes in size and
@@ -455,40 +445,37 @@ consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
-| 0 | 8 | | [yellow-background]*Unknown (transaction identifier?)* +
-[yellow-background]*0 if not set?*
-| 8 | 8 | | [yellow-background]*Unknown*
-| 16 | 8 | | [yellow-background]*Unknown (related to number of block of previous transaction?)*
+| 0 | 8 | | [yellow-background]*Unknown* +
+Contains 0 if not set
+| 8 | 8 | | [yellow-background]*Unknown (flags?)* +
+Seen: 0, 1
+| 16 | 8 | | metadata block number
 |===
 
-=== Volume groups descriptor
+[yellow-background]*If flags? is 0 then unknown contains a transaction identifier and metadata block number points to 0x0013 block?*
+
+==== Volume group descriptor block
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
 | 0 | 8 | | [yellow-background]*Unknown (empty values)*
-| 8 | 8 | | Encrypted metadata number of blocks
+[yellow-background]*0x00 => unencrypted* +
+[yellow-background]*0x01 => encrypted* +
+[yellow-background]*0x02 => decrypting*
+| 8 | 8 | | Encrypted metadata size in number of blocks
 | 16 | 8 | | [yellow-background]*Unknown (empty values)*
-| 24 | 8 | 0x02 | [yellow-background]*number of encrypted metadata block numbers?*
-| 32 | 8 | | Primary encrypted metadata block number
-| 40 | 8 | | Secondary encrypted metadata block number
+| 24 | 8 | | [yellow-background]*Unknown*
+| 32 | 6 | | primary encrypted metadata (physical volume) block number
+| 38 | 2 | | primary encrypted metadata physical volume index, where 0 is the first physical volume
+| 40 | 6 | | secondary encrypted metadata (physical volume) block number
+| 46 | 2 | | secondary encrypted metadata physical volume index, where 0 is the first physical volume
+| 48 | ... | | volume group XML plist data
 |===
 
-....
-00002000: 00 00 00 00 00 00 00 00  00 10 00 00 00 00 00 00   ........ ........
-00002010: 00 00 00 00 00 00 00 00  02 00 00 00 00 00 00 00   ........ ........
-00002020: c8 60 5f 00 00 00 00 00  c8 50 5f 00 00 00 00 00   .`_..... .P_.....
-....
+==== Volume group XML plist data
 
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 48 | ... | [yellow-background]*XML plist*
-|===
-
-==== Core Storage XML plist data
-
-The Core Storage XML plist data consists of a single dict containing the
+The volume group XML plist data consists of a single dict containing the
 following keys.
 
 [cols="1,1",options="header"]
@@ -614,29 +601,7 @@ Contains an UUID in big-endian
 
 === Metadata block data type 0x0011
 
-....
-00000000: 00 00 40 00 03 00 00 00  21 17 de aa ff ff ff ff   ..@..... !.......
-00000010: 07 57 7e c0 00 0d b6 00  00 0d b6 00 10 27 01 00   .W~..... .....'..
-00000020: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-...
-00000050: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-00000060: 00 00 00 00 00 00 00 00  0c 00 00 00 0d 00 00 00   ........ ........
-00000070: 40 00 00 00 30 00 01 00  01 00 00 00 01 00 01 00   @...0... ........
-00000080: 00 08 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-00000090: 00 00 00 00 00 00 00 00  00 00 00 00 00 20 00 00   ........ ..... ..
-000000a0: 30 20 00 00 bf 01 00 00  bf 01 00 00 00 00 00 00   0 ...... ........
-000000b0: db 21 5d 00 00 00 00 00  0a 00 00 00 00 00 00 00   .!]..... ........
-000000c0: 03 00 00 00 00 00 00 00  01 00 00 00 00 00 00 00   ........ ........
-000000d0: 2b 00 00 00 00 00 00 00  02 00 00 00 00 00 00 00   +....... ........
-000000e0: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-000000f0: 02 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-00000100: 00 00 00 00 00 00 00 00  02 00 00 00 00 00 00 00   ........ ........
-00000110: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-00000120: 02 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-00000130: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-...
-00001fb0: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-....
+Identical to the unencrypted <<metadata_block_type_0x0011,Metadata block data type 0x0011>>
 
 === Metadata block data type 0x0012
 
@@ -718,7 +683,7 @@ Seen: 0x13, 0x1f
 | 32 | 8 | 1 | [yellow-background]*Unknown*
 | 40 | 4 | | [yellow-background]*Unknown* +
 Seen: 0x00000000, 0x80000000
-| 44 | 4 | | Number of blocks in transaction
+| 44 | 4 | | Nmber of blocks in transaction fragment
 | 48 | 4 | 0x01 | [yellow-background]*Unknown (index1 ?)*
 | 52 | 4 | | [yellow-background]*Unknown (index2 ?)*
 | 56 | 4 | | Number of (metadata block) object identifiers
@@ -761,7 +726,7 @@ Contains a UUID
 0x1f | [yellow-background]*Unknown*
 | 32 | 8 | 1 | [yellow-background]*Unknown*
 | 40 | 4 | | [yellow-background]*Unknown*
-| 44 | 4 | | [yellow-background]*Unknown (number of blocks in transaction)*
+| 44 | 4 | | Nmber of blocks in transaction fragment
 | 48 | 4 | 0x01 | [yellow-background]*Unknown (index1 ?)*
 | 52 | 4 | | [yellow-background]*Unknown (index2 ?)*
 | 56 | 4 | | Number of (metadata block) object identifiers
@@ -803,7 +768,8 @@ consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
-| 0 | 8 | | [yellow-background]*Unknown (object identifier? has the MSB a special meaning?)*
+| 0 | 8 | | [yellow-background]*Unknown (object identifier?)* +
+[yellow-background]*What does the MSB indicate?*
 | 8 | 4 | | [yellow-background]*Unknown* +
 Seen: 0, 1
 |===
@@ -1540,7 +1506,7 @@ The array entry is 32 bytes of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 8 | | Size in number of blocks
-| 8 | 8 | | [yellow-background]*Unknown (number of elements that the 0x001d objects contains?)*
+| 8 | 8 | | [yellow-background]*Unknown*
 | 16 | 8 | | [yellow-background]*Unknown (0x001d metadata block object identifier?)* +
 Contains 0 if not set
 | 24 | 8 | | [yellow-background]*Unknown (0x001d metadata block object identifier?)* +

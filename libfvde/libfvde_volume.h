@@ -99,6 +99,14 @@ struct libfvde_internal_volume
 	 */
 	libfvde_logical_volume_t *legacy_logical_volume;
 
+        /* The volume master key for backwards compatibility
+	 */
+        uint8_t legacy_volume_master_key[ 16 ];
+
+	/* Value to indicate the volume master key is set for backwards compatibility
+	 */
+	uint8_t legacy_volume_master_key_is_set;
+
 	/* The user password for backwards compatibility
 	 */
 	uint8_t *legacy_user_password;

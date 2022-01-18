@@ -211,6 +211,64 @@ int libfvde_volume_free(
 			result = -1;
 		}
 #endif
+		if( memory_set(
+		     internal_volume->legacy_volume_master_key,
+		     0,
+		     16 ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear user volume master key.",
+			 function );
+
+			result = -1;
+		}
+		if( internal_volume->legacy_user_password != NULL )
+		{
+			if( memory_set(
+			     internal_volume->legacy_user_password,
+			     0,
+			     internal_volume->legacy_user_password_size ) == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+				 "%s: unable to clear user password.",
+				 function );
+
+				result = -1;
+			}
+			memory_free(
+			 internal_volume->legacy_user_password );
+
+			internal_volume->legacy_user_password      = NULL;
+			internal_volume->legacy_user_password_size = 0;
+		}
+		if( internal_volume->legacy_recovery_password != NULL )
+		{
+			if( memory_set(
+			     internal_volume->legacy_recovery_password,
+			     0,
+			     internal_volume->legacy_recovery_password_size ) == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+				 "%s: unable to clear recovery password.",
+				 function );
+
+				result = -1;
+			}
+			memory_free(
+			 internal_volume->legacy_recovery_password );
+
+			internal_volume->legacy_recovery_password      = NULL;
+			internal_volume->legacy_recovery_password_size = 0;
+		}
 		if( internal_volume->encrypted_root_plist != NULL )
 		{
 			if( libfvde_encryption_context_plist_free(
@@ -1113,50 +1171,6 @@ int libfvde_volume_close(
 			result = -1;
 		}
 	}
-	if( internal_volume->legacy_user_password != NULL )
-	{
-		if( memory_set(
-		     internal_volume->legacy_user_password,
-		     0,
-		     internal_volume->legacy_user_password_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear user password.",
-			 function );
-
-			result = -1;
-		}
-		memory_free(
-		 internal_volume->legacy_user_password );
-
-		internal_volume->legacy_user_password      = NULL;
-		internal_volume->legacy_user_password_size = 0;
-	}
-	if( internal_volume->legacy_recovery_password != NULL )
-	{
-		if( memory_set(
-		     internal_volume->legacy_recovery_password,
-		     0,
-		     internal_volume->legacy_recovery_password_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear recovery password.",
-			 function );
-
-			result = -1;
-		}
-		memory_free(
-		 internal_volume->legacy_recovery_password );
-
-		internal_volume->legacy_recovery_password      = NULL;
-		internal_volume->legacy_recovery_password_size = 0;
-	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -1667,6 +1681,24 @@ int libfvde_internal_volume_open_read(
 			 function );
 
 			goto on_error;
+		}
+		if( internal_volume->legacy_volume_master_key_is_set != 0 )
+		{
+			if( libfvde_logical_volume_set_keys(
+			     internal_volume->legacy_logical_volume,
+			     internal_volume->legacy_volume_master_key,
+			     16,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable set user keys in logical volume.",
+				 function );
+
+				goto on_error;
+			}
 		}
 		if( internal_volume->legacy_user_password != NULL )
 		{
@@ -3383,6 +3415,28 @@ int libfvde_volume_set_keys(
 	}
 	internal_volume = (libfvde_internal_volume_t *) volume;
 
+	if( volume_master_key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume master key.",
+		 function );
+
+		return( -1 );
+	}
+	if( volume_master_key_size != 16 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported volume master key size.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_volume->read_write_lock,
@@ -3398,20 +3452,23 @@ int libfvde_volume_set_keys(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_set_keys(
-	     internal_volume->legacy_logical_volume,
+	if( memory_copy(
+	     internal_volume->legacy_volume_master_key,
 	     volume_master_key,
-	     volume_master_key_size,
-	     error ) == -1 )
+	     16 ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set keys in logical volume.",
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy volume master key.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		internal_volume->legacy_volume_master_key_is_set = 1;
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(

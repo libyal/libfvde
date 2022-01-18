@@ -443,7 +443,8 @@ int libfvde_metadata_block_read_data(
 		libcnotify_printf(
 		 "\n" );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	if( block_size != 8192 )
 	{
 		libcerror_error_set(

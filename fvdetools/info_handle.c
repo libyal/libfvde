@@ -30,7 +30,9 @@
 #include <wide_string.h>
 
 #include "byte_size_string.h"
+#include "fvdetools_input.h"
 #include "fvdetools_libbfio.h"
+#include "fvdetools_libcdata.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libfguid.h"
 #include "fvdetools_libfvde.h"
@@ -166,6 +168,7 @@ int fvdetools_system_string_copy_from_64_bit_in_decimal(
  */
 int info_handle_initialize(
      info_handle_t **info_handle,
+     int unattend_mode,
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_initialize";
@@ -218,47 +221,35 @@ int info_handle_initialize(
 		 "%s: unable to clear info handle.",
 		 function );
 
-		goto on_error;
-	}
-	if( libbfio_file_range_initialize(
-	     &( ( *info_handle )->input_file_io_handle ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize input file IO handle.",
-		 function );
+		memory_free(
+		 *info_handle );
 
-		goto on_error;
+		*info_handle = NULL;
+
+		return( -1 );
 	}
-	if( libfvde_volume_initialize(
-	     &( ( *info_handle )->input_volume ),
+	if( libcdata_array_initialize(
+	     &( ( *info_handle )->logical_volumes_array ),
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize input volume.",
+		 "%s: unable to initialize logical volumes array.",
 		 function );
 
 		goto on_error;
 	}
 	( *info_handle )->notify_stream = INFO_HANDLE_NOTIFY_STREAM;
+	( *info_handle )->unattend_mode = unattend_mode;
 
 	return( 1 );
 
 on_error:
 	if( *info_handle != NULL )
 	{
-		if( ( *info_handle )->input_file_io_handle != NULL )
-		{
-			libbfio_handle_free(
-			 &( ( *info_handle )->input_file_io_handle ),
-			 NULL );
-		}
 		memory_free(
 		 *info_handle );
 
@@ -290,31 +281,46 @@ int info_handle_free(
 	}
 	if( *info_handle != NULL )
 	{
-		if( ( *info_handle )->input_volume != NULL )
+		if( ( *info_handle )->input_file_io_handle != NULL )
 		{
-			if( libfvde_volume_free(
-			     &( ( *info_handle )->input_volume ),
-			     error ) != 1 )
+			if( info_handle_close_input(
+			     *info_handle,
+			     error ) != 0 )
 			{
 				libcerror_error_set(
 				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free input volume.",
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+				 "%s: unable to close input.",
 				 function );
 
 				result = -1;
 			}
 		}
-		if( libbfio_handle_free(
-		     &( ( *info_handle )->input_file_io_handle ),
+		if( libcdata_array_free(
+		     &( ( *info_handle )->logical_volumes_array ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_logical_volume_free,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free input file IO handle.",
+			 "%s: unable to free logical volumes array.",
+			 function );
+
+			result = -1;
+		}
+		if( memory_set(
+		     ( *info_handle )->volume_master_key,
+		     0,
+		     16 ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear volume master key.",
 			 function );
 
 			result = -1;
@@ -420,12 +426,9 @@ int info_handle_set_keys(
      const system_character_t *string,
      libcerror_error_t **error )
 {
-	uint8_t key_data[ 16 ];
-
-	static char *function         = "info_handle_set_keys";
-	size_t volume_master_key_size = 0;
-	size_t string_length          = 0;
-	uint32_t base16_variant       = 0;
+	static char *function   = "info_handle_set_keys";
+	size_t string_length    = 0;
+	uint32_t base16_variant = 0;
 
 	if( info_handle == NULL )
 	{
@@ -442,7 +445,7 @@ int info_handle_set_keys(
 	                 string );
 
 	if( memory_set(
-	     key_data,
+	     info_handle->volume_master_key,
 	     0,
 	     16 ) == NULL )
 	{
@@ -450,7 +453,7 @@ int info_handle_set_keys(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear key data.",
+		 "%s: unable to clear volume master key.",
 		 function );
 
 		goto on_error;
@@ -481,7 +484,7 @@ int info_handle_set_keys(
 	if( libuna_base16_stream_copy_to_byte_stream(
 	     (uint8_t *) string,
 	     string_length,
-	     key_data,
+	     info_handle->volume_master_key,
 	     16,
 	     base16_variant,
 	     0,
@@ -491,47 +494,18 @@ int info_handle_set_keys(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy key data.",
+		 "%s: unable to copy volume master key.",
 		 function );
 
 		goto on_error;
 	}
-	volume_master_key_size = 16;
+	info_handle->volume_master_key_is_set = 1;
 
-	if( libfvde_volume_set_keys(
-	     info_handle->input_volume,
-	     key_data,
-	     volume_master_key_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set keys.",
-		 function );
-
-		goto on_error;
-	}
-	if( memory_set(
-	     key_data,
-	     0,
-	     16 ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear key data.",
-		 function );
-
-		goto on_error;
-	}
 	return( 1 );
 
 on_error:
 	memory_set(
-	 key_data,
+	 info_handle->volume_master_key,
 	 0,
 	 16 );
 
@@ -821,9 +795,16 @@ int info_handle_open_input(
      const system_character_t *filename,
      libcerror_error_t **error )
 {
-	static char *function  = "info_handle_open_input";
-	size_t filename_length = 0;
-	int result             = 0;
+	system_character_t password[ 64 ];
+
+	libfvde_logical_volume_t *logical_volume = NULL;
+	static char *function                    = "info_handle_open_input";
+	size_t filename_length                   = 0;
+	size_t password_length                   = 0;
+	int entry_index                          = 0;
+	int logical_volume_index                 = 0;
+	int number_of_logical_volumes            = 0;
+	int result                               = 0;
 
 	if( info_handle == NULL )
 	{
@@ -835,6 +816,41 @@ int info_handle_open_input(
 		 function );
 
 		return( -1 );
+	}
+	if( info_handle->input_file_io_handle != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid info handle - input file IO handle value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( info_handle->input_volume != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid info handle - input volume value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_file_range_initialize(
+	     &( info_handle->input_file_io_handle ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize input file IO handle.",
+		 function );
+
+		goto on_error;
 	}
 	filename_length = system_string_length(
 	                   filename );
@@ -860,7 +876,7 @@ int info_handle_open_input(
 		 "%s: unable to open set file name.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( libbfio_file_range_set(
 	     info_handle->input_file_io_handle,
@@ -875,7 +891,20 @@ int info_handle_open_input(
 		 "%s: unable to open set volume offset.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	if( libfvde_volume_initialize(
+	     &( info_handle->input_volume ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize input volume.",
+		 function );
+
+		goto on_error;
 	}
 	result = libfvde_volume_open_file_io_handle(
 	          info_handle->input_volume,
@@ -892,9 +921,291 @@ int info_handle_open_input(
 		 "%s: unable to open input volume.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	if( libfvde_volume_get_volume_group(
+	     info_handle->input_volume,
+	     &( info_handle->volume_group ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve volume group.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfvde_volume_group_get_number_of_logical_volumes(
+	     info_handle->volume_group,
+	     &number_of_logical_volumes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of logical volumes.",
+		 function );
+
+		goto on_error;
+	}
+	for( logical_volume_index = 0;
+	     logical_volume_index < number_of_logical_volumes;
+	     logical_volume_index++ )
+	{
+		if( libfvde_volume_group_get_logical_volume_by_index(
+		     info_handle->volume_group,
+		     logical_volume_index,
+		     &logical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume: %d.",
+			 function,
+			 logical_volume_index );
+
+			goto on_error;
+		}
+		if( info_handle->volume_master_key_is_set != 0 )
+		{
+			if( libfvde_logical_volume_set_keys(
+			     logical_volume,
+			     info_handle->volume_master_key,
+			     16,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to set keys.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		if( info_handle->user_password != NULL )
+		{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			if( libfvde_logical_volume_set_utf16_password(
+			     logical_volume,
+			     (uint16_t *) info_handle->user_password,
+			     info_handle->user_password_size - 1,
+			     error ) != 1 )
+#else
+			if( libfvde_logical_volume_set_utf8_password(
+			     logical_volume,
+			     (uint8_t *) info_handle->user_password,
+			     info_handle->user_password_size - 1,
+			     error ) != 1 )
+#endif
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to set password.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		if( info_handle->recovery_password != NULL )
+		{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			if( libfvde_logical_volume_set_utf16_recovery_password(
+			     logical_volume,
+			     (uint16_t *) info_handle->recovery_password,
+			     info_handle->recovery_password_size - 1,
+			     error ) != 1 )
+#else
+			if( libfvde_logical_volume_set_utf8_recovery_password(
+			     logical_volume,
+			     (uint8_t *) info_handle->recovery_password,
+			     info_handle->recovery_password_size - 1,
+			     error ) != 1 )
+#endif
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to set recovery password.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		result = libfvde_logical_volume_is_locked(
+		          logical_volume,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine if logical volume is locked.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
+		{
+			result = libfvde_logical_volume_unlock(
+			          logical_volume,
+			          error );
+
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+				 "%s: unable to unlock logical volume.",
+				 function );
+
+				goto on_error;
+			}
+			else if( ( result == 0 )
+			      && ( info_handle->unattend_mode == 0 ) )
+			{
+/* TODO print logical volume identifier and/or name */
+				fprintf(
+				 stdout,
+				 "Logical volume: %d is locked and a password is needed to unlock it.\n\n",
+				 logical_volume_index + 1 );
+
+				if( fvdetools_prompt_for_password(
+				     stdout,
+				     "Password",
+				     password,
+				     64,
+				     error ) != 1 )
+				{
+					fprintf(
+					 stderr,
+					 "Unable to retrieve password.\n" );
+
+					goto on_error;
+				}
+				password_length = system_string_length(
+				                   password );
+
+				if( password_length > 0 )
+				{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+					if( libfvde_logical_volume_set_utf16_password(
+					     logical_volume,
+					     (uint16_t *) password,
+					     password_length,
+					     error ) != 1 )
+#else
+					if( libfvde_logical_volume_set_utf8_password(
+					     logical_volume,
+					     (uint8_t *) password,
+					     password_length,
+					     error ) != 1 )
+#endif
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+						 "%s: unable to set password.",
+						 function );
+
+						goto on_error;
+					}
+					memory_set(
+					 password,
+					 0,
+					 64 );
+				}
+				fprintf(
+				 stdout,
+				 "\n\n" );
+
+				result = libfvde_logical_volume_unlock(
+				          logical_volume,
+				          error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to unlock logical volume.",
+					 function );
+
+					goto on_error;
+				}
+				else if( result == 0 )
+				{
+					fprintf(
+					 stdout,
+					 "Unable to unlock volume.\n\n" );
+				}
+			}
+		}
+		if( libcdata_array_append_entry(
+		     info_handle->logical_volumes_array,
+		     &entry_index,
+		     (intptr_t *) logical_volume,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append logical volume: %d to array.",
+			 function,
+			 logical_volume_index );
+
+			goto on_error;
+		}
+		logical_volume = NULL;
 	}
 	return( 1 );
+
+on_error:
+	if( logical_volume != NULL )
+	{
+		libfvde_logical_volume_free(
+		 &logical_volume,
+		 NULL );
+	}
+	if( info_handle->volume_group != NULL )
+	{
+		libfvde_volume_group_free(
+		 &( info_handle->volume_group ),
+		 NULL );
+	}
+	if( info_handle->input_volume != NULL )
+	{
+		libfvde_volume_free(
+		 &( info_handle->input_volume ),
+		 NULL );
+	}
+	if( info_handle->input_file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &( info_handle->input_file_io_handle ),
+		 NULL );
+	}
+	memory_set(
+	 password,
+	 0,
+	 64 );
+
+	return( -1 );
 }
 
 /* Closes the info handle
@@ -905,42 +1216,6 @@ int info_handle_close_input(
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_close_input";
-
-	if( info_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid info handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfvde_volume_close(
-	     info_handle->input_volume,
-	     error ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close input volume.",
-		 function );
-
-		return( -1 );
-	}
-	return( 0 );
-}
-
-/* Unlocks an encrypted volume
- * Returns 1 if the volume is unlocked, 0 if not or -1 on error
- */
-int info_handle_input_unlock(
-     info_handle_t *info_handle,
-     libcerror_error_t **error )
-{
-	static char *function = "info_handle_input_unlock";
 	int result            = 0;
 
 	if( info_handle == NULL )
@@ -954,59 +1229,93 @@ int info_handle_input_unlock(
 
 		return( -1 );
 	}
-	result = libfvde_volume_unlock(
-	          info_handle->input_volume,
-	          error );
-
-	if( result == -1 )
+	if( libcdata_array_empty(
+	     info_handle->logical_volumes_array,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_logical_volume_free,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to unlock volume.",
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty logical volumes array.",
 		 function );
 
-		return( -1 );
+		result = -1;
 	}
-	return( result );
-}
-
-/* Determine if the input is locked
- * Returns 1 if locked, 0 if not or -1 on error
- */
-int info_handle_input_is_locked(
-     info_handle_t *info_handle,
-     libcerror_error_t **error )
-{
-	static char *function = "info_handle_input_is_locked";
-	int result            = 0;
-
-	if( info_handle == NULL )
+	if( info_handle->volume_group != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid info handle.",
-		 function );
+		if( libfvde_volume_group_free(
+		     &( info_handle->volume_group ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free volume group.",
+			 function );
 
-		return( -1 );
+			result = -1;
+		}
 	}
-	result = libfvde_volume_is_locked(
-	          info_handle->input_volume,
-	          error );
-
-	if( result == -1 )
+	if( info_handle->input_volume != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if volume is locked.",
-		 function );
+		if( libfvde_volume_close(
+		     info_handle->input_volume,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close input volume.",
+			 function );
 
-		return( -1 );
+			result = -1;
+		}
+		if( libfvde_volume_free(
+		     &( info_handle->input_volume ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free input volume.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( info_handle->input_file_io_handle != NULL )
+	{
+		if( libbfio_handle_close(
+		     info_handle->input_file_io_handle,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close input file IO handle.",
+			 function );
+
+			result = -1;
+		}
+		if( libbfio_handle_free(
+		     &( info_handle->input_file_io_handle ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free input file IO handle.",
+			 function );
+
+			result = -1;
+		}
 	}
 	return( result );
 }
@@ -1507,7 +1816,6 @@ int info_handle_volume_fprint(
 
 	libfvde_logical_volume_t *logical_volume   = NULL;
 	libfvde_physical_volume_t *physical_volume = NULL;
-	libfvde_volume_group_t *volume_group       = NULL;
 	system_character_t *value_string           = NULL;
 	static char *function                      = "info_handle_volume_fprint";
 	size_t value_string_size                   = 0;
@@ -1539,22 +1847,8 @@ int info_handle_volume_fprint(
 	 info_handle->notify_stream,
 	 "Logical volume group:\n" );
 
-	if( libfvde_volume_get_volume_group(
-	     info_handle->input_volume,
-	     &volume_group,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve volume group.",
-		 function );
-
-		goto on_error;
-	}
 	if( libfvde_volume_group_get_identifier(
-	     volume_group,
+	     info_handle->volume_group,
 	     uuid_data,
 	     16,
 	     error ) != 1 )
@@ -1589,12 +1883,12 @@ int info_handle_volume_fprint(
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libfvde_volume_group_get_utf16_name_size(
-	          volume_group,
+	          info_handle->volume_group,
 	          &value_string_size,
 	          error );
 #else
 	result = libfvde_volume_group_get_utf8_name_size(
-	          volume_group,
+	          info_handle->volume_group,
 	          &value_string_size,
 	          error );
 #endif
@@ -1628,13 +1922,13 @@ int info_handle_volume_fprint(
 		}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libfvde_volume_group_get_utf16_name(
-		          volume_group,
+		          info_handle->volume_group,
 		          (uint16_t *) value_string,
 		          value_string_size,
 		          error );
 #else
 		result = libfvde_volume_group_get_utf8_name(
-		          volume_group,
+		          info_handle->volume_group,
 		          (uint8_t *) value_string,
 		          value_string_size,
 		          error );
@@ -1665,7 +1959,7 @@ int info_handle_volume_fprint(
 	 "\n" );
 
 	if( libfvde_volume_group_get_number_of_physical_volumes(
-	     volume_group,
+	     info_handle->volume_group,
 	     &number_of_physical_volumes,
 	     error ) != 1 )
 	{
@@ -1683,8 +1977,8 @@ int info_handle_volume_fprint(
 	 "\tNumber of physical volumes\t: %d\n",
 	 number_of_physical_volumes );
 
-	if( libfvde_volume_group_get_number_of_logical_volumes(
-	     volume_group,
+	if( libcdata_array_get_number_of_entries(
+	     info_handle->logical_volumes_array,
 	     &number_of_logical_volumes,
 	     error ) != 1 )
 	{
@@ -1692,7 +1986,7 @@ int info_handle_volume_fprint(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of logical volumes.",
+		 "%s: unable to retrieve number of logical volumes from array.",
 		 function );
 
 		goto on_error;
@@ -1711,7 +2005,7 @@ int info_handle_volume_fprint(
 	     volume_index++ )
 	{
 		if( libfvde_volume_group_get_physical_volume_by_index(
-		     volume_group,
+		     info_handle->volume_group,
 		     volume_index,
 		     &physical_volume,
 		     error ) != 1 )
@@ -1761,73 +2055,21 @@ int info_handle_volume_fprint(
 	     volume_index < number_of_logical_volumes;
 	     volume_index++ )
 	{
-		if( libfvde_volume_group_get_logical_volume_by_index(
-		     volume_group,
+		if( libcdata_array_get_entry_by_index(
+		     info_handle->logical_volumes_array,
 		     volume_index,
-		     &logical_volume,
+		     (intptr_t **) &logical_volume,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve logical volume: %d.",
+			 "%s: unable to retrieve logical volume: %d from array.",
 			 function,
 			 volume_index );
 
 			goto on_error;
-		}
-		if( info_handle->user_password != NULL )
-		{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			if( libfvde_logical_volume_set_utf16_password(
-			     logical_volume,
-			     (uint16_t *) info_handle->user_password,
-			     info_handle->user_password_size - 1,
-			     error ) != 1 )
-#else
-			if( libfvde_logical_volume_set_utf8_password(
-			     logical_volume,
-			     (uint8_t *) info_handle->user_password,
-			     info_handle->user_password_size - 1,
-			     error ) != 1 )
-#endif
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set password.",
-				 function );
-
-				goto on_error;
-			}
-		}
-		if( info_handle->recovery_password != NULL )
-		{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			if( libfvde_logical_volume_set_utf16_recovery_password(
-			     logical_volume,
-			     (uint16_t *) info_handle->recovery_password,
-			     info_handle->recovery_password_size - 1,
-			     error ) != 1 )
-#else
-			if( libfvde_logical_volume_set_utf8_recovery_password(
-			     logical_volume,
-			     (uint8_t *) info_handle->recovery_password,
-			     info_handle->recovery_password_size - 1,
-			     error ) != 1 )
-#endif
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set recovery password.",
-				 function );
-
-				goto on_error;
-			}
 		}
 		result = libfvde_logical_volume_is_locked(
 		          logical_volume,
@@ -1843,22 +2085,6 @@ int info_handle_volume_fprint(
 			 function );
 
 			goto on_error;
-		}
-		else if( result != 0 )
-		{
-			if( libfvde_logical_volume_unlock(
-			     logical_volume,
-			     error ) == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to unlock logical volume.",
-				 function );
-
-				goto on_error;
-			}
 		}
 		if( info_handle_logical_volume_fprint(
 		     info_handle,
@@ -1876,43 +2102,10 @@ int info_handle_volume_fprint(
 
 			goto on_error;
 		}
-		if( libfvde_logical_volume_free(
-		     &logical_volume,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free logical volume: %d.",
-			 function,
-			 volume_index );
-
-			goto on_error;
-		}
-	}
-	if( libfvde_volume_group_free(
-	     &volume_group,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free volume group.",
-		 function );
-
-		goto on_error;
 	}
 	return( 1 );
 
 on_error:
-	if( logical_volume != NULL )
-	{
-		libfvde_logical_volume_free(
-		 &logical_volume,
-		 NULL );
-	}
 	if( physical_volume != NULL )
 	{
 		libfvde_physical_volume_free(
@@ -1923,12 +2116,6 @@ on_error:
 	{
 		memory_free(
 		 value_string );
-	}
-	if( volume_group != NULL )
-	{
-		libfvde_volume_group_free(
-		 &volume_group,
-		 NULL );
 	}
 	return( -1 );
 }

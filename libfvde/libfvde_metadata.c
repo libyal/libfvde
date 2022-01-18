@@ -446,7 +446,7 @@ int libfvde_metadata_read_type_0x0011(
 		 volume_groups_descriptor_offset );
 
 		libcnotify_printf(
-		 "%s: XML offset\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: volume group XML offset\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 xml_offset );
 
@@ -454,7 +454,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 164 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: XML size\t\t\t\t\t: %" PRIu32 "\n",
+		 "%s: volume group XML size\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -462,7 +462,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 168 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: XML size copy\t\t\t\t: %" PRIu32 "\n",
+		 "%s: volume group XML size copy\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -511,9 +511,19 @@ int libfvde_metadata_read_type_0x0011(
 		 "\n" );
 	}
 #endif
-/* TODO: check bounds of number_of_entries */
 	block_data_offset = 192;
 
+	if( number_of_entries > ( ( block_data_size - block_data_offset ) / 24 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of entries value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	for( entry_index = 0;
 	     entry_index < number_of_entries;
 	     entry_index++ )
@@ -525,7 +535,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d transaction identifier\t\t: %" PRIu64 "\n",
+			 "%s: entry: %03d unknown1\t\t\t\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -543,7 +553,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset + 16 ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown3\t\t\t\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %03d metadata block number\t\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -680,7 +690,7 @@ int libfvde_metadata_read_type_0x0011(
 		return( -1 );
 	}
 	/* The offset is relative to the start of the metadata block */
-	if( libfvde_metadata_read_core_storage_plist(
+	if( libfvde_metadata_read_volume_group_plist(
 	     metadata,
 	     &( block_data[ xml_offset - 64 ] ),
 	     error ) != 1 )
@@ -704,10 +714,10 @@ int libfvde_metadata_read_type_0x0011(
 	return( 1 );
 }
 
-/* Reads the core storage (XML) plist
+/* Reads the volume group (XML) plist
  * Returns 1 if successful or -1 on error
  */
-int libfvde_metadata_read_core_storage_plist(
+int libfvde_metadata_read_volume_group_plist(
      libfvde_metadata_t *metadata,
      const uint8_t *xml_plist_data,
      libcerror_error_t **error )
@@ -717,7 +727,7 @@ int libfvde_metadata_read_core_storage_plist(
 	libfplist_property_t *sub_property                               = NULL;
 	libfplist_property_list_t *property_list                         = NULL;
 	libfvde_physical_volume_descriptor_t *physical_volume_descriptor = NULL;
-	static char *function                                            = "libfvde_metadata_read_core_storage_plist";
+	static char *function                                            = "libfvde_metadata_read_volume_group_plist";
 	size_t xml_length                                                = 0;
 	int entry_index                                                  = 0;
 	int number_of_entries                                            = 0;

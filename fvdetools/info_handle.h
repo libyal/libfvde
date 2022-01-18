@@ -28,6 +28,7 @@
 #include <types.h>
 
 #include "fvdetools_libbfio.h"
+#include "fvdetools_libcdata.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libfvde.h"
 
@@ -39,6 +40,14 @@ typedef struct info_handle info_handle_t;
 
 struct info_handle
 {
+	/* The volume master key
+	 */
+	uint8_t volume_master_key[ 16 ];
+
+	/* Value to indicate the volume master key is set
+	 */
+	uint8_t volume_master_key_is_set;
+
 	/* The recovery password
 	 */
 	system_character_t *recovery_password;
@@ -67,9 +76,21 @@ struct info_handle
 	 */
 	libfvde_volume_t *input_volume;
 
+	/* The volume group
+	 */
+	libfvde_volume_group_t *volume_group;
+
+	/* The logical_volumes array
+	 */
+	libcdata_array_t *logical_volumes_array;
+
 	/* The notification output stream
 	 */
 	FILE *notify_stream;
+
+	/* Value to indicate if user interaction is disabled
+	 */
+	int unattend_mode;
 
 	/* Value to indicate if abort was signalled
 	 */
@@ -84,6 +105,7 @@ int fvdetools_system_string_copy_from_64_bit_in_decimal(
 
 int info_handle_initialize(
      info_handle_t **info_handle,
+     int unattend_mode,
      libcerror_error_t **error );
 
 int info_handle_free(
@@ -125,14 +147,6 @@ int info_handle_open_input(
      libcerror_error_t **error );
 
 int info_handle_close_input(
-     info_handle_t *info_handle,
-     libcerror_error_t **error );
-
-int info_handle_input_unlock(
-     info_handle_t *info_handle,
-     libcerror_error_t **error );
-
-int info_handle_input_is_locked(
      info_handle_t *info_handle,
      libcerror_error_t **error );
 

@@ -404,7 +404,7 @@ int main(
 
 	/* TODO: add tests for libfvde_metadata_read_type_0x0011 */
 
-	/* TODO: add tests for libfvde_metadata_read_core_storage_plist */
+	/* TODO: add tests for libfvde_metadata_read_volume_group_plist */
 
 	FVDE_TEST_RUN(
 	 "libfvde_metadata_read_file_io_handle",

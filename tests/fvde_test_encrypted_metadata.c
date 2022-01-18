@@ -142,6 +142,19 @@ uint8_t fvde_test_encrypted_metadata_block_data_0x0013[ 256 ] = {
 	0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
+uint8_t fvde_test_encrypted_metadata_block_data_0x0014[ 176 ] = {
+	0x78, 0xf6, 0x22, 0x4b, 0xff, 0xff, 0xff, 0xff, 0x02, 0x0a, 0xc8, 0xd1, 0x64, 0x98, 0x41, 0xe6,
+	0xaa, 0x27, 0x15, 0x13, 0x1f, 0x31, 0xca, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x16, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
 uint8_t fvde_test_encrypted_metadata_block_data_0x0016[ 128 ] = {
 	0x08, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01, 0x00, 0x00, 0x00,
 	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
@@ -1191,6 +1204,162 @@ int fvde_test_encrypted_metadata_read_type_0x0013(
 	result = libfvde_encrypted_metadata_read_type_0x0013(
 	          encrypted_metadata,
 	          fvde_test_encrypted_metadata_block_data_0x0013,
+	          0,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = libfvde_encrypted_metadata_free(
+	          &encrypted_metadata,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( encrypted_metadata != NULL )
+	{
+		libfvde_encrypted_metadata_free(
+		 &encrypted_metadata,
+		 NULL );
+	}
+	return( 0 );
+}
+
+/* Tests the libfvde_encrypted_metadata_read_type_0x0014 function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_encrypted_metadata_read_type_0x0014(
+     void )
+{
+	libcerror_error_t *error                         = NULL;
+	libfvde_encrypted_metadata_t *encrypted_metadata = NULL;
+	int result                                       = 0;
+
+	/* Initialize test
+	 */
+	result = libfvde_encrypted_metadata_initialize(
+	          &encrypted_metadata,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libfvde_encrypted_metadata_read_type_0x0014(
+	          encrypted_metadata,
+	          fvde_test_encrypted_metadata_block_data_0x0014,
+	          176,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfvde_encrypted_metadata_read_type_0x0014(
+	          NULL,
+	          fvde_test_encrypted_metadata_block_data_0x0014,
+	          176,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0014(
+	          encrypted_metadata,
+	          NULL,
+	          176,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0014(
+	          encrypted_metadata,
+	          fvde_test_encrypted_metadata_block_data_0x0014,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0014(
+	          encrypted_metadata,
+	          fvde_test_encrypted_metadata_block_data_0x0014,
 	          0,
 	          &error );
 
@@ -3428,7 +3597,9 @@ int main(
 	 "libfvde_encrypted_metadata_read_type_0x0013",
 	 fvde_test_encrypted_metadata_read_type_0x0013 );
 
-	/* TODO: add tests for libfvde_encrypted_metadata_read_type_0x0014 */
+	FVDE_TEST_RUN(
+	 "libfvde_encrypted_metadata_read_type_0x0014",
+	 fvde_test_encrypted_metadata_read_type_0x0014 );
 
 	FVDE_TEST_RUN(
 	 "libfvde_encrypted_metadata_read_type_0x0016",

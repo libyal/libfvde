@@ -383,44 +383,6 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves the number of logical volumes
- * Returns 1 if successful or -1 on error
- */
-int mount_file_system_get_number_of_logical_volumes(
-     mount_file_system_t *file_system,
-     int *number_of_logical_volumes,
-     libcerror_error_t **error )
-{
-	static char *function = "mount_file_system_get_number_of_logical_volumes";
-
-	if( file_system == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file system.",
-		 function );
-
-		return( -1 );
-	}
-	if( libcdata_array_get_number_of_entries(
-	     file_system->logical_volumes_array,
-	     number_of_logical_volumes,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of logical volumes.",
-		 function );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
 /* Retrieves the mounted timestamp
  * On Windows the timestamp is an unsigned 64-bit FILETIME timestamp
  * otherwise the timestamp is a signed 64-bit POSIX date and time value in number of nanoseconds
@@ -457,6 +419,44 @@ int mount_file_system_get_mounted_timestamp(
 	}
 	*mounted_timestamp = file_system->mounted_timestamp;
 
+	return( 1 );
+}
+
+/* Retrieves the number of logical volumes
+ * Returns 1 if successful or -1 on error
+ */
+int mount_file_system_get_number_of_logical_volumes(
+     mount_file_system_t *file_system,
+     int *number_of_logical_volumes,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_file_system_get_number_of_logical_volumes";
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     file_system->logical_volumes_array,
+	     number_of_logical_volumes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of logical volumes.",
+		 function );
+
+		return( -1 );
+	}
 	return( 1 );
 }
 

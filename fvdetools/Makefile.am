@@ -32,6 +32,7 @@ fvdeinfo_SOURCES = \
 	fvdetools_i18n.h \
 	fvdetools_input.c fvdetools_input.h \
 	fvdetools_libbfio.h \
+	fvdetools_libcdata.h \
 	fvdetools_libcerror.h \
 	fvdetools_libclocale.h \
 	fvdetools_libcnotify.h \
