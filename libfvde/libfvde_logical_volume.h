@@ -243,12 +243,6 @@ int libfvde_logical_volume_get_utf16_name(
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
-int libfvde_logical_volume_get_encryption_method(
-     libfvde_logical_volume_t *logical_volume,
-     uint32_t *encryption_method,
-     libcerror_error_t **error );
-
-LIBFVDE_EXTERN \
 int libfvde_logical_volume_get_size(
      libfvde_logical_volume_t *logical_volume,
      size64_t *size,

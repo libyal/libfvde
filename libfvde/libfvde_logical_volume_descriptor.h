@@ -28,6 +28,7 @@
 
 #include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
+#include "libfvde_segment_descriptor.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -64,14 +65,6 @@ struct libfvde_logical_volume_descriptor
 	/* The object identifier of the corresponding metadata block 0x0305
 	 */
 	uint64_t object_identifier_0x0305;
-
-	/* The block number as defined by metadata block 0x0305
-	 */
-	uint64_t block_number_0x0305;
-
-	/* The number of blocks as defined by metadata block 0x0305
-	 */
-	uint64_t number_of_blocks_0x0305;
 
 	/* The segment descriptors
 	 */
@@ -123,6 +116,22 @@ int libfvde_logical_volume_descriptor_get_utf16_name(
 int libfvde_logical_volume_descriptor_get_size(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
      size64_t *size,
+     libcerror_error_t **error );
+
+int libfvde_logical_volume_descriptor_get_first_block_number(
+     libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     uint64_t *block_number,
+     libcerror_error_t **error );
+
+int libfvde_logical_volume_descriptor_get_number_of_segment_descriptors(
+     libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     int *number_of_segment_descriptors,
+     libcerror_error_t **error );
+
+int libfvde_logical_volume_descriptor_get_segment_descriptor_by_index(
+     libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     int segment_index,
+     libfvde_segment_descriptor_t **segment_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

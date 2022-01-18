@@ -24,6 +24,7 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_segment_descriptor.h"
 
@@ -133,5 +134,48 @@ int libfvde_segment_descriptor_free(
 		*segment_descriptor = NULL;
 	}
 	return( 1 );
+}
+
+/* Compares two resource node entries
+ * Returns LIBCDATA_COMPARE_LESS, LIBCDATA_COMPARE_EQUAL, LIBCDATA_COMPARE_GREATER if successful or -1 on error
+ */
+int libfvde_segment_descriptor_compare(
+     libfvde_segment_descriptor_t *first_segment_descriptor,
+     libfvde_segment_descriptor_t *second_segment_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfvde_segment_descriptor_compare";
+
+	if( first_segment_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid first resource node entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( second_segment_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid second resource node entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( first_segment_descriptor->logical_block_number < second_segment_descriptor->logical_block_number )
+	{
+		return( LIBCDATA_COMPARE_LESS );
+	}
+	else if( first_segment_descriptor->logical_block_number > second_segment_descriptor->logical_block_number )
+	{
+		return( LIBCDATA_COMPARE_GREATER );
+	}
+	return( LIBCDATA_COMPARE_EQUAL );
 }
 

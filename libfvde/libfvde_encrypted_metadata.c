@@ -37,6 +37,7 @@
 #include "libfvde_keyring.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcaes.h"
+#include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
 #include "libfvde_libfguid.h"
@@ -2512,8 +2513,8 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported object identifier 0x0305 (stored: %" PRIu64 ", expected: %" PRIu64 ").",
 		 function,
 		 object_identifier_0x0305,
@@ -4055,6 +4056,7 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 	uint32_t entry_index                                           = 0;
 	uint32_t number_of_blocks                                      = 0;
 	uint32_t number_of_entries                                     = 0;
+	int result                                                     = 0;
 	int segment_descriptor_index                                   = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -4148,150 +4150,160 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 
 	block_data_offset = 8;
 
-	if( number_of_entries > 0 )
+	if( ( (size_t) number_of_entries * 40 ) > ( block_data_size - block_data_offset ) )
 	{
-		if( ( (size_t) number_of_entries * 40 ) > ( block_data_size - block_data_offset ) )
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of entries value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
+	{
+		if( libfvde_segment_descriptor_initialize(
+		     &segment_descriptor,
+		     error ) == -1 )
 		{
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid number of entries value out of bounds.",
+			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+			 "%s: unable to create segment descriptor.",
 			 function );
 
 			goto on_error;
 		}
-		for( entry_index = 0;
-		     entry_index < number_of_entries;
-		     entry_index++ )
-		{
-			if( libfvde_segment_descriptor_initialize(
-			     &segment_descriptor,
-			     error ) == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-				 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-				 "%s: unable to create segment descriptor.",
-				 function );
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset + 8 ] ),
+		 segment_descriptor->logical_block_number );
 
-				goto on_error;
-			}
+		byte_stream_copy_to_uint32_little_endian(
+		 &( block_data[ block_data_offset + 16 ] ),
+		 segment_descriptor->number_of_blocks );
+
+		byte_stream_copy_to_uint32_little_endian(
+		 &( block_data[ block_data_offset + 32 ] ),
+		 segment_descriptor->physical_block_number );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
 			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 8 ] ),
+			 &( block_data[ block_data_offset ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			libcnotify_printf(
+			 "%s: entry: %03d logical block number\t: %" PRIi64 "\n",
+			 function,
+			 entry_index,
 			 segment_descriptor->logical_block_number );
 
-			byte_stream_copy_to_uint32_little_endian(
-			 &( block_data[ block_data_offset + 16 ] ),
+			libcnotify_printf(
+			 "%s: entry: %03d number of blocks\t: %" PRIu32 "\n",
+			 function,
+			 entry_index,
 			 segment_descriptor->number_of_blocks );
 
 			byte_stream_copy_to_uint32_little_endian(
-			 &( block_data[ block_data_offset + 32 ] ),
+			 &( block_data[ block_data_offset + 20 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown3\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
+
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 24 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown4\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
+
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 28 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown5\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
+
+			libcnotify_printf(
+			 "%s: entry: %03d physical block number\t: %" PRIu32 "\n",
+			 function,
+			 entry_index,
 			 segment_descriptor->physical_block_number );
 
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				byte_stream_copy_to_uint64_little_endian(
-				 &( block_data[ block_data_offset ] ),
-				 value_64bit );
-				libcnotify_printf(
-				 "%s: entry: %03d unknown1\t\t: 0x%08" PRIx64 "\n",
-				 function,
-				 entry_index,
-				 value_64bit );
+			byte_stream_copy_to_uint32_little_endian(
+			 &( block_data[ block_data_offset + 36 ] ),
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown6\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 entry_index,
+			 value_32bit );
 
-				libcnotify_printf(
-				 "%s: entry: %03d logical block number\t: %" PRIi64 "\n",
-				 function,
-				 entry_index,
-				 segment_descriptor->logical_block_number );
-
-				libcnotify_printf(
-				 "%s: entry: %03d number of blocks\t: %" PRIu32 "\n",
-				 function,
-				 entry_index,
-				 segment_descriptor->number_of_blocks );
-
-				byte_stream_copy_to_uint32_little_endian(
-				 &( block_data[ block_data_offset + 20 ] ),
-				 value_32bit );
-				libcnotify_printf(
-				 "%s: entry: %03d unknown3\t\t: 0x%08" PRIx32 "\n",
-				 function,
-				 entry_index,
-				 value_32bit );
-
-				byte_stream_copy_to_uint32_little_endian(
-				 &( block_data[ block_data_offset + 24 ] ),
-				 value_32bit );
-				libcnotify_printf(
-				 "%s: entry: %03d unknown4\t\t: 0x%08" PRIx32 "\n",
-				 function,
-				 entry_index,
-				 value_32bit );
-
-				byte_stream_copy_to_uint32_little_endian(
-				 &( block_data[ block_data_offset + 28 ] ),
-				 value_32bit );
-				libcnotify_printf(
-				 "%s: entry: %03d unknown5\t\t: 0x%08" PRIx32 "\n",
-				 function,
-				 entry_index,
-				 value_32bit );
-
-				libcnotify_printf(
-				 "%s: entry: %03d physical block number\t: %" PRIu32 "\n",
-				 function,
-				 entry_index,
-				 segment_descriptor->physical_block_number );
-
-				byte_stream_copy_to_uint32_little_endian(
-				 &( block_data[ block_data_offset + 36 ] ),
-				 value_32bit );
-				libcnotify_printf(
-				 "%s: entry: %03d unknown6\t\t: 0x%08" PRIx32 "\n",
-				 function,
-				 entry_index,
-				 value_32bit );
-
-				libcnotify_printf(
-				 "\n" );
-			}
+			libcnotify_printf(
+			 "\n" );
+		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-			block_data_offset += 40;
+		block_data_offset += 40;
 
-			if( libcdata_array_append_entry(
-			     logical_volume_descriptor->segment_descriptors,
-			     &segment_descriptor_index,
-			     (intptr_t *) segment_descriptor,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to append segment descriptor to array.",
-				 function );
+		result = libcdata_array_insert_entry(
+		          logical_volume_descriptor->segment_descriptors,
+		          &segment_descriptor_index,
+		          (intptr_t *) segment_descriptor,
+		          (int (*)(intptr_t *, intptr_t *, libcerror_error_t **)) &libfvde_segment_descriptor_compare,
+		          LIBCDATA_INSERT_FLAG_UNIQUE_ENTRIES,
+		          error );
 
-				goto on_error;
-			}
-			if( block_number > segment_descriptor->physical_block_number )
-			{
-				block_number = segment_descriptor->physical_block_number;
-			}
-			number_of_blocks  += segment_descriptor->number_of_blocks;
-			segment_descriptor = NULL;
-		}
-		if( number_of_entries == 1 )
+		if( result == -1 )
 		{
-			logical_volume_descriptor->object_identifier_0x0305 = object_identifier;
-			logical_volume_descriptor->block_number_0x0305      = block_number;
-			logical_volume_descriptor->number_of_blocks_0x0305  = number_of_blocks;
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to insert segment descriptor: %d in array.",
+			 function,
+			 entry_index );
+
+			goto on_error;
 		}
+		else if( result == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported overlapping segment descriptor: %d.",
+			 function,
+			 entry_index );
+
+			goto on_error;
+		}
+		if( block_number > segment_descriptor->physical_block_number )
+		{
+			block_number = segment_descriptor->physical_block_number;
+		}
+		number_of_blocks  += segment_descriptor->number_of_blocks;
+		segment_descriptor = NULL;
 	}
+	logical_volume_descriptor->object_identifier_0x0305 = object_identifier;
+
 	return( 1 );
 
 on_error:
@@ -5644,8 +5656,8 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 			{
 				libcerror_error_set(
 				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 				 "%s: unsupported value type.",
 				 function );
 
@@ -5655,8 +5667,8 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 			{
 				libcerror_error_set(
 				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 				 "%s: unsupported value size.",
 				 function );
 
@@ -5769,8 +5781,8 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 			{
 				libcerror_error_set(
 				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 				 "%s: unsupported value type.",
 				 function );
 
@@ -5780,8 +5792,8 @@ int libfvde_encrypted_metadata_get_volume_master_key(
 			{
 				libcerror_error_set(
 				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 				 "%s: unsupported value size.",
 				 function );
 

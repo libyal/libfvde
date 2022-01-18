@@ -230,6 +230,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\fvdetools\fvdetools_libcdata.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\fvdetools\fvdetools_libcerror.h"
 				>
 			</File>

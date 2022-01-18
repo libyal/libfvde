@@ -1202,6 +1202,11 @@ int libfvde_internal_volume_open_read(
 	int number_of_logical_volumes                                  = 0;
 	int number_of_physical_volumes                                 = 0;
 
+#if defined( HAVE_DEBUG_OUTPUT )
+	size64_t logical_volume_size                                   = 0;
+	off64_t logical_volume_offset                                  = 0;
+#endif
+
 	if( internal_volume == NULL )
 	{
 		libcerror_error_set(
@@ -1651,16 +1656,46 @@ int libfvde_internal_volume_open_read(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
+			if( libfvde_logical_volume_descriptor_get_first_block_number(
+			     logical_volume_descriptor,
+			     (uint64_t *) &logical_volume_offset,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve first block number from logical volume descriptor.",
+				 function );
+
+				goto on_error;
+			}
+			logical_volume_offset *= internal_volume->io_handle->block_size;
+
 			libcnotify_printf(
 			 "%s: logical volume offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
 			 function,
-			 logical_volume_descriptor->block_number_0x0305 * internal_volume->io_handle->block_size,
-			 logical_volume_descriptor->block_number_0x0305 * internal_volume->io_handle->block_size );
+			 logical_volume_offset,
+			 logical_volume_offset );
 
+			if( libfvde_logical_volume_descriptor_get_size(
+			     logical_volume_descriptor,
+			     &logical_volume_size,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve size from first logical volume descriptor.",
+				 function );
+
+				goto on_error;
+			}
 			libcnotify_printf(
 			 "%s: logical volume size\t\t\t: %" PRIu64 "\n",
 			 function,
-			 logical_volume_descriptor->number_of_blocks_0x0305 * internal_volume->io_handle->block_size );
+			 logical_volume_size );
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 

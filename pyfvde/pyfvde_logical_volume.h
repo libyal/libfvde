@@ -89,10 +89,6 @@ PyObject *pyfvde_logical_volume_get_name(
            pyfvde_logical_volume_t *pyfvde_logical_volume,
            PyObject *arguments );
 
-PyObject *pyfvde_logical_volume_get_encryption_method(
-           pyfvde_logical_volume_t *pyfvde_logical_volume,
-           PyObject *arguments );
-
 PyObject *pyfvde_logical_volume_get_size(
            pyfvde_logical_volume_t *pyfvde_logical_volume,
            PyObject *arguments );

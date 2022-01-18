@@ -38,6 +38,7 @@
 #include "libfvde_logical_volume_descriptor.h"
 #include "libfvde_password.h"
 #include "libfvde_sector_data.h"
+#include "libfvde_segment_descriptor.h"
 #include "libfvde_types.h"
 #include "libfvde_volume_data_handle.h"
 
@@ -262,13 +263,17 @@ int libfvde_internal_logical_volume_open_read(
 {
 	uint8_t volume_header_data[ 512 ];
 
-	static char *function  = "libfvde_internal_logical_volume_open_read";
-	size64_t volume_size   = 0;
-	ssize_t read_count     = 0;
-	off64_t volume_offset  = 0;
-	uint32_t segment_flags = 0;
-	int result             = 0;
-	int segment_index      = 0;
+	libfvde_segment_descriptor_t *segment_descriptor = NULL;
+	static char *function                            = "libfvde_internal_logical_volume_open_read";
+	size64_t segment_size                            = 0;
+	ssize_t read_count                               = 0;
+	off64_t segment_offset                           = 0;
+	off64_t volume_offset                            = 0;
+	uint32_t segment_flags                           = 0;
+	int number_of_segment_descriptors                = 0;
+	int result                                       = 0;
+	int segment_descriptor_index                     = 0;
+	int segment_index                                = 0;
 
 	if( internal_logical_volume == NULL )
 	{
@@ -288,17 +293,6 @@ int libfvde_internal_logical_volume_open_read(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid logical volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_logical_volume->logical_volume_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid logical volume - missing logical volume descriptor.",
 		 function );
 
 		return( -1 );
@@ -336,8 +330,21 @@ int libfvde_internal_logical_volume_open_read(
 
 		return( -1 );
 	}
-	volume_offset = internal_logical_volume->logical_volume_descriptor->block_number_0x0305 * internal_logical_volume->io_handle->block_size;
-	volume_size   = internal_logical_volume->logical_volume_descriptor->number_of_blocks_0x0305 * internal_logical_volume->io_handle->block_size;
+	if( libfvde_logical_volume_descriptor_get_first_block_number(
+	     internal_logical_volume->logical_volume_descriptor,
+	     (uint64_t *) &volume_offset,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve first block number from logical volume descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	volume_offset *= internal_logical_volume->io_handle->block_size;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -457,23 +464,74 @@ int libfvde_internal_logical_volume_open_read(
 	{
 		segment_flags = LIBFVDE_RANGE_FLAG_ENCRYPTED;
 	}
-	if( libfdata_vector_append_segment(
-	     internal_logical_volume->sectors_vector,
-	     &segment_index,
-	     0,
-	     volume_offset,
-	     volume_size,
-	     segment_flags,
-	     error ) != 1 )
+	if( libfvde_logical_volume_descriptor_get_number_of_segment_descriptors(
+	     internal_logical_volume->logical_volume_descriptor,
+	     &number_of_segment_descriptors,
+	     error ) == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-		 "%s: unable to append segment to sectors vector.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of segment descriptors from logical volume descriptor.",
 		 function );
 
 		goto on_error;
+	}
+	for( segment_descriptor_index = 0;
+	     segment_descriptor_index < number_of_segment_descriptors;
+	     segment_descriptor_index++ )
+	{
+		if( libfvde_logical_volume_descriptor_get_segment_descriptor_by_index(
+		     internal_logical_volume->logical_volume_descriptor,
+		     segment_descriptor_index,
+		     &segment_descriptor,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve segment descriptor: %d from logical volume descriptor.",
+			 function,
+			 segment_descriptor_index );
+
+			goto on_error;
+		}
+		if( internal_logical_volume->logical_volume_descriptor == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing segment descriptor: %d.",
+			 function,
+			 segment_descriptor_index );
+
+			goto on_error;
+		}
+		segment_offset = segment_descriptor->physical_block_number * internal_logical_volume->io_handle->block_size;
+		segment_size   = segment_descriptor->number_of_blocks * internal_logical_volume->io_handle->block_size;
+
+/* TODO add support for file IO pool entry */
+		if( libfdata_vector_append_segment(
+		     internal_logical_volume->sectors_vector,
+		     &segment_index,
+		     0,
+		     segment_offset,
+		     segment_size,
+		     segment_flags,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append segment to sectors vector.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	if( libfcache_cache_initialize(
 	     &( internal_logical_volume->sectors_cache ),
@@ -1168,7 +1226,21 @@ int libfvde_internal_logical_volume_unlock(
 	}
 	else if( result != 0 )
 	{
-		volume_offset = internal_logical_volume->logical_volume_descriptor->block_number_0x0305 * internal_logical_volume->io_handle->block_size;
+		if( libfvde_logical_volume_descriptor_get_first_block_number(
+		     internal_logical_volume->logical_volume_descriptor,
+		     (uint64_t *) &volume_offset,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve first block number from logical volume descriptor.",
+			 function );
+
+			return( -1 );
+		}
+		volume_offset *= internal_logical_volume->io_handle->block_size;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -2232,66 +2304,6 @@ int libfvde_logical_volume_get_utf16_name(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Retrieves the volume encryption method
- * Returns 1 if successful or -1 on error
- */
-int libfvde_logical_volume_get_encryption_method(
-     libfvde_logical_volume_t *logical_volume,
-     uint32_t *encryption_method,
-     libcerror_error_t **error )
-{
-	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
-	static char *function                                      = "libfvde_logical_volume_get_encryption_method";
-	int result                                                 = 1;
-
-	if( logical_volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid logical volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_logical_volume = (libfvde_internal_logical_volume_t *) logical_volume;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_logical_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	/* TODO implement */
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_logical_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
 		 function );
 
 		return( -1 );

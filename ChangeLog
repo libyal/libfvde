@@ -1,63 +1,28 @@
 TODO
 * volume group refactor
-  - fix libfvde_volume_get_logical_volume_encryption_method
   - update mount_handle_input_unlock
 
 * libfvde
   - optimize XML plist parser to directly generate keys
+  - implement or remove libfvde_volume_get_logical_volume_encryption_method
+  - remove deprecated functions
+  - libfvde_segment_descriptor_compare check for overlapping ranges
 
 * format support
-  - 2x 0x001a block with same serial, where second one contains size of 2x extents
-  - and first 1x extent, another image only the size of 1x extent.
+  - check for partial encrypted volumes
+  - read and compare second physical volume header
+  - rename FileVault to CoreStorage ?
 
 * volume offset detection
   - fallback check if volume data is before encrypted metadata?
 
 * pyfvde
-  - pyfvde_volume_get_size replace by pyfvde_volume_get_logical_volume_size ?
   - add functionality to set encrypted context plist
 
-* complete libfvde_xml_plist
-  - rename XML plist key to element
-  - improve error reporting regardin not being able to read the plist
-    versus not being able to read specific elements.
-* read 0x0012 and 0x001d/0x0505 pairs and compare sequence numbers
-* add support for block chains 0x0019, 0x0024
-* add support from compressed XML plist 0x0019
-* print metadata block offset for debugging
-* check for partial encrypted volumes
-* debug print block type description for 0x0405 metadata
-
-....
-libfvde_encrypted_metadata_read_type_0x0305: number of entries : 1
-libfvde_encrypted_metadata_read_type_0x0305: unknown1:
-00000000: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
-00000010: 00 00 00 00                                        ....
-
-libfvde_encrypted_metadata_read_type_0x0305: logical volume number of blocks : 29323264
-libfvde_encrypted_metadata_read_type_0x0305: unknown2 : 4194304
-libfvde_encrypted_metadata_read_type_0x0305: unknown3:
-00000000: 00 00 00 00 00 00 00 00                            ........ 
-
-libfvde_encrypted_metadata_read_type_0x0305: logical volume block number : 65536
-....
-
-* Make sure to detect PassphraseWrappedKEKStruct in different locations within
-  the XML
-* add password keep
-* remove deprecated functions
+* Make sure to detect PassphraseWrappedKEKStruct in different locations within the XML
   - libfvde_volume_read_random
-* double check 0x0505 findings with debug logs
-* git version
-  - make sure dependent local libs are in git
-  - fix synclibs.sh for libfvalue Makefile.am
-* merge reading metadata and encrypted metadata ?
-
-* API add volume identifier functions
 
 * add handling of FVDE volumes with corrupt metadata, e.g. file header
-
-* read and compare second physical volume header
 
 * move initialize of volume specific runtime data to open and clean up to close
 * store passwords as hashes?
@@ -77,11 +42,6 @@ libfvde_encrypted_metadata_read_type_0x0305: logical volume block number : 65536
 * add debug output
   - encryption method
   - checksum algorithm
-
-Future considerations:
-* how does tie into CS volume management
-  - rename library to libvcs ?
-  - rename FileVault to CoreStorage ?
 
 20141018
 * see `git log' for more recent change log

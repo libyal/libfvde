@@ -47,6 +47,10 @@ struct libfvde_segment_descriptor
 	/* The physical block number
 	 */
 	uint64_t physical_block_number;
+
+	/* The physical volume index
+	 */
+	uint16_t physical_volume_index;
 };
 
 int libfvde_segment_descriptor_initialize(
@@ -55,6 +59,11 @@ int libfvde_segment_descriptor_initialize(
 
 int libfvde_segment_descriptor_free(
      libfvde_segment_descriptor_t **segment_descriptor,
+     libcerror_error_t **error );
+
+int libfvde_segment_descriptor_compare(
+     libfvde_segment_descriptor_t *first_segment_descriptor,
+     libfvde_segment_descriptor_t *second_segment_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
