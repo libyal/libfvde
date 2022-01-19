@@ -188,6 +188,7 @@ int libfvde_metadata_free(
 int libfvde_metadata_read_type_0x0011(
      libfvde_metadata_t *metadata,
      libfvde_io_handle_t *io_handle,
+     uint64_t transaction_identifier,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error )
@@ -725,6 +726,8 @@ int libfvde_metadata_read_type_0x0011(
 
 	metadata->secondary_encrypted_metadata_offset &= 0x0000ffffffffffffUL;
 	metadata->secondary_encrypted_metadata_offset *= io_handle->block_size;
+
+	metadata->transaction_identifier = transaction_identifier;
 
 	return( 1 );
 }
@@ -1380,6 +1383,7 @@ int libfvde_metadata_read_file_io_handle(
 	if( libfvde_metadata_read_type_0x0011(
 	     metadata,
 	     io_handle,
+	     metadata_block->transaction_identifier,
 	     metadata_block->data,
 	     metadata_block->data_size,
 	     error ) != 1 )

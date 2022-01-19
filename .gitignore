@@ -131,7 +131,6 @@ stamp-h[1-9]
 /tests/*.exe
 /tests/fvde_test_checksum
 /tests/fvde_test_compression
-/tests/fvde_test_data_area_descriptor
 /tests/fvde_test_deflate
 /tests/fvde_test_encrypted_metadata
 /tests/fvde_test_encryption_context_plist

@@ -154,6 +154,7 @@ int libfvde_volume_header_read_data(
 	uint32_t stored_checksum     = 0;
 	uint16_t block_type          = 0;
 	uint16_t format_version      = 0;
+	int metadata_block_index     = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint64_t value_64bit         = 0;
@@ -247,22 +248,14 @@ int libfvde_volume_header_read_data(
 	 ( (fvde_volume_header_t *) data )->metadata_size,
 	 volume_header->metadata_size );
 
-	byte_stream_copy_to_uint64_little_endian(
-	 ( (fvde_volume_header_t *) data )->first_metadata_block_number,
-	 volume_header->first_metadata_offset );
-
-	byte_stream_copy_to_uint64_little_endian(
-	 ( (fvde_volume_header_t *) data )->second_metadata_block_number,
-	 volume_header->second_metadata_offset );
-
-	byte_stream_copy_to_uint64_little_endian(
-	 ( (fvde_volume_header_t *) data )->third_metadata_block_number,
-	 volume_header->third_metadata_offset );
-
-	byte_stream_copy_to_uint64_little_endian(
-	 ( (fvde_volume_header_t *) data )->fourth_metadata_block_number,
-	 volume_header->fourth_metadata_offset );
-
+	for( metadata_block_index = 0;
+	     metadata_block_index < 4;
+	     metadata_block_index++ )
+	{
+		byte_stream_copy_to_uint64_little_endian(
+		 &( ( ( (fvde_volume_header_t *) data )->metadata_block_numbers )[ metadata_block_index * 8 ] ),
+		 volume_header->metadata_offsets[ metadata_block_index ] );
+	}
 	byte_stream_copy_to_uint32_little_endian(
 	 ( (fvde_volume_header_t *) data )->encryption_method,
 	 volume_header->physical_volume_encryption_method );
@@ -433,26 +426,16 @@ int libfvde_volume_header_read_data(
 		 function,
 		 volume_header->metadata_size );
 
-		libcnotify_printf(
-		 "%s: first metadata block number\t\t: %" PRIu64 "\n",
-		 function,
-		 volume_header->first_metadata_offset );
-
-		libcnotify_printf(
-		 "%s: second metadata block number\t\t: %" PRIu64 "\n",
-		 function,
-		 volume_header->second_metadata_offset );
-
-		libcnotify_printf(
-		 "%s: third metadata block number\t\t: %" PRIu64 "\n",
-		 function,
-		 volume_header->third_metadata_offset );
-
-		libcnotify_printf(
-		 "%s: fourth metadata block number\t\t: %" PRIu64 "\n",
-		 function,
-		 volume_header->fourth_metadata_offset );
-
+		for( metadata_block_index = 0;
+		     metadata_block_index < 4;
+		     metadata_block_index++ )
+		{
+			libcnotify_printf(
+			 "%s: metadata: %d block number\t\t: %" PRIu64 "\n",
+			 function,
+			 metadata_block_index,
+			 volume_header->metadata_offsets[ metadata_block_index] );
+		}
 		libcnotify_printf(
 		 "%s: unknown7:\n",
 		 function );
@@ -653,12 +636,24 @@ int libfvde_volume_header_read_data(
 
 		return( -1 );
 	}
-/* TODO add bounds check */
-	volume_header->first_metadata_offset  *= volume_header->block_size;
-	volume_header->second_metadata_offset *= volume_header->block_size;
-	volume_header->third_metadata_offset  *= volume_header->block_size;
-	volume_header->fourth_metadata_offset *= volume_header->block_size;
+	for( metadata_block_index = 0;
+	     metadata_block_index < 4;
+	     metadata_block_index++ )
+	{
+		if( volume_header->metadata_offsets[ metadata_block_index ] > ( (uint64_t) INT64_MAX / volume_header->block_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid metadata: %d block number value out of bounds.",
+			 function,
+			 metadata_block_index );
 
+			return( -1 );
+		}
+		volume_header->metadata_offsets[ metadata_block_index ] *= volume_header->block_size;
+	}
 	return( 1 );
 }
 

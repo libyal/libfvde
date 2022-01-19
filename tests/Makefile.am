@@ -50,7 +50,6 @@ EXTRA_DIST = \
 check_PROGRAMS = \
 	fvde_test_checksum \
 	fvde_test_compression \
-	fvde_test_data_area_descriptor \
 	fvde_test_deflate \
 	fvde_test_encrypted_metadata \
 	fvde_test_encryption_context_plist \
@@ -92,18 +91,6 @@ fvde_test_compression_SOURCES = \
 	fvde_test_unused.h
 
 fvde_test_compression_LDADD = \
-	../libfvde/libfvde.la \
-	@LIBCERROR_LIBADD@
-
-fvde_test_data_area_descriptor_SOURCES = \
-	fvde_test_data_area_descriptor.c \
-	fvde_test_libcerror.h \
-	fvde_test_libfvde.h \
-	fvde_test_macros.h \
-	fvde_test_memory.c fvde_test_memory.h \
-	fvde_test_unused.h
-
-fvde_test_data_area_descriptor_LDADD = \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 

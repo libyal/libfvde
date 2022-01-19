@@ -56,21 +56,9 @@ struct libfvde_volume_header
 	 */
 	uint32_t metadata_size;
 
-	/* The first metadata offset
+	/* The metadata offsets
 	 */
-	uint64_t first_metadata_offset;
-
-	/* The second metadata offset
-	 */
-	uint64_t second_metadata_offset;
-
-	/* The third metadata offset
-	 */
-	uint64_t third_metadata_offset;
-
-	/* The fourth metadata offset
-	 */
-	uint64_t fourth_metadata_offset;
+	uint64_t metadata_offsets[ 4 ];
 
 	/* The encryption method of the physical volume
 	 */

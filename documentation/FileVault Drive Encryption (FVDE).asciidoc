@@ -288,15 +288,8 @@ See section: <<checksum_algorithms,Checksum algorithms>>
 [yellow-background]*Maximum of 8?*
 | 96 | 4 | | Block size (in bytes)
 | 100 | 4 | | Metadata size (in bytes)
-| 104 | 8 | | First metadata block number +
-The block number is relative from the start of the physical volume +
-[yellow-background]*(why is this referred to as disklabel block?)*
-| 112 | 8 | | Second metadata block number +
-The block number is relative from the start of the physical volume
-| 120 | 8 | | Third metadata block number +
-The block number is relative from the start of the physical volume
-| 128 | 8 | | Fourth metadata block number +
-The block number is relative from the start of the physical volume
+| 104 | 8 x 4 | | Array of metadata block numbers +
+The block numbers are relative from the start of the physical volume
 | 136 | 4 x 8 = 32 | | [yellow-background]*Reserved for medadata block numbers?*
 | 168 | 4 | 16 | Key data size
 | 172 | 4 | 2 | Encryption method +
@@ -448,14 +441,11 @@ consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
-| 0 | 8 | | [yellow-background]*Unknown* +
+| 0 | 8 | | [yellow-background]*Unknown (metadata transaction identifier?)* +
 Contains 0 if not set
-| 8 | 8 | | [yellow-background]*Unknown (flags?)* +
-Seen: 0, 1
-| 16 | 8 | | metadata block number
+| 8 | 8 | | [yellow-background]*Unknown* +
+| 16 | 8 | | [yellow-background]*Unknown*
 |===
-
-[yellow-background]*If flags? is 0 then unknown contains a transaction identifier and metadata block number points to 0x0013 block?*
 
 ==== Volume group descriptor block
 
@@ -581,15 +571,8 @@ See section: <<checksum_algorithms,Checksum algorithms>>
 [yellow-background]*Maximum of 8?*
 | 104 | 4 | | Block size (in bytes)
 | 108 | 4 | | Metadata size (in bytes)
-| 112 | 8 | | First metadata block number +
-The block number is relative from the start of the physical volume +
-[yellow-background]*(why is this referred to as disklabel block?)*
-| 120 | 8 | | Second metadata block number +
-The block number is relative from the start of the physical volume
-| 128 | 8 | | Third metadata block number +
-The block number is relative from the start of the physical volume
-| 136 | 8 | | Fourth metadata block number +
-The block number is relative from the start of the physical volume
+| 112 | 8 x 4 | | Array of metadata block numbers +
+The block numbers are relative from the start of the physical volume
 | 144 | 4 x 8 = 32 | | [yellow-background]*Reserved for medadata block numbers?*
 | 176 | 4 | 16 | Key data size
 | 180 | 4 | 2 | Encryption method +
@@ -832,64 +815,34 @@ The metadata block data is variable bytes in size and consists of:
 | Offset | Size | Value | Description
 | 0 | 8 | | [yellow-background]*Unknown*
 | 8 | 8 | | [yellow-background]*Unknown*
-| 16 | 8 | | [yellow-background]*Unknown*
-| 24 | 8 | | [yellow-background]*Unknown*
-| 32 | 4 | | Next block number +
-Contains 0 if there is no next block
-| 36 | 4 | | [yellow-background]*Unknown (empty values)*
-| 40 | 4 | | total compressed XML plist data size +
-The total compressed size of the XML plist data +
+| 16 | 8 | | [yellow-background]*Unknown (0x0605 object identifier?)*
+| 24 | 8 | | [yellow-background]*Unknown (0x0205 object identifier?)*
+| 32 | 8 | | Next object identifier +
+Contains 0 if there is no next object
+| 40 | 4 | | Total compressed data size +
 [yellow-background]*aligned to dword?*
-| 44 | 4 | | total uncompressed XML plist data size +
-The total uncompressed size of the XML plist data
-| 48 | 4 | | stored XML plist data offset +
+| 44 | 4 | | Total uncompressed data size
+| 48 | 4 | | XML plist data offset +
 The offset is relative to the start of the metadata block header
-| 52 | 4 | | stored XML plist data size +
-The size of the plist data stored within the metadata block
-| 56 | 4 | | [yellow-background]*Unknown (empty values)*
-| 60 | 4 | | [yellow-background]*Unknown*
-| 64 | ... | | [yellow-background]*Unknown (empty values)*
-| ... | ... | | XML plist data
+| 52 | 4 | | XML plist data size
+| 56 | 4 | | [yellow-background]*Unknown*
+| 60 | 2 | | [yellow-background]*Unknown (maximum number of entries?)*
+| 62 | 2 | | [yellow-background]*Unknown (number of entries?)*
+| 64 | ... | | [yellow-background]*Unknown (Array of entries)*
+| ... | ... | | XML plist data or compressed data
 |===
 
-[NOTE]
-The XML plist data can be stored accross multiple metadata blocks. The first
+If the XML plist is uncompressed the total compressed data size will be the
+same as the total uncompressed data size. If the XML plist is compressed the
+data is stored using ZLIB compression (DEFLATE + ZLIB header).
+
+The XML plist data size contains the amount of data stored within this metadata
+block.
+
+A compressed XML plist can be stored accross multiple metadata blocks. The first
 metadata block will be of type 0x0019 and followed by metadata blocks of type
-0x0024. The total uncompressed XML plist data size indicates the size of the
-data. Also see: <<metadata_block_0x0024,Metadata block data type 0x0024>>.
-
-[NOTE]
-The XML plist data can be DEFLATE compressed. The total compressed XML plist
-data size will contain the compressed data size, otherwise it contains the same
-as the uncompressed XML plist data size.
-
-....
-Compressed and segmented XML plist data (first block 0x0019)
-
-00000040  01 00 00 00 00 00 00 00  01 00 00 00 00 00 00 00  |................|
-00000050  08 00 00 00 00 00 00 00  07 00 00 00 00 00 00 00  |................|
-00000060  0a 00 00 00 00 00 00 00                           |........c.$..(0.|
-
-00000060                           63 15 24 00 bd 28 30 00  |........c.$..(0.|
-00000070  b0 03 00 00 50 1c 00 00  01 00 00 00 20 00 01 00  |....P....... ...|
-00000080  01 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-00000090  09 00 00 00 00 00 00 00  77 03 00 00 00 00 00 00  |........w.......|
-000000a0  e4 0e 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-000000b0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-
-DEFLATE compressed
-000003b0  78 9c d4 ba d9 b2 ab 58  92 2d fa 2b 65 f1 8a 45  |x......X.-.+e..E|
-....
-
-....
-Compressed and segmented XML plist data (successive block 0x0024)
-
-00000040  00 00 00 00 00 00 00 00  0a 0c 00 00 00 00 00 00  |................|
-00000050  5a c8 6e 91 e0 5c 00 a0  3f bc f6 25 2a 34 fc c8  |Z.n..\..?..%*4..|
-....
-
-[NOTE]
-The XML plist data does not have to be valid.
+0x0024. The total uncompressed data size indicates the size of the data. Also
+see: <<metadata_block_0x0024,Metadata block data type 0x0024>>.
 
 ==== XML plist data
 
@@ -908,7 +861,7 @@ Contains an UUID
 | com.apple.corestorage.lvf.sequence | The sequence number +
 Consists of a 32-bits integer +
 The largest sequence number contains the most up to date information.
-| com.apple.corestorage.lvf.uuid | The logical volume identifier +
+| com.apple.corestorage.lvf.uuid | The logical volume family identifier +
 Contains an UUID
 | PreviousEncryptionContext | Reference to an identifier (ID) in the encryption context
 | com.apple.corestorage.lvf.advertisedBlkSizes | Values seen: 1
@@ -916,6 +869,10 @@ Contains an UUID
 Values seen: "None"
 | com.apple.corestorage.lvf.encryption.status | This key is optional +
 Values seen: "Unlocked"
+| com.apple.corestorage.lvf.conversion.lvuuid | This key is optional +
+Contains an UUID
+| com.apple.corestorage.lvf.conversion.starttime | This key is optional +
+Contains an integer
 |===
 
 ===== Encryption context
@@ -1185,8 +1142,8 @@ The metadata block data is variable in size and consists of:
 | 32 | 8 | | [yellow-background]*Unknown*
 | 40 | 8 | | [yellow-background]*Unknown (0x0021 metadata block object identifier?)*
 | 48 | 8 | | [yellow-background]*Unknown (0x0505 metadata block object identifier?)*
-| 56 | 4 | | [yellow-background]*Unknown (compressed of XML plist data size?)*
-| 60 | 4 | | [yellow-background]*Unknown (uncompressed XML plist data size?)*
+| 56 | 4 | | [yellow-background]*Unknown (compressed data size?)*
+| 60 | 4 | | [yellow-background]*Unknown (uncompressed data size?)*
 | 64 | 4 | | XML plist data offset +
 The offset is relative to the start of the metadata block header
 | 68 | 4 | | XML plist data size
@@ -1336,11 +1293,11 @@ The metadata block data is variable in size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | | Next block number +
-Contains 0 if there is no next block
-| 8 | 8 | | Data size +
-Including the 16 bytes of the next block number and the data size
-| 16 | ... | Data
+| 0 | 8 | | Next object identifier +
+Contains 0 if there is no next object
+| 8 | 4 | | XML plist data size
+| 12 | 4 | | [yellow-background]*Unknown*
+| 16 | ... | XML plist data
 |===
 
 === Metadata block data type 0x0025
@@ -1860,10 +1817,10 @@ sub-blocks (children blocks), which might be or not encrypted depending on the
 type of the parent metadata block or some other information (unsure of this for
 now).
 
-For example, in one test image, the first disklabel metadata appears to have
-4096 sub-blocks. Most of these 4096 are encrypted (with keys from the CS
-header), but some of them (e.g. blocks 60-61) are zero (so when decrypted we
-should expect some crappy data).
+For example, in one test image, the first metadata block data type 0x0010
+appears to have 4096 sub-blocks. Most of these 4096 are encrypted (with keys
+from the Core Storage header), but some of them (e.g. blocks 60-61) are zero
+(so when decrypted we should expect some crappy data).
 
 Note: I see that the tool only outputs some of these blocks while in
 debug/verbose mode and then goes to decrypt the EncryptedRoot.plist.wipekey

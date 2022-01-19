@@ -301,15 +301,6 @@ int libfvde_volume_close(
      libfvde_volume_t *volume,
      libfvde_error_t **error );
 
-/* Retrieves the encryption method of the logical volume
- * Returns 1 if successful or -1 on error
- */
-LIBFVDE_EXTERN \
-int libfvde_volume_get_logical_volume_encryption_method(
-     libfvde_volume_t *volume,
-     uint32_t *encryption_method,
-     libfvde_error_t **error );
-
 /* Reads the EncryptedRoot.plist file
  * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful or -1 on error
@@ -521,6 +512,18 @@ LIBFVDE_EXTERN \
 int libfvde_volume_get_logical_volume_size(
      libfvde_volume_t *volume,
      size64_t *size,
+     libfvde_error_t **error );
+
+/* Retrieves the encryption method of the logical volume
+ * Returns 1 if successful or -1 on error
+ *
+ * This function is deprecated
+ */
+LIBFVDE_DEPRECATED \
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_encryption_method(
+     libfvde_volume_t *volume,
+     uint32_t *encryption_method,
      libfvde_error_t **error );
 
 /* Retrieves the logical volume identifier

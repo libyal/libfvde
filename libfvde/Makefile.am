@@ -32,7 +32,6 @@ libfvde_la_SOURCES = \
 	libfvde_checksum.c libfvde_checksum.h \
 	libfvde_codepage.h \
 	libfvde_compression.c libfvde_compression.h \
-	libfvde_data_area_descriptor.c libfvde_data_area_descriptor.h \
 	libfvde_debug.c libfvde_debug.h \
 	libfvde_definitions.h \
 	libfvde_deflate.c libfvde_deflate.h \

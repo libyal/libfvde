@@ -51,21 +51,9 @@ struct libfvde_internal_volume
 	 */
 	libfvde_volume_header_t *volume_header;
 
-	/* The primary metadata
+	/* The metadata
 	 */
-	libfvde_metadata_t *primary_metadata;
-
-	/* The secondary metadata
-	 */
-	libfvde_metadata_t *secondary_metadata;
-
-	/* The tertiary metadata
-	 */
-	libfvde_metadata_t *tertiary_metadata;
-
-	/* The quaternary metadata
-	 */
-	libfvde_metadata_t *quaternary_metadata;
+	libfvde_metadata_t *metadata;
 
 	/* The primary encrypted metadata
 	 */
@@ -250,12 +238,6 @@ int libfvde_internal_volume_open_read(
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
-int libfvde_volume_get_logical_volume_encryption_method(
-     libfvde_volume_t *volume,
-     uint32_t *encryption_method,
-     libcerror_error_t **error );
-
-LIBFVDE_EXTERN \
 int libfvde_volume_read_encrypted_root_plist(
      libfvde_volume_t *volume,
      const char *filename,
@@ -366,6 +348,12 @@ LIBFVDE_EXTERN \
 int libfvde_volume_get_logical_volume_size(
      libfvde_volume_t *volume,
      size64_t *size,
+     libcerror_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_get_logical_volume_encryption_method(
+     libfvde_volume_t *volume,
+     uint32_t *encryption_method,
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \

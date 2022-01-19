@@ -134,25 +134,10 @@ struct fvde_volume_header
 	 */
 	uint8_t metadata_size[ 4 ];
 
-	/* The first metadata block number
-	 * Consists of 8 bytes
+	/* The metadata block numbers
+	 * Consists of 4 x 8 = 32 bytes
 	 */
-	uint8_t first_metadata_block_number[ 8 ];
-
-	/* The second metadata block number
-	 * Consists of 8 bytes
-	 */
-	uint8_t second_metadata_block_number[ 8 ];
-
-	/* The third metadata block number
-	 * Consists of 8 bytes
-	 */
-	uint8_t third_metadata_block_number[ 8 ];
-
-	/* The fourth metadata block number
-	 * Consists of 8 bytes
-	 */
-	uint8_t fourth_metadata_block_number[ 8 ];
+	uint8_t metadata_block_numbers[ 32 ];
 
 	/* Unknown
 	 * Consists of 32 bytes

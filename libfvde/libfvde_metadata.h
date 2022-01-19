@@ -40,6 +40,10 @@ typedef struct libfvde_metadata libfvde_metadata_t;
 
 struct libfvde_metadata
 {
+	/* The transaction identifier
+	 */
+	uint64_t transaction_identifier;
+
 	/* The physical volume index
 	 */
 	uint16_t physical_volume_index;
@@ -88,6 +92,7 @@ int libfvde_metadata_free(
 int libfvde_metadata_read_type_0x0011(
      libfvde_metadata_t *metadata,
      libfvde_io_handle_t *io_handle,
+     uint64_t transaction_identifier,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error );

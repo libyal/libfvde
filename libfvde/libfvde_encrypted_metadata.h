@@ -26,7 +26,6 @@
 #include <common.h>
 #include <types.h>
 
-#include "libfvde_data_area_descriptor.h"
 #include "libfvde_encryption_context_plist.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_keyring.h"
@@ -55,9 +54,33 @@ struct libfvde_encrypted_metadata
 	 */
 	libcdata_array_t *logical_volume_descriptors;
 
-	/* The data area descriptors
+	/* The encryption context plist data
 	 */
-	libcdata_array_t *data_area_descriptors;
+	uint8_t *encryption_context_plist_data;
+
+	/* The encryption context plist data size
+	 */
+	size_t encryption_context_plist_data_size;
+
+	/* The compressed data object identifier
+	 */
+	uint64_t compressed_data_object_identifier;
+
+	/* The compressed data
+	 */
+	uint8_t *compressed_data;
+
+	/* The compressed data size
+	 */
+	size_t compressed_data_size;
+
+	/* The compressed data offset
+	 */
+	size_t compressed_data_offset;
+
+	/* The uncompressed data size
+	 */
+	size_t uncompressed_data_size;
 };
 
 int libfvde_encrypted_metadata_initialize(
@@ -152,6 +175,13 @@ int libfvde_encrypted_metadata_read_type_0x0022(
      size_t block_data_size,
      libcerror_error_t **error );
 
+int libfvde_encrypted_metadata_read_type_0x0024(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     uint64_t object_identifier,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
 int libfvde_encrypted_metadata_read_type_0x0025(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
@@ -200,6 +230,12 @@ int libfvde_encrypted_metadata_read_type_0x0405(
 int libfvde_encrypted_metadata_read_type_0x0505(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      uint64_t object_identifier,
+     const uint8_t *block_data,
+     size_t block_data_size,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_read_type_0x0605(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error );
