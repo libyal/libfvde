@@ -571,7 +571,7 @@ int libfvde_logical_volume_descriptor_get_first_block_number(
 		return( -1 );
 	}
 	*volume_index = segment_descriptor->physical_volume_index;
-	*block_number = segment_descriptor->physical_block_number;
+	*block_number = logical_volume_descriptor->base_physical_block_number + segment_descriptor->physical_block_number;
 
 	return( 1 );
 }

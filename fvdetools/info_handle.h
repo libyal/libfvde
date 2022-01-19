@@ -40,6 +40,10 @@ typedef struct info_handle info_handle_t;
 
 struct info_handle
 {
+	/* The encrypted root plist path
+	 */
+	const system_character_t *encrypted_root_plist_path;
+
 	/* The key data
 	 */
 	uint8_t key_data[ 16 ];
@@ -90,7 +94,7 @@ struct info_handle
 
 	/* Value to indicate if user interaction is disabled
 	 */
-	int unattend_mode;
+	int unattended_mode;
 
 	/* Value to indicate if abort was signalled
 	 */
@@ -105,7 +109,7 @@ int fvdetools_system_string_copy_from_64_bit_in_decimal(
 
 int info_handle_initialize(
      info_handle_t **info_handle,
-     int unattend_mode,
+     int unattended_mode,
      libcerror_error_t **error );
 
 int info_handle_free(
@@ -114,6 +118,11 @@ int info_handle_free(
 
 int info_handle_signal_abort(
      info_handle_t *info_handle,
+     libcerror_error_t **error );
+
+int info_handle_set_encrypted_root_plist(
+     info_handle_t *info_handle,
+     const system_character_t *filename,
      libcerror_error_t **error );
 
 int info_handle_set_keys(
@@ -129,11 +138,6 @@ int info_handle_set_password(
 int info_handle_set_recovery_password(
      info_handle_t *info_handle,
      const system_character_t *string,
-     libcerror_error_t **error );
-
-int info_handle_read_encrypted_root_plist(
-     info_handle_t *info_handle,
-     const system_character_t *filename,
      libcerror_error_t **error );
 
 int info_handle_set_volume_offset(

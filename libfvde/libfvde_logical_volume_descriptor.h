@@ -66,6 +66,14 @@ struct libfvde_logical_volume_descriptor
 	 */
 	uint64_t object_identifier_0x0305;
 
+	/* The object identifier of the corresponding metadata block 0x0505
+	 */
+	uint64_t object_identifier_0x0505;
+
+	/* The base physical block number
+	 */
+	uint64_t base_physical_block_number;
+
 	/* The segment descriptors
 	 */
 	libcdata_array_t *segment_descriptors;

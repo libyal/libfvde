@@ -388,7 +388,7 @@ int libfvde_internal_logical_volume_open_read(
 		libcnotify_print_data(
 		 volume_header_data,
 		 512,
-		 0 );
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
 	result = libfvde_internal_logical_volume_open_read_volume_header_data(
@@ -480,10 +480,6 @@ int libfvde_internal_logical_volume_open_read(
 	}
 	expected_logical_block_number = 0;
 
-	if( internal_logical_volume->volume_data_handle->is_encrypted != 0 )
-	{
-		segment_flags = LIBFVDE_RANGE_FLAG_IS_ENCRYPTED;
-	}
 	for( segment_descriptor_index = 0;
 	     segment_descriptor_index < number_of_segment_descriptors;
 	     segment_descriptor_index++ )
@@ -530,7 +526,7 @@ int libfvde_internal_logical_volume_open_read(
 		}
 		else if( segment_descriptor->logical_block_number > expected_logical_block_number )
 		{
-			segment_size  = segment_descriptor->logical_block_number - expected_logical_block_number;
+			segment_size += segment_descriptor->logical_block_number - expected_logical_block_number;
 			segment_size *= internal_logical_volume->io_handle->block_size;
 
 			if( libfdata_vector_append_segment(
@@ -553,9 +549,20 @@ int libfvde_internal_logical_volume_open_read(
 			}
 			expected_logical_block_number = segment_descriptor->logical_block_number;
 		}
-		segment_offset = segment_descriptor->physical_block_number * internal_logical_volume->io_handle->block_size;
-		segment_size   = segment_descriptor->number_of_blocks * internal_logical_volume->io_handle->block_size;
+		segment_offset  = internal_logical_volume->logical_volume_descriptor->base_physical_block_number;
+		segment_offset += segment_descriptor->physical_block_number;
+		segment_offset *= internal_logical_volume->io_handle->block_size;
+		segment_size    = segment_descriptor->number_of_blocks;
+		segment_size   *= internal_logical_volume->io_handle->block_size;
 
+		if( internal_logical_volume->volume_data_handle->is_encrypted != 0 )
+		{
+			segment_flags = LIBFVDE_RANGE_FLAG_IS_ENCRYPTED;
+		}
+		else
+		{
+			segment_flags = 0;
+		}
 		if( libfdata_vector_append_segment(
 		     internal_logical_volume->sectors_vector,
 		     &segment_index,
@@ -624,7 +631,7 @@ int libfvde_internal_logical_volume_open_read_keys(
 	uint8_t tweak_key_data[ 32 ];
 
 	static char *function = "libfvde_internal_logical_volume_open_read_keys";
-	int result            = 1;
+	int result            = 0;
 
 	if( internal_logical_volume == NULL )
 	{
@@ -740,7 +747,8 @@ int libfvde_internal_logical_volume_open_read_keys(
 			}
 		}
 	}
-	if( internal_logical_volume->volume_master_key_is_set != 0 )
+	if( ( internal_logical_volume->volume_master_key_is_set != 0 )
+	 && ( internal_logical_volume->volume_data_handle->xts_context == NULL ) )
 	{
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -818,7 +826,7 @@ int libfvde_internal_logical_volume_open_read_keys(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create XTS context.",
+			 "%s: unable to create AES-XTS context.",
 			 function );
 
 			goto on_error;
@@ -857,7 +865,11 @@ int libfvde_internal_logical_volume_open_read_keys(
 		}
 		internal_logical_volume->volume_data_handle->is_encrypted = 1;
 	}
-	return( result );
+	if( internal_logical_volume->volume_data_handle->xts_context != NULL )
+	{
+		return( 1 );
+	}
+	return( 0 );
 
 on_error:
 	memory_set(

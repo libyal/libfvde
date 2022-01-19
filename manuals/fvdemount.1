@@ -1,4 +1,4 @@
-.Dd January 18, 2022
+.Dd January 19, 2022
 .Dt fvdemount
 .Os libfvde
 .Sh NAME
@@ -6,12 +6,12 @@
 .Nd mounts a FileVault Drive Encrypted (FVDE) volume
 .Sh SYNOPSIS
 .Nm fvdemount
-.Op Fl e Ar filename
+.Op Fl e Ar plist_path
 .Op Fl o Ar offset
 .Op Fl p Ar password
 .Op Fl r Ar password
 .Op Fl X Ar extended_options
-.Op Fl hvV
+.Op Fl huvV
 .Ar sources
 .Sh DESCRIPTION
 .Nm fvdemount
@@ -29,8 +29,8 @@ one or more source files or devices.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl e Ar filename
-specify the name of the EncryptedRoot.plist.wipekey file
+.It Fl e Ar plist_path
+specify the path of the EncryptedRoot.plist.wipekey file
 .It Fl h
 shows this help
 .It Fl o Ar offset
@@ -39,6 +39,8 @@ specify the volume offset
 specify the password
 .It Fl r Ar password
 specify the recovery password
+.It Fl u
+unattended mode (disables user interaction)
 .It Fl v
 verbose output to stderr
 .It Fl V

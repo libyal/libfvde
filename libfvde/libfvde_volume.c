@@ -464,13 +464,11 @@ int libfvde_volume_open(
 
 		goto on_error;
 	}
-	result = libfvde_volume_open_file_io_handle(
-	          volume,
-	          file_io_handle,
-	          access_flags,
-	          error );
-
-	if( result == -1 )
+	if( libfvde_volume_open_file_io_handle(
+	     volume,
+	     file_io_handle,
+	     access_flags,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -481,22 +479,6 @@ int libfvde_volume_open(
 		 filename );
 
 		goto on_error;
-	}
-	else if( result == 0 )
-	{
-		if( libbfio_handle_free(
-		     &file_io_handle,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free file IO handle.",
-			 function );
-
-			goto on_error;
-		}
 	}
 	else
 	{
@@ -667,13 +649,11 @@ int libfvde_volume_open_wide(
 
 		goto on_error;
 	}
-	result = libfvde_volume_open_file_io_handle(
-	          volume,
-	          file_io_handle,
-	          access_flags,
-	          error );
-
-	if( result == -1 )
+	if( libfvde_volume_open_file_io_handle(
+	     volume,
+	     file_io_handle,
+	     access_flags,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -684,22 +664,6 @@ int libfvde_volume_open_wide(
 		 filename );
 
 		goto on_error;
-	}
-	else if( result == 0 )
-	{
-		if( libbfio_handle_free(
-		     &file_io_handle,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free file IO handle.",
-			 function );
-
-			goto on_error;
-		}
 	}
 	else
 	{

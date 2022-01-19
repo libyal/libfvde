@@ -174,7 +174,7 @@ int fvdetools_system_string_copy_from_64_bit_in_decimal(
  */
 int info_handle_initialize(
      info_handle_t **info_handle,
-     int unattend_mode,
+     int unattended_mode,
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_initialize";
@@ -248,8 +248,8 @@ int info_handle_initialize(
 
 		goto on_error;
 	}
-	( *info_handle )->notify_stream = INFO_HANDLE_NOTIFY_STREAM;
-	( *info_handle )->unattend_mode = unattend_mode;
+	( *info_handle )->notify_stream   = INFO_HANDLE_NOTIFY_STREAM;
+	( *info_handle )->unattended_mode = unattended_mode;
 
 	return( 1 );
 
@@ -560,15 +560,15 @@ int info_handle_set_recovery_password(
 	return( 1 );
 }
 
-/* Reads the encrypted root plist file
+/* Sets the path of the EncryptedRoot.plist.wipekey file
  * Returns 1 if successful or -1 on error
  */
-int info_handle_read_encrypted_root_plist(
+int info_handle_set_encrypted_root_plist(
      info_handle_t *info_handle,
-     const system_character_t *filename,
+     const system_character_t *string,
      libcerror_error_t **error )
 {
-	static char *function = "info_handle_read_encrypted_root_plist";
+	static char *function = "info_handle_set_encrypted_root_plist";
 
 	if( info_handle == NULL )
 	{
@@ -576,32 +576,24 @@ int info_handle_read_encrypted_root_plist(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid info handle.",
+		 "%s: invalid mount handle.",
 		 function );
 
 		return( -1 );
 	}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libfvde_volume_read_encrypted_root_plist_wide(
-	     info_handle->volume,
-	     filename,
-	     error ) != 1 )
-#else
-	if( libfvde_volume_read_encrypted_root_plist(
-	     info_handle->volume,
-	     filename,
-	     error ) != 1 )
-#endif
+	if( string == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read encrypted root plist file.",
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid string.",
 		 function );
 
 		return( -1 );
 	}
+	info_handle->encrypted_root_plist_path = string;
+
 	return( 1 );
 }
 
@@ -784,13 +776,35 @@ int info_handle_open(
 
 		goto on_error;
 	}
-	result = libfvde_volume_open_file_io_handle(
-	          info_handle->volume,
-	          file_io_handle,
-	          LIBFVDE_OPEN_READ,
-	          error );
+	if( info_handle->encrypted_root_plist_path != NULL )
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libfvde_volume_read_encrypted_root_plist_wide(
+		     info_handle->volume,
+		     info_handle->encrypted_root_plist_path,
+		     error ) != 1 )
+#else
+		if( libfvde_volume_read_encrypted_root_plist(
+		     info_handle->volume,
+		     info_handle->encrypted_root_plist_path,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read EncryptedRoot.plist.wipekey file.",
+			 function );
 
-	if( result == -1 )
+			goto on_error;
+		}
+	}
+	if( libfvde_volume_open_file_io_handle(
+	     info_handle->volume,
+	     file_io_handle,
+	     LIBFVDE_OPEN_READ,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1084,7 +1098,7 @@ int info_handle_open(
 				goto on_error;
 			}
 			else if( ( result == 0 )
-			      && ( info_handle->unattend_mode == 0 ) )
+			      && ( info_handle->unattended_mode == 0 ) )
 			{
 /* TODO print logical volume identifier and/or name */
 				fprintf(

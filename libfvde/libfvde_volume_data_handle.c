@@ -194,8 +194,6 @@ int libfvde_volume_data_handle_read_sector(
 {
 	libfvde_sector_data_t *sector_data = NULL;
 	static char *function              = "libfvde_volume_data_handle_read_sector";
-	uint64_t block_number              = 0;
-	uint8_t is_encrypted               = 0;
 
 	LIBFVDE_UNREFERENCED_PARAMETER( element_data_size );
 	LIBFVDE_UNREFERENCED_PARAMETER( read_flags );
@@ -255,20 +253,14 @@ int libfvde_volume_data_handle_read_sector(
 	}
 	else
 	{
-		if( ( element_data_flags & LIBFVDE_RANGE_FLAG_IS_ENCRYPTED ) != 0 )
-		{
-			is_encrypted = 1;
-		}
-		block_number = (uint64_t) ( element_data_offset - volume_data_handle->logical_volume_offset ) / volume_data_handle->io_handle->bytes_per_sector;
-
 		if( libfvde_sector_data_read(
 		     sector_data,
 		     volume_data_handle->xts_context,
 		     file_io_pool,
 		     element_data_file_index,
 		     element_data_offset,
-		     block_number,
-		     is_encrypted,
+		     (uint64_t) element_index,
+		     volume_data_handle->is_encrypted,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

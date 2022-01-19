@@ -652,6 +652,7 @@ int libfvde_encryption_context_plist_decrypt(
 	libcaes_tweaked_context_t *xts_context                      = NULL;
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_decrypt";
+	size_t xml_data_length                                      = 0;
 	int result                                                  = 0;
 
 	if( plist == NULL )
@@ -710,20 +711,6 @@ int libfvde_encryption_context_plist_decrypt(
 		 function );
 	}
 #endif
-	if( memory_set(
-	     tweak_key,
-	     0,
-	     16 ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear tweak key.",
-		 function );
-
-		goto on_error;
-	}
 	if( libcaes_tweaked_context_initialize(
 	     &xts_context,
 	     error ) == -1 )
@@ -739,6 +726,20 @@ int libfvde_encryption_context_plist_decrypt(
 	}
 	/* The tweak key is 0
 	 */
+	if( memory_set(
+	     tweak_key,
+	     0,
+	     16 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear tweak key.",
+		 function );
+
+		goto on_error;
+	}
 	if( libcaes_tweaked_context_set_keys(
 	     xts_context,
 	     LIBCAES_CRYPT_MODE_DECRYPT,
@@ -771,48 +772,42 @@ int libfvde_encryption_context_plist_decrypt(
 
 		goto on_error;
 	}
-	if( internal_plist->data_size > 0 )
-	{
-		/* The tweak value is 0 and the block size is the size of the data
-		 */
-		if( memory_set(
-		     tweak_value,
-		     0,
-		     16 ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to copy block number to tweak value.",
-			 function );
-
-			goto on_error;
-		}
-		if( libcaes_crypt_xts(
-		     xts_context,
-		     LIBCAES_CRYPT_MODE_DECRYPT,
-		     tweak_value,
-		     16,
-		     internal_plist->data_encrypted,
-		     (size_t) internal_plist->data_size,
-		     internal_plist->data_decrypted,
-		     (size_t) internal_plist->data_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-			 "%s: unable to decrypt data.",
-			 function );
-
-			goto on_error;
-		}
-	}
-	/* Make sure the plist data has a trailing 0 byte before passing it
-	 * to libfvde_encryption_context_plist_read_xml
+	/* The tweak value is 0 and the block size is the size of the data
 	 */
+	if( memory_set(
+	     tweak_value,
+	     0,
+	     16 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to copy block number to tweak value.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcaes_crypt_xts(
+	     xts_context,
+	     LIBCAES_CRYPT_MODE_DECRYPT,
+	     tweak_value,
+	     16,
+	     internal_plist->data_encrypted,
+	     (size_t) internal_plist->data_size,
+	     internal_plist->data_decrypted,
+	     (size_t) internal_plist->data_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+		 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+		 "%s: unable to decrypt data.",
+		 function );
+
+		goto on_error;
+	}
 	internal_plist->data_decrypted[ internal_plist->data_size ] = 0;
 
 	if( libcaes_tweaked_context_free(
@@ -828,16 +823,41 @@ int libfvde_encryption_context_plist_decrypt(
 
 		goto on_error;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: unencrypted encryption context plist data:\n",
+		 function );
+		libcnotify_print_data(
+		 internal_plist->data_decrypted,
+		 internal_plist->data_size + 1,
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+	}
+#endif
 	if( ( internal_plist->data_decrypted[ 0 ] == (uint8_t) '<' )
 	 && ( internal_plist->data_decrypted[ 1 ] == (uint8_t) '?' )
 	 && ( internal_plist->data_decrypted[ 2 ] == (uint8_t) 'x' )
 	 && ( internal_plist->data_decrypted[ 3 ] == (uint8_t) 'm' )
 	 && ( internal_plist->data_decrypted[ 4 ] == (uint8_t) 'l' ) )
 	{
+		/* Make sure the plist data has only one trailing 0 byte before passing it
+		 * to libfvde_encryption_context_plist_read_xml
+		 */
+		xml_data_length = internal_plist->data_size;
+
+		while( xml_data_length > 0 )
+		{
+			if( internal_plist->data_decrypted[ xml_data_length ] != 0 )
+			{
+				break;
+			}
+			xml_data_length--;
+		}
 		result = libfvde_encryption_context_plist_read_xml(
 			  plist,
 			  internal_plist->data_decrypted,
-			  internal_plist->data_size + 1,
+			  xml_data_length + 1,
 			  error );
 
 		if( result == -1 )

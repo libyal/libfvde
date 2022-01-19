@@ -55,6 +55,8 @@ int libfvde_volume_open_physical_volume_files_file_io_pool(
 
 #endif /* !defined( LIBFVDE_HAVE_BFIO ) */
 
+#define MOUNT_HANDLE_NOTIFY_STREAM		stdout
+
 /* Copies a string of a decimal value to a 64-bit value
  * Returns 1 if successful or -1 on error
  */
@@ -171,6 +173,7 @@ int mount_handle_system_string_copy_from_64_bit_in_decimal(
  */
 int mount_handle_initialize(
      mount_handle_t **mount_handle,
+     int unattended_mode,
      libcerror_error_t **error )
 {
 	static char *function = "mount_handle_initialize";
@@ -238,6 +241,9 @@ int mount_handle_initialize(
 
 		goto on_error;
 	}
+	( *mount_handle )->notify_stream   = MOUNT_HANDLE_NOTIFY_STREAM;
+	( *mount_handle )->unattended_mode = unattended_mode;
+
 	return( 1 );
 
 on_error:
@@ -364,7 +370,7 @@ int mount_handle_signal_abort(
 	return( 1 );
 }
 
-/* Sets the encrypted root plist file path
+/* Sets the path of the EncryptedRoot.plist.wipekey file
  * Returns 1 if successful or -1 on error
  */
 int mount_handle_set_encrypted_root_plist(
@@ -799,13 +805,35 @@ int mount_handle_open(
 
 		goto on_error;
 	}
-	result = libfvde_volume_open_file_io_handle(
-	          mount_handle->volume,
-	          file_io_handle,
-	          LIBFVDE_OPEN_READ,
-	          error );
+	if( mount_handle->encrypted_root_plist_path != NULL )
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libfvde_volume_read_encrypted_root_plist_wide(
+		     mount_handle->volume,
+		     mount_handle->encrypted_root_plist_path,
+		     error ) != 1 )
+#else
+		if( libfvde_volume_read_encrypted_root_plist(
+		     mount_handle->volume,
+		     mount_handle->encrypted_root_plist_path,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read EncryptedRoot.plist.wipekey file.",
+			 function );
 
-	if( result == -1 )
+			goto on_error;
+		}
+	}
+	if( libfvde_volume_open_file_io_handle(
+	     mount_handle->volume,
+	     file_io_handle,
+	     LIBFVDE_OPEN_READ,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1098,7 +1126,8 @@ int mount_handle_open(
 
 				goto on_error;
 			}
-			else if( result == 0 )
+			else if( ( result == 0 )
+			      && ( mount_handle->unattended_mode == 0 ) )
 			{
 /* TODO print logical volume identifier and/or name */
 				fprintf(
@@ -1250,6 +1279,7 @@ int mount_handle_close(
 	static char *function                    = "mount_handle_close";
 	int logical_volume_index                 = 0;
 	int number_of_logical_volumes            = 0;
+	int result                               = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -1294,7 +1324,7 @@ int mount_handle_close(
 			 function,
 			 logical_volume_index );
 
-			return( -1 );
+			result = -1;
 		}
 		if( libfvde_logical_volume_free(
 		     &logical_volume,
@@ -1308,7 +1338,7 @@ int mount_handle_close(
 			 function,
 			 logical_volume_index );
 
-			return( -1 );
+			result = -1;
 		}
 	}
 	if( libfvde_volume_group_free(
@@ -1322,7 +1352,7 @@ int mount_handle_close(
 		 "%s: unable to free volume group.",
 		 function );
 
-		return( -1 );
+		result = -1;
 	}
 	if( libfvde_volume_close(
 	     mount_handle->volume,
@@ -1335,11 +1365,11 @@ int mount_handle_close(
 		 "%s: unable to close volume.",
 		 function );
 
-		return( -1 );
+		result = -1;
 	}
 	if( libfvde_volume_free(
 	     &( mount_handle->volume ),
-	     error ) != 0 )
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1348,7 +1378,7 @@ int mount_handle_close(
 		 "%s: unable to free volume.",
 		 function );
 
-		return( -1 );
+		result = -1;
 	}
 	if( libbfio_pool_free(
 	     &( mount_handle->physical_volume_file_io_pool ),
@@ -1361,7 +1391,7 @@ int mount_handle_close(
 		 "%s: unable to free physical volume file IO pool.",
 		 function );
 
-		return( -1 );
+		result = -1;
 	}
 	if( libbfio_handle_free(
 	     &( mount_handle->file_io_handle ),
@@ -1374,9 +1404,9 @@ int mount_handle_close(
 		 "%s: unable to free file IO handle.",
 		 function );
 
-		return( -1 );
+		result = -1;
 	}
-	return( 0 );
+	return( result );
 }
 
 /* Retrieves a file entry for a specific path

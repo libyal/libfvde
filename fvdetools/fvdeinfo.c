@@ -61,13 +61,13 @@ void usage_fprint(
 	fprintf( stream, "Use fvdeinfo to determine information about a MacOS-X FileVault\n"
 	                 " Drive Encrypted (FVDE) volume\n\n" );
 
-	fprintf( stream, "Usage: fvdeinfo [ -e filename ] [ -k keys ] [ -o offset ]\n"
+	fprintf( stream, "Usage: fvdeinfo [ -e plist_path ] [ -k keys ] [ -o offset ]\n"
 	                 "                [ -p password ] [ -r password ] [ -huvV ]\n"
 	                 "                sources\n\n" );
 
 	fprintf( stream, "\tsources: one or more source files or devices\n\n" );
 
-	fprintf( stream, "\t-e:      specify the name of the EncryptedRoot.plist.wipekey file\n" );
+	fprintf( stream, "\t-e:      specify the path of the EncryptedRoot.plist.wipekey file\n" );
 	fprintf( stream, "\t-h:      shows this help\n" );
 	fprintf( stream, "\t-k:      the volume master key formatted in base16\n" );
 	fprintf( stream, "\t-o:      specify the volume offset\n" );
@@ -130,18 +130,18 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	system_character_t * const *sources                      = NULL;
-	libfvde_error_t *error                                   = NULL;
-	system_character_t *option_encrypted_root_plist_filename = NULL;
-	system_character_t *option_keys                          = NULL;
-	system_character_t *option_password                      = NULL;
-	system_character_t *option_recovery_password             = NULL;
-	system_character_t *option_volume_offset                 = NULL;
-	char *program                                            = "fvdeinfo";
-	system_integer_t option                                  = 0;
-	int number_of_sources                                    = 0;
-	int unattend_mode                                        = 0;
-	int verbose                                              = 0;
+	system_character_t * const *sources                  = NULL;
+	libfvde_error_t *error                               = NULL;
+	system_character_t *option_encrypted_root_plist_path = NULL;
+	system_character_t *option_keys                      = NULL;
+	system_character_t *option_password                  = NULL;
+	system_character_t *option_recovery_password         = NULL;
+	system_character_t *option_volume_offset             = NULL;
+	char *program                                        = "fvdeinfo";
+	system_integer_t option                              = 0;
+	int number_of_sources                                = 0;
+	int unattended_mode                                  = 0;
+	int verbose                                          = 0;
 
 	libcnotify_stream_set(
 	 stderr,
@@ -193,7 +193,7 @@ int main( int argc, char * const argv[] )
 				return( EXIT_FAILURE );
 
 			case (system_integer_t) 'e':
-				option_encrypted_root_plist_filename = optarg;
+				option_encrypted_root_plist_path = optarg;
 
 				break;
 
@@ -224,7 +224,7 @@ int main( int argc, char * const argv[] )
 				break;
 
 			case (system_integer_t) 'u':
-				unattend_mode = 1;
+				unattended_mode = 1;
 
 				break;
 
@@ -264,7 +264,7 @@ int main( int argc, char * const argv[] )
 
 	if( info_handle_initialize(
 	     &fvdeinfo_info_handle,
-	     unattend_mode,
+	     unattended_mode,
 	     &error ) != 1 )
 	{
 		fprintf(
@@ -272,6 +272,20 @@ int main( int argc, char * const argv[] )
 		 "Unable to initialize info handle.\n" );
 
 		goto on_error;
+	}
+	if( option_encrypted_root_plist_path != NULL )
+	{
+		if( info_handle_set_encrypted_root_plist(
+		     fvdeinfo_info_handle,
+		     option_encrypted_root_plist_path,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to set path of EncryptedRoot.plist.wipekey file.\n" );
+
+			goto on_error;
+		}
 	}
 	if( option_keys != NULL )
 	{
@@ -311,20 +325,6 @@ int main( int argc, char * const argv[] )
 			fprintf(
 			 stderr,
 			 "Unable to set recovery password.\n" );
-
-			goto on_error;
-		}
-	}
-	if( option_encrypted_root_plist_filename != NULL )
-	{
-		if( info_handle_read_encrypted_root_plist(
-		     fvdeinfo_info_handle,
-		     option_encrypted_root_plist_filename,
-		     &error ) != 1 )
-		{
-			fprintf(
-			 stderr,
-			 "Unable to read encrypted root plist file.\n" );
 
 			goto on_error;
 		}

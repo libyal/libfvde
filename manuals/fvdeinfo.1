@@ -1,4 +1,4 @@
-.Dd January 18, 2022
+.Dd January 19, 2022
 .Dt fvdeinfo
 .Os libfvde
 .Sh NAME
@@ -6,7 +6,7 @@
 .Nd determines information about a FileVault Drive Encrypted (FVDE) volume
 .Sh SYNOPSIS
 .Nm fvdeinfo
-.Op Fl e Ar filename
+.Op Fl e Ar plist_path
 .Op Fl o Ar offset
 .Op Fl p Ar password
 .Op Fl r Ar password
@@ -28,8 +28,8 @@ one or more source files or devices.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl e Ar filename
-specify the name of the EncryptedRoot.plist.wipekey file
+.It Fl e Ar plist_path
+specify the path of the EncryptedRoot.plist.wipekey file
 .It Fl h
 shows this help
 .It Fl o Ar offset

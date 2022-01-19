@@ -98,6 +98,10 @@ struct mount_handle
 	 */
 	FILE *notify_stream;
 
+	/* Value to indicate if user interaction is disabled
+	 */
+	int unattended_mode;
+
 	/* Value to indicate if abort was signalled
 	 */
 	int abort;
@@ -111,6 +115,7 @@ int mount_handle_system_string_copy_from_64_bit_in_decimal(
 
 int mount_handle_initialize(
      mount_handle_t **mount_handle,
+     int unattended_mode,
      libcerror_error_t **error );
 
 int mount_handle_free(

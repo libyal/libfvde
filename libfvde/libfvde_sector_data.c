@@ -289,8 +289,17 @@ int libfvde_sector_data_read(
 			 encrypted_data,
 			 sector_data->data_size,
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+
+			libcnotify_printf(
+			 "%s: tweak value: %" PRIu64 ".\n",
+			 function,
+			 block_number );
+
+			libcnotify_printf(
+			 "\n" );
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		if( memory_set(
 		     tweak_value,
 		     0,

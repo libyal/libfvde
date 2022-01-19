@@ -69,7 +69,7 @@ void usage_fprint(
 	fprintf( stream, "Use fvdemount to mount a FileVault Drive Encrypted (FVDE) volume\n\n" );
 
 	fprintf( stream, "Usage: fvdemount [ -e plist_path ] [ -k keys ] [ -o offset ] [ -p password ]\n"
-	                 "                 [ -r recovery_password ] [ -X extended_options ] [ -hvV ]\n"
+	                 "                 [ -r recovery_password ] [ -X extended_options ] [ -huvV ]\n"
 	                 "                 sources mount_point\n\n" );
 
 	fprintf( stream, "\tsources:     one or more source files or devices\n\n" );
@@ -81,6 +81,7 @@ void usage_fprint(
 	fprintf( stream, "\t-o:          specify the volume offset in bytes\n" );
 	fprintf( stream, "\t-p:          specify the password/passphrase\n" );
 	fprintf( stream, "\t-r:          specify the recovery password/passphrase\n" );
+	fprintf( stream, "\t-u:          unattended mode (disables user interaction)\n" );
 	fprintf( stream, "\t-v:          verbose output to stderr, while fvdemount will remain running in the\n"
 	                 "\t             foreground\n" );
 	fprintf( stream, "\t-V:          print version\n" );
@@ -154,6 +155,7 @@ int main( int argc, char * const argv[] )
 	size_t path_prefix_size                              = 0;
 	int number_of_sources                                = 0;
 	int result                                           = 0;
+	int unattended_mode                                  = 0;
 	int verbose                                          = 0;
 
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
@@ -201,7 +203,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = fvdetools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "e:hk:o:p:r:vVX:" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "e:hk:o:p:r:uvVX:" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -245,6 +247,11 @@ int main( int argc, char * const argv[] )
 
 			case (system_integer_t) 'r':
 				option_recovery_password = optarg;
+
+				break;
+
+			case (system_integer_t) 'u':
+				unattended_mode = 1;
 
 				break;
 
@@ -302,6 +309,7 @@ int main( int argc, char * const argv[] )
 
 	if( mount_handle_initialize(
 	     &fvdemount_mount_handle,
+	     unattended_mode,
 	     &error ) != 1 )
 	{
 		fprintf(
@@ -319,7 +327,7 @@ int main( int argc, char * const argv[] )
 		{
 			fprintf(
 			 stderr,
-			 "Unable to set encrypted root plist.\n" );
+			 "Unable to set path of EncryptedRoot.plist.wipekey file.\n" );
 
 			goto on_error;
 		}
