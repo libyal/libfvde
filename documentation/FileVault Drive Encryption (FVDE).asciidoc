@@ -828,7 +828,10 @@ The offset is relative to the start of the metadata block header
 | 56 | 4 | | [yellow-background]*Unknown*
 | 60 | 2 | | [yellow-background]*Unknown (maximum number of entries?)*
 | 62 | 2 | | [yellow-background]*Unknown (number of entries?)*
-| 64 | ... | | [yellow-background]*Unknown (Array of entries)*
+| 64 | 8 | | [yellow-background]*Unknown*
+| 72 | 8 | | [yellow-background]*Unknown*
+| 80 | ... | | [yellow-background]*Unknown (Array of entries) +
+[yellow-background]*TODO: determine if an entry is 24 bytes of size?*
 | ... | ... | | XML plist data or compressed data
 |===
 
@@ -851,11 +854,11 @@ XML plist main dict containing:
 [cols="1,1",options="header"]
 |===
 | Key | Description
-| com.apple.corestorage.lvf.revertState | Revert state +
-This key is optional
-| com.apple.corestorage.lvf.encryption.context | Encryption context dict +
-This key is optional
-| DefaultEncryptionContext | Reference to an identifier (ID) in the encryption context
+| com.apple.corestorage.lvf.revertState | Optional revert state
+| com.apple.corestorage.lvf.encryption.context | Optional encryption context dict +
+Contains an <<encryption_context_plist,encryption context plist>>
+| DefaultEncryptionContext | [yellow-background]*Unknown* +
+Consists of a 32-bits integer
 | com.apple.corestorage.lvf.groupUUID | The logical volume group identifier +
 Contains an UUID
 | com.apple.corestorage.lvf.sequence | The sequence number +
@@ -863,266 +866,19 @@ Consists of a 32-bits integer +
 The largest sequence number contains the most up to date information.
 | com.apple.corestorage.lvf.uuid | The logical volume family identifier +
 Contains an UUID
-| PreviousEncryptionContext | Reference to an identifier (ID) in the encryption context
-| com.apple.corestorage.lvf.advertisedBlkSizes | Values seen: 1
-| com.apple.corestorage.lvf.encryption.type | This key is optional +
+| PreviousEncryptionContext | [yellow-background]*Unknown* +
+Consists of a 32-bits integer
+| com.apple.corestorage.lvf.advertisedBlkSizes | [yellow-background]*Unknown (advertised block sizes?)* +
+Values seen: 1
+| com.apple.corestorage.lvf.encryption.type | Optional encryption type +
 Values seen: "None"
-| com.apple.corestorage.lvf.encryption.status | This key is optional +
+| com.apple.corestorage.lvf.encryption.status | Optional encryption status +
 Values seen: "Unlocked"
-| com.apple.corestorage.lvf.conversion.lvuuid | This key is optional +
+| com.apple.corestorage.lvf.conversion.lvuuid | Optional logical volume identifier +
 Contains an UUID
-| com.apple.corestorage.lvf.conversion.starttime | This key is optional +
+| com.apple.corestorage.lvf.conversion.starttime | Optional conversion start time +
 Contains an integer
 |===
-
-===== Encryption context
-
-Dict containing:
-
-[cols="1,1",options="header"]
-|===
-| Key | Description
-| CryptoUsers | Array of crypto user dicts +
-This array is empty when the logical volume is not pass-phrase/password protected
-| LastUpdateTime | [yellow-background]*TODO*
-| WrappedVolumeKeys | Array of wrapped volume key dicts
-| ConversionInfo | Optional conversion information dict
-|===
-
-===== Crypto user
-
-Dict containing:
-
-[cols="1,1",options="header"]
-|===
-| Key | Description
-| PassphraseWrappedKEKStruct | Base 64 encoded binary data that contains the password wrapped key encrypted key +
-See section: <<passphrase_wrapped_kek_struct,PassphraseWrappedKEKStruct>>
-| WrapVersion |
-| UserType |
-| UserIdent |
-| UserNamesData |
-| UserNamesData |
-| PassphraseHint |
-| KeyEncryptingKeyIdent |
-| UserFullName |
-| UserIcon |
-| EFILoginGraphics |
-|===
-
-Notes:
-
-....
-Some user entries do not contain PassphraseWrappedKEKStruct
-
-<dict>
-  <key>ExternalKeyProps</key>
-  <dict>
-    <key>EncryptedBlob</key>
-    <data>
-    AggED8YNUFMrSX/Hz5KRjdN2WKr6tkiq6YWelbJlFjzq
-    ...
-    KYUuxmQh1MZpasdHHq3PLAw=
-    </data>
-    <key>EncryptionAlgorithm</key>
-    <string>iCloud PCS</string>
-    <key>OS User UUID</key>
-    <string>12345678-1234-1234-1234-1234567890ab</string>
-    <key>Version</key>
-    <string>1</string>
-    <key>iCloud User ID</key>
-    <string>email@example.com</string>
-  </dict>
-  <key>KeyEncryptingKeyIdent</key>
-  <string>12345678-1234-1234-1234-1234567890ab</string>
-  <key>KeyWrappedKEKStruct</key>
-  <data>
-  AgAAABgAAABtlTI+StOM45NfgYzpQH7gFnseJyML6nMAAAAAAAAA
-  ...
-  heWm7on1IkAoDcGei2rgGhEKAQAAAA==
-  </data>
-  <key>PassphraseHint</key>
-  <string>Admin Hint</string>
-  <key>UserIdent</key>
-  <string>12345678-1234-1234-1234-1234567890ab</string>
-  <key>UserType</key>
-  <integer>536936456</integer>
-  <key>WrapVersion</key>
-  <integer>1</integer>
-</dict>
-....
-
-===== Wrapped volume key
-
-Dict containing information about the volume key:
-
-[cols="1,1",options="header"]
-|===
-| Key | Description
-| VolumeKeyIndex | Index of the volume key within the array
-| VolumeKeyIdent | Volume key identifier
-| Contains an UUID | WrapVersion +
-Reference to an identifier (ID) in the encryption context
-| KeyEncryptingKeyIdent | The identifier of the key encrypting key
-| BlockAlgorithm | Encryption method of the logical volume data: +
-Seen: "None", "AES-XTS"
-| KEKWrappedVolumeKeyStruct | Base 64 encoded binary data that contains the key encrypted key wrapped volume key }
-See section: <<key_encrypted_key_wrapped_volume_key,Key encrypted key wrapped volume key>>
-|===
-
-===== Conversion information
-
-Dict containing information about the conversion status:
-
-[cols="1,1",options="header"]
-|===
-| Key | Description
-| TargetContext | [yellow-background]*Reference to an identifier (ID) in the encryption context*
-| ConversionStatus | Coversion status +
-Seen: NoConversion
-|===
-
-....
-Unencrypted
-<dict ID="0">
-  <key>com.apple.corestorage.lvf.encryption.context</key>
-  <dict ID="1">
-    <key>CryptoUsers</key>
-    <array ID="2"></array> (empty)
-    <key>LastUpdateTime</key>
-    <integer size="64" ID="3">0x500ba053</integer>
-    <key>WrappedVolumeKeys</key>
-
-    <array ID="4">
-      <dict ID="5">
-        <key>VolumeKeyIndex</key>
-        <integer size="32" ID="6">0x0</integer>
-        <key>VolumeKeyIdent</key>
-        <string ID="7">AD2FA664-BC4D-491A-936C-F745295B3AC5</string>
-        <key>WrapVersion</key>
-        <reference IDREF="6"/>
-        <key>KeyEncryptingKeyIdent</key>
-        <string ID="8">none</string>
-        <key>BlockAlgorithm</key>
-        <string ID="9">None</string>
-        <key>KEKWrappedVolumeKeyStruct</key>
-        <data ID="10"></data>
-      </dict>
-    </array>
-
-    <key>ConversionInfo</key>
-    <dict ID="11">
-      <key>TargetContext</key>
-      <reference IDREF="6"/>
-      <key>ConversionStatus</key>
-      <string ID="12">NoConversion</string>
-    </dict>
-  </dict>
-
-  <key>DefaultEncryptionContext</key>
-  <reference IDREF="6"/>
-  <key>com.apple.corestorage.lvf.groupUUID</key>
-  <string ID="13">ACC53457-40D1-417C-958A-DC6A04CFCBBB</string>
-  <key>com.apple.corestorage.lvf.sequence</key>
-  <integer size="32" ID="14">0x2</integer>
-  <key>com.apple.corestorage.lvf.uuid</key>
-  <string ID="15">456AF40B-AF12-4BA6-AF74-9E3D253C9DBD</string>
-  <key>PreviousEncryptionContext</key>
-  <reference IDREF="6"/>
-  <key>com.apple.corestorage.lvf.advertisedBlkSizes</key>
-  <integer size="32" ID="16">0x1</integer>
-</dict>
-
-
-
-Encrypted
-<dict ID="0">
-  <key>com.apple.corestorage.lvf.encryption.context</key>
-  <dict ID="1">
-    <key>CryptoUsers</key>
-    <array ID="2">
-      <dict ID="3">
-        <key>PassphraseWrappedKEKStruct</key>
-        <data ID="4">AwAAABAAAAAhJ7cnW0kP7akL3+XPVv/dEAAAABgAAAB92Y6avvO2JVmeOlMPWt0yaiUX13HXSN0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAMAAAAKAAAA5WzYfJ6wBsZwAzRpF68AAAEAAAABAAAAAwAAAAoAAAB0TZG7mq/T2CYOGjrQvWzHVQDX8bjI4OqM6RjgHLHbsYsTc9qn3fhZ/N5oSdzyTH3KddNAL8VI9viqTQ/rZ84k5feUJCHCiSx3Gw2joJeESu90iynb2oU8o36VS20BRNE=</data>
-        <key>WrapVersion</key>
-        <integer size="32" ID="5">0x1</integer>
-        <key>UserType</key>
-        <integer size="32" ID="6">0x10000001</integer>
-        <key>UserIdent</key>
-        <string ID="7">A27BFBF4-5E71-499E-A50E-0F3C9A93A65E</string>
-        <key>UserNamesData</key>
-        <string ID="8"></string>
-        <key>PassphraseHint</key>
-        <reference IDREF="8"/>
-        <key>KeyEncryptingKeyIdent</key>
-        <string ID="9">C8787204-AE27-4823-A24F-FB8C46CDB21A</string>
-        <key>UserFullName</key>
-        <reference IDREF="8"/>
-        <key>UserIcon</key>
-        <data ID="10"></data>
-        <key>EFILoginGraphics</key>
-        <data ID="11"></data>
-      </dict>
-    </array>
-    <key>LastUpdateTime</key>
-    <integer size="64" ID="12">0x500ba362</integer>
-    <key>WrappedVolumeKeys</key>
-    <array ID="13">
-      <dict ID="14">
-        <key>VolumeKeyIndex</key>
-        <integer size="32" ID="15">0x0</integer>
-        <key>VolumeKeyIdent</key>
-        <string ID="16">064F0E0F-93D8-4B9B-86BD-3B88E975B986</string>
-        <key>WrapVersion</key>
-        <reference IDREF="15"/>
-        <key>KeyEncryptingKeyIdent</key>
-        <string ID="17">none</string>
-        <key>BlockAlgorithm</key>
-        <string ID="18">None</string>
-        <key>KEKWrappedVolumeKeyStruct</key>
-        <data ID="19"></data>
-      </dict>
-
-      <dict ID="20">
-        <key>VolumeKeyIndex</key>
-        <reference IDREF="5"/>
-        <key>VolumeKeyIdent</key>
-        <string ID="21">32686E63-1B7B-4789-A0AE-DBCDEFF59A9F</string>
-        <key>WrapVersion</key>
-        <reference IDREF="5"/>
-        <key>KeyEncryptingKeyIdent</key>
-        <reference IDREF="9"/>
-        <key>BlockAlgorithm</key>
-        <string ID="22">AES-XTS</string>
-        <key>KEKWrappedVolumeKeyStruct</key>
-        <data ID="23">AgAAABgAAACH2P5JK0cnneEO1tyc/QE548bziUUWHjAIAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAMAAAAKAAAA5WzYfJ6wBsZwAzRpVBN8bKAN1e/A5eZ1NzNRgU3IIklZRGgeb/MZlvBJdhWzwqPsfsd9DY95B7bvRxR2s1/16uoDnFUaLQ8JJZaM1mgPR63ih7kOGgOS+GlQlkQz/2SWAQAAAA==</data>
-      </dict>
-    </array>
-    <key>ConversionInfo</key>
-    <dict ID="24">
-      <key>TargetContext</key>
-      <reference IDREF="5"/>
-      <key>ConversionStatus</key>
-      <string ID="25">NoConversion</string>
-    </dict>
-  </dict>
-  <key>DefaultEncryptionContext</key>
-  <integer size="32" ID="26">0x1</integer>
-  <key>com.apple.corestorage.lvf.groupUUID</key>
-  <string ID="27">ACC53457-40D1-417C-958A-DC6A04CFCBBB</string>
-  <key>com.apple.corestorage.lvf.sequence</key>
-  <integer size="32" ID="28">0x2</integer>
-  <key>com.apple.corestorage.lvf.uuid</key>
-  <string ID="29">697CA9C9-2DB2-4313-9FD5-C06BC12317AE</string>
-  <key>PreviousEncryptionContext</key>
-  <reference IDREF="15"/>
-  <key>com.apple.corestorage.lvf.advertisedBlkSizes</key>
-  <integer size="32" ID="30">0x1</integer>
-</dict>
-
-System volume:
-LVFwiped
-....
 
 === Metadata block data type 0x001a
 
@@ -1557,6 +1313,8 @@ The block number is relative from the start of the physical volume
 [yellow-background]*TODO: determine how entries, other than the first, should
 be interpreted.*
 
+[yellow-background]*TODO: are these referred to as Encrypted Extents?*
+
 === Metadata block data type 0x0605
 
 ....
@@ -1577,7 +1335,7 @@ Seen in system volume
 00001fb0: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ........ ........
 ....
 
-== The encryption context plist
+== [[encryption_context_plist]]The encryption context plist
 
 The encryption context plist either the EncryptedRoot.plist.wipekey stored on
 the "Recovery HD" partition of the system disk that also contains the FileVault
@@ -1667,14 +1425,17 @@ EncryptedRoot.plist.wipekey file is currently unknown.
 [cols="1,1",options="header"]
 |===
 | Key | Description
-| ConversionInfo | Encrypted volume conversion status
-| CryptoUsers | Information about user accounts that can access the encrypted volume
+| ConversionInfo | Optional conversion status information dict
+| CryptoUsers | Array of crypto user dicts +
+This array is empty when the logical volume is not pass-phrase/password protected
 | LastUpdateTime | Date and time the EncryptedRoot.plist.wipekey was updated. +
 Contains the number of seconds since January 1, 1970 00:00:00 UTC.
-| WrappedVolumeKeys | Key protected volume keys
+| WrappedVolumeKeys | Array of wrapped volume key dicts
 |===
 
 === ConversionInfo
+
+Dict containing information about the conversion status:
 
 [cols="1,1",options="header"]
 |===
@@ -1684,10 +1445,13 @@ Complete => the volume is fully encrypted +
 Converting => the volume is being encrypted +
 NoConversion => [yellow-background]*TODO* +
 Pending => the volume is to be encrypted.
-| TargetContext | [yellow-background]*Unknown (the index of the encryption context to be used.)*
+| TargetContext | [yellow-background]*Unknown* +
+Seen: 0 and 1 (partial encrypted volume)
 |===
 
 === CryptoUsers
+
+Dict containing:
 
 [cols="1,1",options="header"]
 |===
@@ -1697,7 +1461,7 @@ Pending => the volume is to be encrypted.
 Consists of a string containing an UUID +
 [yellow-background]*Corresponds to an entry in WrappedVolumeKeys?*
 | PassphraseHint | The passphrase hint
-| PassphraseWrappedKEKStruct | +
+| PassphraseWrappedKEKStruct | Optional base 64 encoded binary data that contains the password wrapped key encrypted key +
 See section: <<passphrase_wrapped_kek_struct,PassphraseWrappedKEKStruct>>
 | UserFullName | User full name
 | UserIcon | User icon +
@@ -1747,18 +1511,21 @@ Contains WrappedKEK
 
 === WrappedVolumeKeys
 
+Dict containing information about the volume key:
+
 [cols="1,1",options="header"]
 |===
 | Key | Description
 | BlockAlgorithm | The encryption method. +
 Seen: AES-XTS, None
-| KEKWrappedVolumeKeyStruct | The Key encrypted key wrapped volume key
+| KEKWrappedVolumeKeyStruct | Base 64 encoded binary data that contains the key encrypted key wrapped volume key }
+See section: <<key_encrypted_key_wrapped_volume_key,Key encrypted key wrapped volume key>>
 | KeyEncryptingKeyIdent | The identifier of the key encrypting key +
 Consists of a string containing an UUID +
 [yellow-background]*Corresponds to an entry in CryptoUsers?*
 | VolumeKeyIdent | The identifier of the volume key +
 Consists of a string containing an UUID
-| VolumeKeyIndex | [yellow-background]*The index of the wrapped volume key in the WrappedVolumeKeys array?*
+| VolumeKeyIndex | Index of the volume key within the array
 | WrapVersion | [yellow-background]*The format version of the KEKWrappedVolumeKeyStruct ?* +
 Seen 1
 |===
@@ -1805,31 +1572,191 @@ Once unencrypted it should be: "\xa6\xa6\xa6\xa6\xa6\xa6\xa6\xa6"
 
 == Notes
 
-The metadata can be seen as having a hierarchical structure, where each
-metadata block is composed of:
+=== Crypto user
 
-* a metadata block header
-* a metadata block data
+....
+Some user entries do not contain PassphraseWrappedKEKStruct
 
-If the "volume groups descriptor" from the metadata block header is not empty
-(i.e. is different than 0x00000000), then this metadata block points to some
-sub-blocks (children blocks), which might be or not encrypted depending on the
-type of the parent metadata block or some other information (unsure of this for
-now).
+<dict>
+  <key>ExternalKeyProps</key>
+  <dict>
+    <key>EncryptedBlob</key>
+    <data>
+    AggED8YNUFMrSX/Hz5KRjdN2WKr6tkiq6YWelbJlFjzq
+    ...
+    KYUuxmQh1MZpasdHHq3PLAw=
+    </data>
+    <key>EncryptionAlgorithm</key>
+    <string>iCloud PCS</string>
+    <key>OS User UUID</key>
+    <string>12345678-1234-1234-1234-1234567890ab</string>
+    <key>Version</key>
+    <string>1</string>
+    <key>iCloud User ID</key>
+    <string>email@example.com</string>
+  </dict>
+  <key>KeyEncryptingKeyIdent</key>
+  <string>12345678-1234-1234-1234-1234567890ab</string>
+  <key>KeyWrappedKEKStruct</key>
+  <data>
+  AgAAABgAAABtlTI+StOM45NfgYzpQH7gFnseJyML6nMAAAAAAAAA
+  ...
+  heWm7on1IkAoDcGei2rgGhEKAQAAAA==
+  </data>
+  <key>PassphraseHint</key>
+  <string>Admin Hint</string>
+  <key>UserIdent</key>
+  <string>12345678-1234-1234-1234-1234567890ab</string>
+  <key>UserType</key>
+  <integer>536936456</integer>
+  <key>WrapVersion</key>
+  <integer>1</integer>
+</dict>
+....
 
-For example, in one test image, the first metadata block data type 0x0010
-appears to have 4096 sub-blocks. Most of these 4096 are encrypted (with keys
-from the Core Storage header), but some of them (e.g. blocks 60-61) are zero
-(so when decrypted we should expect some crappy data).
+=== Conversion information
 
-Note: I see that the tool only outputs some of these blocks while in
-debug/verbose mode and then goes to decrypt the EncryptedRoot.plist.wipekey
-file. Or am I missing something?
+....
+Unencrypted
+<dict ID="0">
+  <key>com.apple.corestorage.lvf.encryption.context</key>
+  <dict ID="1">
+    <key>CryptoUsers</key>
+    <array ID="2"></array> (empty)
+    <key>LastUpdateTime</key>
+    <integer size="64" ID="3">0x500ba053</integer>
+    <key>WrappedVolumeKeys</key>
 
-The Core Storage header provides the pointers to four parent metadata blocks,
-which we call DiskLabel metadata. These parent blocks seem to have type 0x0011.
-The size of these parent blocks is defined in the physical volume header, in
-the "metadata size" field; this is commonly 4 MiB.
+    <array ID="4">
+      <dict ID="5">
+        <key>VolumeKeyIndex</key>
+        <integer size="32" ID="6">0x0</integer>
+        <key>VolumeKeyIdent</key>
+        <string ID="7">AD2FA664-BC4D-491A-936C-F745295B3AC5</string>
+        <key>WrapVersion</key>
+        <reference IDREF="6"/>
+        <key>KeyEncryptingKeyIdent</key>
+        <string ID="8">none</string>
+        <key>BlockAlgorithm</key>
+        <string ID="9">None</string>
+        <key>KEKWrappedVolumeKeyStruct</key>
+        <data ID="10"></data>
+      </dict>
+    </array>
+
+    <key>ConversionInfo</key>
+    <dict ID="11">
+      <key>TargetContext</key>
+      <reference IDREF="6"/>
+      <key>ConversionStatus</key>
+      <string ID="12">NoConversion</string>
+    </dict>
+  </dict>
+
+  <key>DefaultEncryptionContext</key>
+  <reference IDREF="6"/>
+  <key>com.apple.corestorage.lvf.groupUUID</key>
+  <string ID="13">ACC53457-40D1-417C-958A-DC6A04CFCBBB</string>
+  <key>com.apple.corestorage.lvf.sequence</key>
+  <integer size="32" ID="14">0x2</integer>
+  <key>com.apple.corestorage.lvf.uuid</key>
+  <string ID="15">456AF40B-AF12-4BA6-AF74-9E3D253C9DBD</string>
+  <key>PreviousEncryptionContext</key>
+  <reference IDREF="6"/>
+  <key>com.apple.corestorage.lvf.advertisedBlkSizes</key>
+  <integer size="32" ID="16">0x1</integer>
+</dict>
+
+
+
+Encrypted
+<dict ID="0">
+  <key>com.apple.corestorage.lvf.encryption.context</key>
+  <dict ID="1">
+    <key>CryptoUsers</key>
+    <array ID="2">
+      <dict ID="3">
+        <key>PassphraseWrappedKEKStruct</key>
+        <data ID="4">AwAAABAAAAAhJ7cnW0kP7akL3+XPVv/dEAAAABgAAAB92Y6avvO2JVmeOlMPWt0yaiUX13HXSN0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAMAAAAKAAAA5WzYfJ6wBsZwAzRpF68AAAEAAAABAAAAAwAAAAoAAAB0TZG7mq/T2CYOGjrQvWzHVQDX8bjI4OqM6RjgHLHbsYsTc9qn3fhZ/N5oSdzyTH3KddNAL8VI9viqTQ/rZ84k5feUJCHCiSx3Gw2joJeESu90iynb2oU8o36VS20BRNE=</data>
+        <key>WrapVersion</key>
+        <integer size="32" ID="5">0x1</integer>
+        <key>UserType</key>
+        <integer size="32" ID="6">0x10000001</integer>
+        <key>UserIdent</key>
+        <string ID="7">A27BFBF4-5E71-499E-A50E-0F3C9A93A65E</string>
+        <key>UserNamesData</key>
+        <string ID="8"></string>
+        <key>PassphraseHint</key>
+        <reference IDREF="8"/>
+        <key>KeyEncryptingKeyIdent</key>
+        <string ID="9">C8787204-AE27-4823-A24F-FB8C46CDB21A</string>
+        <key>UserFullName</key>
+        <reference IDREF="8"/>
+        <key>UserIcon</key>
+        <data ID="10"></data>
+        <key>EFILoginGraphics</key>
+        <data ID="11"></data>
+      </dict>
+    </array>
+    <key>LastUpdateTime</key>
+    <integer size="64" ID="12">0x500ba362</integer>
+    <key>WrappedVolumeKeys</key>
+    <array ID="13">
+      <dict ID="14">
+        <key>VolumeKeyIndex</key>
+        <integer size="32" ID="15">0x0</integer>
+        <key>VolumeKeyIdent</key>
+        <string ID="16">064F0E0F-93D8-4B9B-86BD-3B88E975B986</string>
+        <key>WrapVersion</key>
+        <reference IDREF="15"/>
+        <key>KeyEncryptingKeyIdent</key>
+        <string ID="17">none</string>
+        <key>BlockAlgorithm</key>
+        <string ID="18">None</string>
+        <key>KEKWrappedVolumeKeyStruct</key>
+        <data ID="19"></data>
+      </dict>
+
+      <dict ID="20">
+        <key>VolumeKeyIndex</key>
+        <reference IDREF="5"/>
+        <key>VolumeKeyIdent</key>
+        <string ID="21">32686E63-1B7B-4789-A0AE-DBCDEFF59A9F</string>
+        <key>WrapVersion</key>
+        <reference IDREF="5"/>
+        <key>KeyEncryptingKeyIdent</key>
+        <reference IDREF="9"/>
+        <key>BlockAlgorithm</key>
+        <string ID="22">AES-XTS</string>
+        <key>KEKWrappedVolumeKeyStruct</key>
+        <data ID="23">AgAAABgAAACH2P5JK0cnneEO1tyc/QE548bziUUWHjAIAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAMAAAAKAAAA5WzYfJ6wBsZwAzRpVBN8bKAN1e/A5eZ1NzNRgU3IIklZRGgeb/MZlvBJdhWzwqPsfsd9DY95B7bvRxR2s1/16uoDnFUaLQ8JJZaM1mgPR63ih7kOGgOS+GlQlkQz/2SWAQAAAA==</data>
+      </dict>
+    </array>
+    <key>ConversionInfo</key>
+    <dict ID="24">
+      <key>TargetContext</key>
+      <reference IDREF="5"/>
+      <key>ConversionStatus</key>
+      <string ID="25">NoConversion</string>
+    </dict>
+  </dict>
+  <key>DefaultEncryptionContext</key>
+  <integer size="32" ID="26">0x1</integer>
+  <key>com.apple.corestorage.lvf.groupUUID</key>
+  <string ID="27">ACC53457-40D1-417C-958A-DC6A04CFCBBB</string>
+  <key>com.apple.corestorage.lvf.sequence</key>
+  <integer size="32" ID="28">0x2</integer>
+  <key>com.apple.corestorage.lvf.uuid</key>
+  <string ID="29">697CA9C9-2DB2-4313-9FD5-C06BC12317AE</string>
+  <key>PreviousEncryptionContext</key>
+  <reference IDREF="15"/>
+  <key>com.apple.corestorage.lvf.advertisedBlkSizes</key>
+  <integer size="32" ID="30">0x1</integer>
+</dict>
+
+System volume:
+LVFwiped
+....
 
 === Backup of EncryptedRoot.plist.wipekey?
 
@@ -1844,127 +1771,9 @@ Use the most recent transaction:
 
 === Partial encrypted volume
 
-Seen in 10.7 partial encrypted volume
-
-Encrypted volume header:
-....
-00000000: 00 63 00 6d 00 70 00 66  00 73 00 00 00 10 00 00   .c.m.p.f .s......
-00000010: 00 00 00 00 00 00 00 00  02 3c 66 70 6d 63 03 00   ........ .<fpmc..
-00000020: 00 00 98 06 00 00 00 00  00 00 78 5e a5 55 5b 6f   ........ ..x^.U[o
-....
-
-Big-endian
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | ... | | [yellow-background]*Unknown (identifier)*
-Contains an UTF-16 big-endian string with end-of-string character
-| ... | 4 | 0x1000 | [yellow-background]*Unknown*
-| ... | 8 | | [yellow-background]*Unknown (Empty values)*
-| ... | 2 | | data size
-4+| _data_
-| ... | 4 | "fpmc" | [yellow-background]*Unknown (data signature?)*
-| ... | 4 | | [yellow-background]*Unknown*
-| ... | 4 | | uncompressed XML plist data size
-| ... | 4 | | [yellow-background]*Unknown (Empty values)*
-| ... | .. | | compressed XML plist data +
-Contains zlib compressed data
-|===
-
-....
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>BuildMachineOSBuild</key>
-	<string>11E53</string>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
-	<string>CertsKeychainMonitor</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.apple.servermgrd.CertsKeychainMonitor</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>CertsKeychainMonitor</string>
-	<key>CFBundlePackageType</key>
-	<string>BNDL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>1.1</string>
-	<key>CFPlugInDynamicRegisterFunction</key>
-	<string></string>
-	<key>CFPlugInDynamicRegistration</key>
-	<string>NO</string>
-	<key>CFPlugInFactories</key>
-	<dict>
-		<key>FB86416D-6164-2070-726F-70735C216EC0</key>
-		<string>UserEventAgentFactory</string>
-	</dict>
-	<key>CFPlugInTypes</key>
-	<dict>
-		<key>FC86416D-6164-2070-726F-70735C216EC0</key>
-		<array>
-			<string>FB86416D-6164-2070-726F-70735C216EC0</string>
-		</array>
-	</dict>
-	<key>CFPlugInUnloadFunction</key>
-	<string></string>
-	<key>DTCompiler</key>
-	<string></string>
-	<key>DTPlatformBuild</key>
-	<string>11E53</string>
-	<key>DTPlatformVersion</key>
-	<string>GM</string>
-	<key>DTSDKBuild</key>
-	<string>11E53</string>
-	<key>DTSDKName</key>
-	<string></string>
-	<key>DTXcode</key>
-	<string>0410</string>
-	<key>DTXcodeBuild</key>
-	<string>11E53</string>
-	<key>LimitLoadToSessionType</key>
-	<string>System</string>
-</dict>
-</plist>
-....
-
-....
-1c805650  fe 02 2f 45 26 36                                 |../E&6..........|
-
-1c805650                    00 2e  00 00 00 07 10 fc 00 00  |../E&6..........|
-1c805660  00 00 00 11                                       |.....c.o.m...a.p|
-
-1c805660              00 63 00 6f  00 6d 00 2e 00 61 00 70  |.....c.o.m...a.p|
-1c805670  00 70 00 6c 00 65 00 2e  00 64 00 65 00 63 00 6d  |.p.l.e...d.e.c.m|
-1c805680  00 70 00 66 00 73 00 00  00 10 00 00 00 00 00 00  |.p.f.s..........|
-1c805690  00 00 00 00 00 10 66 70  6d 63 04 00 00 00 10 66  |......fpmc.....f|
-1c8056a0  01 00 00 00 00 00                                 |................|
-
-1c8056a0                    00 2e  00 00 00 07 10 fe 00 00  |................|
-1c8056b0  00 00 00 11 00 63 00 6f  00 6d 00 2e 00 61 00 70  |.....c.o.m...a.p|
-1c8056c0  00 70 00 6c 00 65 00 2e  00 64 00 65 00 63 00 6d  |.p.l.e...d.e.c.m|
-1c8056d0  00 70 00 66 00 73 00 00  00 10 00 00 00 00 00 00  |.p.f.s..........|
-1c8056e0  00 00 00 00 01 c0 66 70  6d 63 03 00 00 00 cd 06  |......fpmc......|
-1c8056f0  00 00 00 00 00 00 78 5e  cd 93 db 6a db 40 10 86  |......x^...j.@..|
-1c805700  af e3 a7 50 45 2e 9a 16  6b 1c 42 0e 2e b2 1c 1f  |...PE...k.B.....|
-...
-1c805eb0  df 43 72 7c 0d a2 c9 5f  3e fe 8c 6c              |.Cr|..._>..l....|
-
-1c805eb0                                       00 2e 00 00  |.Cr|..._>..l....|
-1c805ec0  00 07 11 07 00 00 00 00  00 11 00 63 00 6f 00 6d  |...........c.o.m|
-1c805ed0  00 2e 00 61 00 70 00 70  00 6c 00 65 00 2e 00 64  |...a.p.p.l.e...d|
-1c805ee0  00 65 00 63 00 6d 00 70  00 66 00 73 00 00 00 10  |.e.c.m.p.f.s....|
-1c805ef0  00 00 00 00 00 00 00 00  00 00 00 10 66 70 6d 63  |............fpmc|
-1c805f00  04 00 00 00 00 f7 0c 00  00 00 00 00 00 00 00 00  |................|
-1c805f10  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-....
+* information in 0x0505 and 0x0305 do not seem to point to encrypted logical volume header
+* encryption context plist stored in metadata, whereas in the finalized encrypted volume these metadata blocks are marked as LVFwiped
+* ConversionStatus in the encryption context plist is Converting
 
 :numbered!:
 [appendix]

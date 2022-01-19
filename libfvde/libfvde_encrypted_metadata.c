@@ -2038,6 +2038,8 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 	uint32_t uncompressed_data_size = 0;
 	uint32_t xml_plist_data_offset  = 0;
 	uint32_t xml_plist_data_size    = 0;
+	uint16_t entry_index            = 0;
+	uint16_t number_of_entries      = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint64_t value_64bit            = 0;
@@ -2106,6 +2108,10 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 	 &( block_data[ 52 ] ),
 	 xml_plist_data_size );
 
+	byte_stream_copy_to_uint16_little_endian(
+	 &( block_data[ 62 ] ),
+	 number_of_entries );
+
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -2170,7 +2176,7 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 		 &( block_data[ 56 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown9\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown3\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -2178,24 +2184,37 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 		 &( block_data[ 60 ] ),
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown10\t\t\t: %" PRIu16 "\n",
+		 "%s: unknown4\t\t\t: %" PRIu16 "\n",
 		 function,
 		 value_16bit );
 
-		byte_stream_copy_to_uint16_little_endian(
-		 &( block_data[ 62 ] ),
-		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown11\t\t\t: %" PRIu16 "\n",
+		 "%s: number of entries\t\t: %" PRIu16 "\n",
 		 function,
-		 value_16bit );
+		 number_of_entries );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 64 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown5\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
+
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ 72 ] ),
+		 value_64bit );
+		libcnotify_printf(
+		 "%s: unknown6\t\t\t: %" PRIu64 "\n",
+		 function,
+		 value_64bit );
 
 		libcnotify_printf(
 		 "\n" );
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-	block_data_offset = 64;
+	block_data_offset = 80;
 
 	if( ( xml_plist_data_offset < ( block_data_offset + 64 ) )
 	 || ( xml_plist_data_offset >= block_data_size ) )
@@ -2220,13 +2239,65 @@ int libfvde_encrypted_metadata_read_type_0x0019(
 
 		goto on_error;
 	}
+	if( number_of_entries > ( ( block_data_size - block_data_offset ) / 24 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of entries value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	for( entry_index = 0;
+	     entry_index < number_of_entries;
+	     entry_index++ )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown1\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 8 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown2\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			byte_stream_copy_to_uint64_little_endian(
+			 &( block_data[ block_data_offset + 16 ] ),
+			 value_64bit );
+			libcnotify_printf(
+			 "%s: entry: %03d unknown3\t: %" PRIu64 "\n",
+			 function,
+			 entry_index,
+			 value_64bit );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+		block_data_offset += 24;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		if( xml_plist_data_offset > ( block_data_offset + 64 ) )
 		{
 			libcnotify_printf(
-			 "%s: unknown5:\n",
+			 "%s: unknown7:\n",
 			 function );
 			libcnotify_print_data(
 			 &( block_data[ block_data_offset ] ),
@@ -2513,7 +2584,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		 &( block_data[ 48 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown4\t\t\t\t: %" PRIu64 "\n",
+		 "%s: unknown3\t\t\t\t: %" PRIu64 "\n",
 		 function,
 		 value_64bit );
 
@@ -2570,7 +2641,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		if( xml_plist_data_offset > ( block_data_offset + 64 ) )
 		{
 			libcnotify_printf(
-			 "%s: unknown5:\n",
+			 "%s: unknown4:\n",
 			 function );
 			libcnotify_print_data(
 			 &( block_data[ block_data_offset ] ),
