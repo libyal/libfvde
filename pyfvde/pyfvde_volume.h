@@ -48,6 +48,10 @@ struct pyfvde_volume
 	/* The libbfio file IO handle
 	 */
 	libbfio_handle_t *file_io_handle;
+
+	/* The file IO pool
+	 */
+	libbfio_pool_t *file_io_pool;
 };
 
 extern PyMethodDef pyfvde_volume_object_methods[];
@@ -69,6 +73,16 @@ PyObject *pyfvde_volume_open(
            PyObject *keywords );
 
 PyObject *pyfvde_volume_open_file_object(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfvde_volume_open_physical_volume_files(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfvde_volume_open_physical_volume_files_as_file_objects(
            pyfvde_volume_t *pyfvde_volume,
            PyObject *arguments,
            PyObject *keywords );

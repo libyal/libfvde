@@ -62,6 +62,10 @@ int pyfvde_logical_volume_init(
 void pyfvde_logical_volume_free(
       pyfvde_logical_volume_t *pyfvde_logical_volume );
 
+PyObject *pyfvde_logical_volume_unlock(
+           pyfvde_logical_volume_t *pyfvde_logical_volume,
+           PyObject *arguments );
+
 PyObject *pyfvde_logical_volume_read_buffer(
            pyfvde_logical_volume_t *pyfvde_logical_volume,
            PyObject *arguments,

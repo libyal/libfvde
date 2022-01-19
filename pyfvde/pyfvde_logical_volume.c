@@ -38,6 +38,13 @@
 
 PyMethodDef pyfvde_logical_volume_object_methods[] = {
 
+	{ "unlock",
+	  (PyCFunction) pyfvde_logical_volume_unlock,
+	  METH_NOARGS,
+	  "unlock() -> Boolean\n"
+	  "\n"
+	  "Unlocks the logical volume." },
+
 	{ "read_buffer",
 	  (PyCFunction) pyfvde_logical_volume_read_buffer,
 	  METH_VARARGS | METH_KEYWORDS,
@@ -258,6 +265,62 @@ PyTypeObject pyfvde_logical_volume_type_object = {
 	/* tp_del */
 	0
 };
+
+/* Unlocks the logical volume
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_logical_volume_unlock(
+           pyfvde_logical_volume_t *pyfvde_logical_volume,
+           PyObject *arguments PYFVDE_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfvde_logical_volume_unlock";
+	int result               = 0;
+
+	PYFVDE_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfvde_logical_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid logical volume.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfvde_logical_volume_unlock(
+	          pyfvde_logical_volume->logical_volume,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to unlock logical volume.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	if( result != 0 )
+	{
+		Py_IncRef(
+		 (PyObject *) Py_True );
+
+		return( Py_True );
+	}
+	Py_IncRef(
+	 (PyObject *) Py_False );
+
+	return( Py_False );
+}
 
 /* Creates a new logical volume object
  * Returns a Python object if successful or NULL on error

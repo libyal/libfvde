@@ -27,6 +27,7 @@
 #endif
 
 #include "pyfvde_error.h"
+#include "pyfvde_guid.h"
 #include "pyfvde_libcerror.h"
 #include "pyfvde_libfvde.h"
 #include "pyfvde_logical_volume.h"
@@ -38,6 +39,13 @@
 #include "pyfvde_volume_group.h"
 
 PyMethodDef pyfvde_volume_group_object_methods[] = {
+
+	{ "get_identifier",
+	  (PyCFunction) pyfvde_volume_group_get_identifier,
+	  METH_NOARGS,
+	  "get_identifier() -> Unicode string\n"
+	  "\n"
+	  "Retrieves the volume group identifier." },
 
 	{ "get_name",
 	  (PyCFunction) pyfvde_volume_group_get_name,
@@ -79,6 +87,12 @@ PyMethodDef pyfvde_volume_group_object_methods[] = {
 };
 
 PyGetSetDef pyfvde_volume_group_object_get_set_definitions[] = {
+
+	{ "identifier",
+	  (getter) pyfvde_volume_group_get_identifier,
+	  (setter) 0,
+	  "The volume group identifier.",
+	  NULL },
 
 	{ "name",
 	  (getter) pyfvde_volume_group_get_name,
@@ -360,6 +374,70 @@ void pyfvde_volume_group_free(
 	}
 	ob_type->tp_free(
 	 (PyObject*) pyfvde_volume_group );
+}
+
+/* Retrieves the volume group identifier
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_volume_group_get_identifier(
+           pyfvde_volume_group_t *pyfvde_volume_group,
+           PyObject *arguments PYFVDE_ATTRIBUTE_UNUSED )
+{
+	uint8_t uuid_data[ 16 ];
+
+	PyObject *string_object  = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfvde_volume_group_get_identifier";
+	int result               = 0;
+
+	PYFVDE_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfvde_volume_group == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid volume group.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfvde_volume_group_get_identifier(
+	          pyfvde_volume_group->volume_group,
+	          uuid_data,
+	          16,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve volume group identifier.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	string_object = pyfvde_string_new_from_guid(
+	                 uuid_data,
+	                 16 );
+
+	if( string_object == NULL )
+	{
+		PyErr_Format(
+		 PyExc_IOError,
+		 "%s: unable to convert UUID into Unicode object.",
+		 function );
+
+		return( NULL );
+	}
+	return( string_object );
 }
 
 /* Retrieves the name

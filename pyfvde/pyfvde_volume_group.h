@@ -62,6 +62,10 @@ int pyfvde_volume_group_init(
 void pyfvde_volume_group_free(
       pyfvde_volume_group_t *pyfvde_volume_group );
 
+PyObject *pyfvde_volume_group_get_identifier(
+           pyfvde_volume_group_t *pyfvde_volume_group,
+           PyObject *arguments );
+
 PyObject *pyfvde_volume_group_get_name(
            pyfvde_volume_group_t *pyfvde_volume_group,
            PyObject *arguments );

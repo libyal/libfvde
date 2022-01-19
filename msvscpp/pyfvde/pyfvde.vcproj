@@ -186,6 +186,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\pyfvde\pyfvde_file_objects_io_pool.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\pyfvde\pyfvde_guid.c"
 				>
 			</File>
@@ -237,6 +241,10 @@
 			</File>
 			<File
 				RelativePath="..\..\pyfvde\pyfvde_file_object_io_handle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfvde\pyfvde_file_objects_io_pool.h"
 				>
 			</File>
 			<File

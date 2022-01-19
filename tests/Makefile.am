@@ -36,8 +36,11 @@ TESTS = \
 	$(TESTS_PYFVDE)
 
 check_SCRIPTS = \
+	pyfvde_test_logical_volume.py \
+	pyfvde_test_physical_volume.py \
 	pyfvde_test_support.py \
 	pyfvde_test_volume.py \
+	pyfvde_test_volume_group.py \
 	test_fvdeinfo.sh \
 	test_library.sh \
 	test_manpage.sh \

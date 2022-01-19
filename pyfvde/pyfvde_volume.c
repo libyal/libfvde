@@ -31,6 +31,7 @@
 #include "pyfvde_datetime.h"
 #include "pyfvde_error.h"
 #include "pyfvde_file_object_io_handle.h"
+#include "pyfvde_file_objects_io_pool.h"
 #include "pyfvde_integer.h"
 #include "pyfvde_guid.h"
 #include "pyfvde_libbfio.h"
@@ -49,6 +50,12 @@ int libfvde_volume_open_file_io_handle(
      libfvde_volume_t *volume,
      libbfio_handle_t *file_io_handle,
      int access_flags,
+     libfvde_error_t **error );
+
+LIBFVDE_EXTERN \
+int libfvde_volume_open_physical_volume_files_file_io_pool(
+     libfvde_volume_t *volume,
+     libbfio_pool_t *file_io_pool,
      libfvde_error_t **error );
 
 #endif /* !defined( LIBFVDE_HAVE_BFIO ) */
@@ -77,6 +84,20 @@ PyMethodDef pyfvde_volume_object_methods[] = {
 	  "open_file_object(file_object, mode='r') -> None\n"
 	  "\n"
 	  "Opens a volume using a file-like object." },
+
+	{ "open_physical_volume_files",
+	  (PyCFunction) pyfvde_volume_open_physical_volume_files,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "open_physical_volume_files() -> None\n"
+	  "\n"
+	  "Opens the physical volume files." },
+
+	{ "open_physical_volume_files_as_file_objects",
+	  (PyCFunction) pyfvde_volume_open_physical_volume_files_as_file_objects,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "open_physical_volume_files_as_file_objects(file_objects) -> None\n"
+	  "\n"
+	  "Opens physical volume files using a list of file-like objects." },
 
 	{ "close",
 	  (PyCFunction) pyfvde_volume_close,
@@ -328,6 +349,7 @@ int pyfvde_volume_init(
 	 */
 	pyfvde_volume->volume         = NULL;
 	pyfvde_volume->file_io_handle = NULL;
+	pyfvde_volume->file_io_pool   = NULL;
 
 	if( libfvde_volume_initialize(
 	     &( pyfvde_volume->volume ),
@@ -387,7 +409,8 @@ void pyfvde_volume_free(
 
 		return;
 	}
-	if( pyfvde_volume->file_io_handle != NULL )
+	if( ( pyfvde_volume->file_io_handle != NULL )
+	 || ( pyfvde_volume->file_io_pool != NULL ) )
 	{
 		if( pyfvde_volume_close(
 		     pyfvde_volume,
@@ -816,6 +839,459 @@ on_error:
 	return( NULL );
 }
 
+/* Opens the physical volume files
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_volume_open_physical_volume_files(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	wchar_t **filenames              = NULL;
+	wchar_t *filename                = NULL;
+	const char *errors               = NULL;
+	char *narrow_string              = NULL;
+	size_t narrow_string_size        = 0;
+	int is_unicode_string            = 0;
+#else
+	char **filenames                 = NULL;
+	char *filename                   = NULL;
+#endif
+	PyObject *filename_string_object = NULL;
+	PyObject *sequence_object        = NULL;
+	PyObject *string_object          = NULL;
+	libcerror_error_t *error         = NULL;
+	static char *keyword_list[]      = { "filenames", NULL };
+	static char *function            = "pyfvde_volume_open_physical_volume_files";
+	Py_ssize_t sequence_size         = 0;
+	size_t filename_length           = 0;
+	int filename_index               = 0;
+	int number_of_filenames          = 0;
+	int result                       = 0;
+
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: invalid volume.",
+		 function );
+
+		return( NULL );
+	}
+	if( PyArg_ParseTupleAndKeywords(
+	     arguments,
+	      keywords,
+	      "O",
+	      keyword_list,
+	      &sequence_object ) == 0 )
+	{
+		return( NULL );
+	}
+	if( PySequence_Check(
+	     sequence_object ) == 0 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: argument: files must be a sequence object.",
+		 function );
+
+		return( NULL );
+	}
+	sequence_size = PySequence_Size(
+	                 sequence_object );
+
+	if( sequence_size > (Py_ssize_t) INT_MAX )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid sequence size value exceeds maximum.",
+		 function );
+
+		goto on_error;
+	}
+	number_of_filenames = (int) sequence_size;
+
+	if( ( number_of_filenames <= 0 )
+	 || ( number_of_filenames > (int) UINT16_MAX ) )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid number of files.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	filenames = (wchar_t **) PyMem_Malloc(
+	                          sizeof( wchar_t * ) * number_of_filenames );
+#else
+	filenames = (char **) PyMem_Malloc(
+	                       sizeof( char * ) * number_of_filenames );
+#endif
+	if( filenames == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create filenames.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	if( memory_set(
+	     filenames,
+	     0,
+	     sizeof( wchar_t * ) * number_of_filenames ) == NULL )
+#else
+	if( memory_set(
+	     filenames,
+	     0,
+	     sizeof( char * ) * number_of_filenames ) == NULL )
+#endif
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to clear filenames.",
+		 function );
+
+		PyMem_Free(
+		 filenames );
+
+		return( NULL );
+	}
+	for( filename_index = 0;
+	     filename_index < number_of_filenames;
+	     filename_index++ )
+	{
+		string_object = PySequence_GetItem(
+		                 sequence_object,
+		                 filename_index );
+
+		PyErr_Clear();
+
+		result = PyObject_IsInstance(
+			  string_object,
+			  (PyObject *) &PyUnicode_Type );
+
+		if( result == -1 )
+		{
+			pyfvde_error_fetch_and_raise(
+			 PyExc_ValueError,
+			 "%s: unable to determine if the sequence object: %d is of type unicode.",
+			 function,
+			 filename_index );
+
+			goto on_error;
+		}
+		else if( result == 0 )
+		{
+			PyErr_Clear();
+
+#if PY_MAJOR_VERSION >= 3
+			result = PyObject_IsInstance(
+				  string_object,
+				  (PyObject *) &PyBytes_Type );
+#else
+			result = PyObject_IsInstance(
+				  string_object,
+				  (PyObject *) &PyString_Type );
+#endif
+			if( result == -1 )
+			{
+				pyfvde_error_fetch_and_raise(
+				 PyExc_RuntimeError,
+				 "%s: unable to determine if string object is of type string.",
+				 function );
+
+				goto on_error;
+			}
+			else if( result == 0 )
+			{
+				PyErr_Format(
+				 PyExc_TypeError,
+				 "%s: unsupported string object type",
+				 function );
+
+				goto on_error;
+			}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			else
+			{
+				is_unicode_string = 0;
+			}
+#endif
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		else
+		{
+			is_unicode_string = 1;
+		}
+#endif
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( is_unicode_string != 0 )
+		{
+			filename = (wchar_t *) PyUnicode_AsUnicode(
+			                        string_object );
+		}
+		else
+		{
+#if PY_MAJOR_VERSION >= 3
+			narrow_string = PyBytes_AsString(
+			                 string_object );
+
+			narrow_string_size = PyBytes_Size(
+			                      string_object );
+#else
+			narrow_string = PyString_AsString(
+			                 string_object );
+
+			narrow_string_size = PyString_Size(
+			                      string_object );
+#endif
+			filename_string_object = PyUnicode_Decode(
+						  narrow_string,
+						  narrow_string_size,
+						  PyUnicode_GetDefaultEncoding(),
+						  errors );
+
+			if( filename_string_object == NULL )
+			{
+				PyErr_Format(
+				 PyExc_IOError,
+				 "%s: unable to convert filename: %d into Unicode.",
+				 function,
+				 filename_index );
+
+				goto on_error;
+			}
+			filename = (wchar_t *) PyUnicode_AsUnicode(
+			                        filename_string_object );
+		}
+		filename_length = wide_string_length(
+		                   filename );
+#else
+		/* A Unicode string object can be converted into UFT-8 formatted narrow string
+		 */
+#if PY_MAJOR_VERSION >= 3
+		filename = PyBytes_AsString(
+		            string_object );
+#else
+		filename = PyString_AsString(
+		            string_object );
+#endif
+		filename_length = narrow_string_length(
+		                   filename );
+#endif
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		filenames[ filename_index ] = (wchar_t *) PyMem_Malloc(
+		                                           sizeof( wchar_t ) * ( filename_length + 1 ) );
+#else
+		filenames[ filename_index ] = (char *) PyMem_Malloc(
+		                                        sizeof( char ) * ( filename_length + 1 ) );
+#endif
+		if( filenames[ filename_index ] == NULL )
+		{
+			PyErr_Format(
+			 PyExc_MemoryError,
+			 "%s: unable to create filename: %d.",
+			 function,
+			 filename_index );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( wide_string_copy(
+		     filenames[ filename_index ],
+		     filename,
+		     filename_length ) == NULL )
+#else
+		if( narrow_string_copy(
+		     filenames[ filename_index ],
+		     filename,
+		     filename_length ) == NULL )
+#endif
+		{
+			PyErr_Format(
+			 PyExc_MemoryError,
+			 "%s: unable to set filename: %d.",
+			 function,
+			 filename_index );
+
+			goto on_error;
+		}
+		( filenames[ filename_index ] )[ filename_length ] = 0;
+
+		if( filename_string_object != NULL )
+		{
+			Py_DecRef(
+			 filename_string_object );
+
+			filename_string_object = NULL;
+		}
+		/* The string object was reference by PySequence_GetItem
+		 */
+		Py_DecRef(
+		 string_object );
+
+		string_object = NULL;
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfvde_volume_open_physical_volume_files_wide(
+	          pyfvde_volume->volume,
+	          filenames,
+	          number_of_filenames,
+	          &error );
+#else
+	result = libfvde_volume_open_physical_volume_files(
+	          pyfvde_volume->volume,
+	          filenames,
+	          number_of_filenames,
+	          &error );
+#endif
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to open volume.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	for( filename_index = 0;
+	     filename_index < number_of_filenames;
+	     filename_index++ )
+	{
+		PyMem_Free(
+		 filenames[ filename_index ] );
+	}
+	PyMem_Free(
+	 filenames );
+
+	Py_IncRef(
+	 Py_None );
+
+	return( Py_None );
+
+on_error:
+	if( filename_string_object != NULL )
+	{
+		Py_DecRef(
+		 filename_string_object );
+	}
+	if( string_object != NULL )
+	{
+		Py_DecRef(
+		 string_object );
+	}
+	if( filenames != NULL )
+	{
+		for( ; filename_index > 0; filename_index-- )
+		{
+			PyMem_Free(
+			 filenames[ filename_index - 1 ] );
+		}
+		PyMem_Free(
+		 filenames );
+	}
+	return( NULL );
+}
+
+/* Opens physical volume files using a list of file-like objects
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_volume_open_physical_volume_files_as_file_objects(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	PyObject *file_objects      = NULL;
+	libcerror_error_t *error    = NULL;
+	static char *keyword_list[] = { "file_object", NULL };
+	static char *function       = "pyfvde_volume_open_physical_volume_files_as_file_objects";
+	int result                  = 0;
+
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid volume.",
+		 function );
+
+		return( NULL );
+	}
+	if( PyArg_ParseTupleAndKeywords(
+	     arguments,
+	     keywords,
+	     "O",
+	     keyword_list,
+	     &file_objects ) == 0 )
+	{
+		return( NULL );
+	}
+	if( pyfvde_file_objects_pool_initialize(
+	     &( pyfvde_volume->file_io_pool ),
+	     file_objects,
+	     LIBBFIO_OPEN_READ,
+	     &error ) != 1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_MemoryError,
+		 "%s: unable to initialize file IO pool.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfvde_volume_open_physical_volume_files_file_io_pool(
+	          pyfvde_volume->volume,
+	          pyfvde_volume->file_io_pool,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to open physical volume files.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	Py_IncRef(
+	 Py_None );
+
+	return( Py_None );
+
+on_error:
+	if( pyfvde_volume->file_io_pool != NULL )
+	{
+		libbfio_pool_free(
+		 &( pyfvde_volume->file_io_pool ),
+		 NULL );
+	}
+	return( NULL );
+}
+
 /* Closes a volume
  * Returns a Python object if successful or NULL on error
  */
@@ -875,6 +1351,30 @@ PyObject *pyfvde_volume_close(
 			 error,
 			 PyExc_MemoryError,
 			 "%s: unable to free libbfio file IO handle.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+
+			return( NULL );
+		}
+	}
+	if( pyfvde_volume->file_io_pool != NULL )
+	{
+		Py_BEGIN_ALLOW_THREADS
+
+		result = libbfio_pool_free(
+		          &( pyfvde_volume->file_io_pool ),
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyfvde_error_raise(
+			 error,
+			 PyExc_IOError,
+			 "%s: unable to free libbfio file IO pool.",
 			 function );
 
 			libcerror_error_free(
@@ -979,7 +1479,7 @@ PyObject *pyfvde_volume_read_buffer(
 	{
 		PyErr_Format(
 		 PyExc_TypeError,
-		 "%s: invalid pyfvde volume.",
+		 "%s: invalid volume.",
 		 function );
 
 		return( NULL );
@@ -1102,7 +1602,7 @@ PyObject *pyfvde_volume_read_buffer_at_offset(
 	{
 		PyErr_Format(
 		 PyExc_TypeError,
-		 "%s: invalid pyfvde volume.",
+		 "%s: invalid volume.",
 		 function );
 
 		return( NULL );
@@ -1235,7 +1735,7 @@ PyObject *pyfvde_volume_seek_offset(
 	{
 		PyErr_Format(
 		 PyExc_TypeError,
-		 "%s: invalid pyfvde volume.",
+		 "%s: invalid volume.",
 		 function );
 
 		return( NULL );

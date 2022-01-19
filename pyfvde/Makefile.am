@@ -20,6 +20,7 @@ pyfvde_la_SOURCES = \
 	pyfvde_datetime.c pyfvde_datetime.h \
 	pyfvde_error.c pyfvde_error.h \
 	pyfvde_file_object_io_handle.c pyfvde_file_object_io_handle.h \
+	pyfvde_file_objects_io_pool.c pyfvde_file_objects_io_pool.h \
 	pyfvde_guid.c pyfvde_guid.h \
 	pyfvde_integer.c pyfvde_integer.h \
 	pyfvde_libbfio.h \

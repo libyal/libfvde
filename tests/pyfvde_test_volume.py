@@ -269,6 +269,35 @@ class VolumeTypeTests(unittest.TestCase):
         del file_object
         fvde_volume.close()
 
+  def test_get_volume_group(self):
+    """Tests the get_volume_group function."""
+    test_source = unittest.source
+    if not test_source:
+      raise unittest.SkipTest("missing source")
+
+    if not os.path.isfile(test_source):
+      raise unittest.SkipTest("source not a regular file")
+
+    fvde_volume = pyfvde.volume()
+    if unittest.password:
+      fvde_volume.set_password(unittest.password)
+    if unittest.recovery_password:
+      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    with DataRangeFileObject(
+        test_source, unittest.offset or 0, None) as file_object:
+
+      fvde_volume = pyfvde.volume()
+      fvde_volume.open_file_object(file_object)
+      fvde_volume.open_physical_volume_files_as_file_objects([file_object])
+
+      fvde_volume_group = fvde_volume.get_volume_group()
+      self.assertIsNotNone(fvde_volume_group)
+
+      fvde_volume.close()
+
+  # Deprecated functions
+
   def test_is_locked(self):
     """Tests the is_locked function."""
     test_source = unittest.source

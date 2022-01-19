@@ -8,7 +8,7 @@ EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
 TEST_FUNCTIONS="support";
-TEST_FUNCTIONS_WITH_INPUT="volume";
+TEST_FUNCTIONS_WITH_INPUT="logical_volume physical_volume volume volume_group";
 OPTION_SETS="offset password recovery_password";
 
 TEST_TOOL_DIRECTORY=".";

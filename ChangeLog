@@ -5,49 +5,40 @@ TODO
 * physical volume file IO pool refactor
   - handle metadata physical volume index
   - read and check volume headers, pool entries should match physical volume IDs
-  - create pool if not set?
-  - change python bindings
 
 * libfvde
   - optimize XML plist parser to directly generate keys
   - implement or remove libfvde_volume_get_logical_volume_encryption_method
   - remove deprecated functions
   - libfvde_segment_descriptor_compare check for overlapping ranges
+  - clean up: split off AES KEK functions
+  - add handling of FVDE volumes with corrupt metadata, e.g. file header
+  - store passwords as hashes?
+  - read and compare second physical volume header
+
+* add debug output
+  - encryption method
+  - checksum algorithm
 
 * format support
   - check for partial encrypted volumes
-  - read and compare second physical volume header
-  - rename FileVault to CoreStorage ?
 
 * volume offset detection
-  - fallback check if volume data is before encrypted metadata?
+  - handle volume offset of partial encrypted volume
 
 * pyfvde
-  - add functionality to set encrypted context plist
+  - add functionality to set encrypted context plist from a file-like object
 
-* Make sure to detect PassphraseWrappedKEKStruct in different locations within the XML
-  - libfvde_volume_read_random
-
-* add handling of FVDE volumes with corrupt metadata, e.g. file header
-
-* move initialize of volume specific runtime data to open and clean up to close
-* store passwords as hashes?
-* libxml
-  integrate into packaging system
-  print status info in configure
-* split off AES KEK functions
-* fvdemount add osxmount support
 * code clean up
+  - rename FileVault to CoreStorage ?
   - check for leading spaces
   - check for () without spaces
   - check for = alignment
   - check for if ( instead of if(
   - check error codes
+
 * check README files
   - make sure pkg-config is mentioned as a dependency
-* add debug output
-  - encryption method
-  - checksum algorithm
 
 20141018
 * see `git log' for more recent change log
