@@ -41,6 +41,16 @@ int libfvde_volume_open_file_io_handle(
      int access_flags,
      libfvde_error_t **error );
 
+/* Opens the physical volume files
+ * This function assumes the physical volume files are in same order as defined by the metadata
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_open_physical_volume_files_file_io_pool(
+     libfvde_volume_t *volume,
+     libbfio_pool_t *file_io_pool,
+     libfvde_error_t **error );
+
 #endif /* !defined( LIBFVDE_HAVE_BFIO ) */
 
 int LLVMFuzzerTestOneInput(
@@ -48,7 +58,9 @@ int LLVMFuzzerTestOneInput(
      size_t size )
 {
 	libbfio_handle_t *file_io_handle = NULL;
-	libfvde_volume_t *volume         = NULL;
+	libbfio_pool_t *file_io_pool     = NULL;
+	libfvde_volume_t *volume        = NULL;
+	int entry_index                  = 0;
 
 	if( libbfio_memory_range_initialize(
 	     &file_io_handle,
@@ -60,6 +72,14 @@ int LLVMFuzzerTestOneInput(
 	     file_io_handle,
 	     (uint8_t *) data,
 	     size,
+	     NULL ) != 1 )
+	{
+		goto on_error_libbfio;
+	}
+	if( libbfio_pool_initialize(
+	     &file_io_pool,
+	     0,
+	     0,
 	     NULL ) != 1 )
 	{
 		goto on_error_libbfio;
@@ -78,6 +98,26 @@ int LLVMFuzzerTestOneInput(
 	{
 		goto on_error_libfvde;
 	}
+	if( libbfio_pool_append_handle(
+	     file_io_pool,
+	     &entry_index,
+	     file_io_handle,
+	     LIBBFIO_OPEN_READ,
+	     NULL ) != 1 )
+	{
+		goto on_error_libfvde;
+	}
+	/* The file IO pool takes over management of the file IO handle
+	 */
+	file_io_handle = NULL;
+
+	if( libfvde_volume_open_physical_volume_files_file_io_pool(
+	     volume,
+	     file_io_pool,
+	     NULL ) != 1 )
+	{
+		goto on_error_libfvde;
+	}
 	libfvde_volume_close(
 	 volume,
 	 NULL );
@@ -88,10 +128,22 @@ on_error_libfvde:
 	 NULL );
 
 on_error_libbfio:
-	libbfio_handle_free(
-	 &file_io_handle,
-	 NULL );
-
+	/* Note that on error the volume still has a reference to file_io_pool
+	 * that will be closed. Therefore the file IO pool and handle need to
+	 * be freed after closing or freeing the volume.
+	 */
+	if( file_io_pool != NULL )
+	{
+		libbfio_pool_free(
+		 &file_io_pool,
+		 NULL );
+	}
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
 	return( 0 );
 }
 

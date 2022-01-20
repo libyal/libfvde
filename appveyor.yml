@@ -283,5 +283,5 @@ artifacts:
 deploy_script:
 - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -and $isWindows -and $env:BUILD_ENVIRONMENT -eq "python") {
     Invoke-Expression "${env:PYTHON} -m twine upload dist/*.whl --username __token__ --password ${env:PYPI_TOKEN} --skip-existing" }
-- sh: if test ${APPVEYOR_REPO_TAG} = "true" && ${BUILD_ENVIRONMENT} = "python"; then ${PYTHON} -m twine upload dist/*.whl --username __token__ --password ${PYPI_TOKEN} --skip-existing; fi
+- sh: if test ${APPVEYOR_REPO_TAG} = "true" && test ${BUILD_ENVIRONMENT} = "python"; then ${PYTHON} -m twine upload dist/*.whl --username __token__ --password ${PYPI_TOKEN} --skip-existing; fi
 

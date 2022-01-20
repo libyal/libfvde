@@ -441,11 +441,18 @@ consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
-| 0 | 8 | | [yellow-background]*Unknown (metadata transaction identifier?)* +
+| 0 | 8 | | [yellow-background]*Unknown (Metadata (not encrypted) transaction identifier?)* +
 Contains 0 if not set
-| 8 | 8 | | [yellow-background]*Unknown* +
-| 16 | 8 | | [yellow-background]*Unknown*
+| 8 | 8 | | [yellow-background]*Unknown (flags?)* +
+| 16 | 8 | | [yellow-background]*Unknown (Encrypted metadata block number?)*
 |===
+
+==== Notes
+
+....
+Unknown flags: 0x00000000 corresponding encrypted metadata block type 0x0013
+Unknown flags: 0x00000024 corresponding encrypted metadata block type 0x0017
+....
 
 ==== Volume group descriptor block
 

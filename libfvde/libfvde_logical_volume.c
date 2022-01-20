@@ -217,6 +217,19 @@ int libfvde_logical_volume_free(
 		internal_logical_volume = (libfvde_internal_logical_volume_t *) *logical_volume;
 		*logical_volume         = NULL;
 
+		if( libfvde_internal_logical_volume_close(
+		     internal_logical_volume,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close logical volume.",
+			 function );
+
+			result = -1;
+		}
 		if( libfvde_keyring_free(
 		     &( internal_logical_volume->keyring ),
 		     error ) != 1 )
@@ -1292,17 +1305,6 @@ int libfvde_internal_logical_volume_unlock(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid logical volume - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_logical_volume->logical_volume_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid logical volume - missing logical volume descriptor.",
 		 function );
 
 		return( -1 );

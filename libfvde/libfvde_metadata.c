@@ -520,7 +520,8 @@ int libfvde_metadata_read_type_0x0011(
 		libcnotify_printf(
 		 "\n" );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	block_data_offset = 192;
 
 	if( number_of_entries > ( ( block_data_size - block_data_offset ) / 24 ) )
@@ -545,7 +546,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown1\t\t\t: %" PRIu64 "\n",
+			 "%s: entry: %03d transaction identifier\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
