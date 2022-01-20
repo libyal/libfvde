@@ -266,6 +266,7 @@ int libfvde_internal_logical_volume_open_read(
 	libfvde_segment_descriptor_t *segment_descriptor = NULL;
 	static char *function                            = "libfvde_internal_logical_volume_open_read";
 	size64_t segment_size                            = 0;
+	size64_t volume_size                             = 0;
 	ssize_t read_count                               = 0;
 	off64_t segment_offset                           = 0;
 	off64_t volume_offset                            = 0;
@@ -349,6 +350,20 @@ int libfvde_internal_logical_volume_open_read(
 	}
 	volume_offset *= internal_logical_volume->io_handle->block_size;
 
+	if( libfvde_logical_volume_descriptor_get_size(
+	     internal_logical_volume->logical_volume_descriptor,
+	     &volume_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve logical volume size from descriptor.",
+		 function );
+
+		result = -1;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -526,7 +541,7 @@ int libfvde_internal_logical_volume_open_read(
 		}
 		else if( segment_descriptor->logical_block_number > expected_logical_block_number )
 		{
-			segment_size += segment_descriptor->logical_block_number - expected_logical_block_number;
+			segment_size  = segment_descriptor->logical_block_number - expected_logical_block_number;
 			segment_size *= internal_logical_volume->io_handle->block_size;
 
 			if( libfdata_vector_append_segment(
@@ -582,6 +597,31 @@ int libfvde_internal_logical_volume_open_read(
 			goto on_error;
 		}
 		expected_logical_block_number += segment_descriptor->number_of_blocks;
+	}
+	segment_size = (size64_t) expected_logical_block_number * internal_logical_volume->io_handle->block_size;
+
+	if( segment_size < volume_size )
+	{
+		segment_size = volume_size - segment_size;
+
+		if( libfdata_vector_append_segment(
+		     internal_logical_volume->sectors_vector,
+		     &segment_index,
+		     0,
+		     0,
+		     segment_size,
+		     LIBFVDE_RANGE_FLAG_IS_SPARSE,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append sparse segment to sectors vector.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	if( libfcache_cache_initialize(
 	     &( internal_logical_volume->sectors_cache ),

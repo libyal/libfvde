@@ -237,6 +237,11 @@ int libfvde_internal_volume_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
+int libfvde_internal_volume_open_read_physical_volume_files(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     libcerror_error_t **error );
+
 LIBFVDE_EXTERN \
 int libfvde_volume_read_encrypted_root_plist(
      libfvde_volume_t *volume,

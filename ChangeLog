@@ -1,35 +1,31 @@
 TODO
-* fvdeinfo
-  - print information about current physical volume, such as the volume index and UUID?
-
-* physical volume file IO pool refactor
-  - handle metadata physical volume index
-  - read and check volume headers, pool entries should match physical volume IDs
+* format support
+  - handle volume offset detection of partial encrypted logical volume
 
 * libfvde
-  - optimize XML plist parser to directly generate keys
-  - implement or remove libfvde_volume_get_logical_volume_encryption_method
-  - remove deprecated functions
   - libfvde_segment_descriptor_compare check for overlapping ranges
   - clean up: split off AES KEK functions
   - add handling of FVDE volumes with corrupt metadata, e.g. file header
   - store passwords as hashes?
-  - read and compare second physical volume header
+  - read and compare secondary (physical) volume header
+  - support out-of-order physical volume file IO pool
 
 * add debug output
   - encryption method
   - checksum algorithm
 
-* format support
-  - check for partial encrypted volumes
-
-* volume offset detection
-  - handle volume offset of partial encrypted volume
-
 * pyfvde
   - add functionality to set encrypted context plist from a file-like object
 
+* fvdeinfo
+  - print logical volume name and/or identifier when asking for a password
+
+* fvdemount
+  - print logical volume name and/or identifier when asking for a password
+
 * code clean up
+  - remove deprecated functions from libfvde and pyfvde
+  - remove libfvde_volume_get_logical_volume_encryption_method
   - rename FileVault to CoreStorage ?
   - check for leading spaces
   - check for () without spaces

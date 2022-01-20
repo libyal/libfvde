@@ -72,9 +72,9 @@ struct libfvde_volume_header
 	 */
 	uint8_t physical_volume_identifier[ 16 ];
 
-	/* The logical volume group identifier
+	/* The volume group identifier
 	 */
-	uint8_t logical_volume_group_identifier[ 16 ];
+	uint8_t volume_group_identifier[ 16 ];
 };
 
 int libfvde_volume_header_initialize(
@@ -97,7 +97,7 @@ int libfvde_volume_header_read_file_io_handle(
      off64_t file_offset,
      libcerror_error_t **error );
 
-int libfvde_volume_header_get_logical_volume_group_identifier(
+int libfvde_volume_header_get_volume_group_identifier(
      libfvde_volume_header_t *volume_header,
      uint8_t *uuid_data,
      size_t uuid_data_size,

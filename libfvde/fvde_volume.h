@@ -166,11 +166,11 @@ struct fvde_volume_header
 	 */
 	uint8_t physical_volume_identifier[ 16 ];
 
-	/* The logical volume group identifier
+	/* The (logical) volume group identifier
 	 * Consists of 16 bytes
 	 * Contains an UUID
 	 */
-	uint8_t logical_volume_group_identifier[ 16 ];
+	uint8_t volume_group_identifier[ 16 ];
 
 	/* Unknown
 	 * Consists of 176 bytes

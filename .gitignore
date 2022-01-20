@@ -141,7 +141,6 @@ stamp-h[1-9]
 /tests/fvde_test_logical_volume_descriptor
 /tests/fvde_test_metadata
 /tests/fvde_test_metadata_block
-/tests/fvde_test_metadata_transaction
 /tests/fvde_test_notify
 /tests/fvde_test_physical_volume
 /tests/fvde_test_physical_volume_descriptor

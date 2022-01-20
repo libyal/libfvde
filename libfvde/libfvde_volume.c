@@ -978,17 +978,6 @@ int libfvde_volume_open_physical_volume_files(
 
 		goto on_error;
 	}
-	if( number_of_physical_volumes == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing physical volumes.",
-		 function );
-
-		goto on_error;
-	}
 	if( number_of_physical_volumes != number_of_filenames )
 	{
 		libcerror_error_set(
@@ -1064,9 +1053,25 @@ int libfvde_volume_open_physical_volume_files(
 		goto on_error;
 	}
 #endif
-	internal_volume->physical_volume_file_io_pool                    = file_io_pool;
-	internal_volume->physical_volume_file_io_pool_created_in_library = 1;
+	if( libfvde_internal_volume_open_read_physical_volume_files(
+	     internal_volume,
+	     file_io_pool,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to read physical volume files from file IO pool.",
+                 function );
 
+                result = -1;
+	}
+	else
+	{
+		internal_volume->physical_volume_file_io_pool                    = file_io_pool;
+		internal_volume->physical_volume_file_io_pool_created_in_library = 1;
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -1186,17 +1191,6 @@ int libfvde_volume_open_physical_volume_files_wide(
 
 		goto on_error;
 	}
-	if( number_of_physical_volumes == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing physical volumes.",
-		 function );
-
-		goto on_error;
-	}
 	if( number_of_physical_volumes != number_of_filenames )
 	{
 		libcerror_error_set(
@@ -1272,9 +1266,25 @@ int libfvde_volume_open_physical_volume_files_wide(
 		goto on_error;
 	}
 #endif
-	internal_volume->physical_volume_file_io_pool                    = file_io_pool;
-	internal_volume->physical_volume_file_io_pool_created_in_library = 1;
+	if( libfvde_internal_volume_open_read_physical_volume_files(
+	     internal_volume,
+	     file_io_pool,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to read physical volume files from file IO pool.",
+                 function );
 
+                result = -1;
+	}
+	else
+	{
+		internal_volume->physical_volume_file_io_pool                    = file_io_pool;
+		internal_volume->physical_volume_file_io_pool_created_in_library = 1;
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -1318,9 +1328,7 @@ int libfvde_volume_open_physical_volume_files_file_io_pool(
 {
 	libfvde_internal_volume_t *internal_volume = NULL;
 	static char *function                      = "libfvde_volume_open_physical_volume_files_file_io_pool";
-	int number_of_file_io_handles              = 0;
-	int number_of_physical_volumes             = 0;
-	int result                                 = 0;
+	int result                                 = 1;
 
 	if( volume == NULL )
 	{
@@ -1347,88 +1355,6 @@ int libfvde_volume_open_physical_volume_files_file_io_pool(
 		return( -1 );
 	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	result = libfvde_metadata_get_number_of_physical_volume_descriptors(
-	          internal_volume->metadata,
-	          &number_of_physical_volumes,
-	          error );
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of physical volumes - from metadata.",
-		 function );
-
-		return( -1 );
-	}
-	if( number_of_physical_volumes == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing physical volumes.",
-		 function );
-
-		return( -1 );
-	}
-	if( libbfio_pool_get_number_of_handles(
-	     file_io_pool,
-	     &number_of_file_io_handles,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of handles in file IO pool.",
-		 function );
-
-		return( -1 );
-	}
-	if( number_of_physical_volumes != number_of_file_io_handles )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: mismatch between number of filenames and physical volumes in metadata.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_volume->read_write_lock,
 	     error ) != 1 )
@@ -1443,8 +1369,24 @@ int libfvde_volume_open_physical_volume_files_file_io_pool(
 		return( -1 );
 	}
 #endif
-	internal_volume->physical_volume_file_io_pool = file_io_pool;
+	if( libfvde_internal_volume_open_read_physical_volume_files(
+	     internal_volume,
+	     file_io_pool,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to read physical volume files from file IO pool.",
+                 function );
 
+                result = -1;
+	}
+	else
+	{
+		internal_volume->physical_volume_file_io_pool = file_io_pool;
+	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_volume->read_write_lock,
@@ -1460,7 +1402,7 @@ int libfvde_volume_open_physical_volume_files_file_io_pool(
 		return( -1 );
 	}
 #endif
-	return( 1 );
+	return( result );
 }
 
 /* Opens a specific physical volume file
@@ -2683,6 +2625,249 @@ on_error:
 	return( -1 );
 }
 
+/* Opens the physical volume files for reading
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_internal_volume_open_read_physical_volume_files(
+     libfvde_internal_volume_t *internal_volume,
+     libbfio_pool_t *file_io_pool,
+     libcerror_error_t **error )
+{
+	libbfio_handle_t *file_io_handle                                 = NULL;
+	libfvde_physical_volume_descriptor_t *physical_volume_descriptor = NULL;
+	libfvde_volume_header_t *volume_header                           = NULL;
+	static char *function                                            = "libfvde_internal_volume_open_read";
+	int file_io_handle_is_open                                       = 0;
+	int file_io_pool_entry                                           = 0;
+	int number_of_file_io_handles                                    = 0;
+	int number_of_physical_volumes                                   = 0;
+
+	if( internal_volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_volume->volume_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid volume - missing volume header.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_pool_get_number_of_handles(
+	     file_io_pool,
+	     &number_of_file_io_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of handles in file IO pool.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfvde_metadata_get_number_of_physical_volume_descriptors(
+	     internal_volume->metadata,
+	     &number_of_physical_volumes,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of physical volume descriptors from metadata.",
+		 function );
+
+		goto on_error;
+	}
+	if( number_of_physical_volumes != number_of_file_io_handles )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: mismatch between number of filenames and physical volumes in metadata.",
+		 function );
+
+		goto on_error;
+	}
+	for( file_io_pool_entry = 0;
+	     file_io_pool_entry < number_of_file_io_handles;
+	     file_io_pool_entry++ )
+	{
+		if( libbfio_pool_get_handle(
+		     file_io_pool,
+		     file_io_pool_entry,
+		     &file_io_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve file IO handle: %d from pool.",
+			 function,
+			 file_io_pool_entry );
+
+			goto on_error;
+		}
+		file_io_handle_is_open = libbfio_handle_is_open(
+		                          file_io_handle,
+		                          error );
+
+		if( file_io_handle_is_open == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to determine if file IO pool entry: %d is open.",
+			 function,
+			 file_io_pool_entry );
+
+			goto on_error;
+		}
+		else if( file_io_handle_is_open == 0 )
+		{
+			if( libbfio_handle_open(
+			     file_io_handle,
+			     internal_volume->access_flags,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_OPEN_FAILED,
+				 "%s: unable to open file IO pool entry: %d.",
+				 function,
+				 file_io_pool_entry );
+
+				goto on_error;
+			}
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "Reading physical volume header from file IO pool entry: %d:\n",
+			 file_io_pool_entry );
+		}
+#endif
+		if( libfvde_volume_header_initialize(
+		     &volume_header,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create physical volume header.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfvde_volume_header_read_file_io_handle(
+		     volume_header,
+		     file_io_handle,
+		     0,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read physical volume header from file IO pool entry: %d.",
+			 function,
+			 file_io_pool_entry );
+
+			goto on_error;
+		}
+		if( libfvde_metadata_get_physical_volume_descriptor_by_index(
+		     internal_volume->metadata,
+		     file_io_pool_entry,
+		     &physical_volume_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve physical volume descriptor: %d from metadata.",
+			 function,
+			 file_io_pool_entry );
+
+			goto on_error;
+		}
+		if( memory_compare(
+		     volume_header->physical_volume_identifier,
+		     physical_volume_descriptor->identifier,
+		     16 ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: mismatch in physical volume identifier for file IO pool entry: %d.",
+			 function,
+			 file_io_pool_entry );
+
+			goto on_error;
+		}
+		if( memory_compare(
+		     volume_header->volume_group_identifier,
+		     internal_volume->volume_header->volume_group_identifier,
+		     16 ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: mismatch in volume group identifier for file IO pool entry: %d.",
+			 function,
+			 file_io_pool_entry );
+
+			goto on_error;
+		}
+/* TODO determine physical volume index and check with pool
+ */
+		if( libfvde_volume_header_free(
+		     &volume_header,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free volume header.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( volume_header != NULL )
+	{
+		libfvde_volume_header_free(
+		 &volume_header,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Reads the EncryptedRoot.plist file
  * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful or -1 on error
@@ -3778,7 +3963,7 @@ int libfvde_volume_get_logical_volume_group_identifier(
 		return( -1 );
 	}
 #endif
-	if( libfvde_volume_header_get_logical_volume_group_identifier(
+	if( libfvde_volume_header_get_volume_group_identifier(
 	     internal_volume->volume_header,
 	     uuid_data,
 	     uuid_data_size,
@@ -3788,7 +3973,7 @@ int libfvde_volume_get_logical_volume_group_identifier(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve logical volume group identifier from volume header.",
+		 "%s: unable to retrieve volume group identifier from volume header.",
 		 function );
 
 		result = -1;

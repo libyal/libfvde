@@ -290,15 +290,15 @@ int libfvde_volume_header_read_data(
 		return( -1 );
 	}
 	if( memory_copy(
-	     volume_header->logical_volume_group_identifier,
-	     &( ( (fvde_volume_header_t *) data )->logical_volume_group_identifier ),
+	     volume_header->volume_group_identifier,
+	     &( ( (fvde_volume_header_t *) data )->volume_group_identifier ),
 	     16 ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy logical volume group identifier.",
+		 "%s: unable to copy volume group identifier.",
 		 function );
 
 		return( -1 );
@@ -485,8 +485,8 @@ int libfvde_volume_header_read_data(
 		}
 		if( libfvde_debug_print_guid_value(
 		     function,
-		     "logical volume group identifier\t",
-		     volume_header->logical_volume_group_identifier,
+		     "volume group identifier\t\t",
+		     volume_header->volume_group_identifier,
 		     16,
 		     LIBFGUID_ENDIAN_BIG,
 		     LIBFGUID_STRING_FORMAT_FLAG_USE_LOWER_CASE,
@@ -730,17 +730,17 @@ int libfvde_volume_header_read_file_io_handle(
 	return( 1 );
 }
 
-/* Retrieves the logical volume group identifier
+/* Retrieves the (logical) volume group identifier
  * The identifier is a UUID and is 16 bytes of size
  * Returns 1 if successful or -1 on error
  */
-int libfvde_volume_header_get_logical_volume_group_identifier(
+int libfvde_volume_header_get_volume_group_identifier(
      libfvde_volume_header_t *volume_header,
      uint8_t *uuid_data,
      size_t uuid_data_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfvde_volume_header_get_logical_volume_group_identifier";
+	static char *function = "libfvde_volume_header_get_volume_group_identifier";
 
 	if( volume_header == NULL )
 	{
@@ -778,14 +778,14 @@ int libfvde_volume_header_get_logical_volume_group_identifier(
 	}
 	if( memory_copy(
 	     uuid_data,
-	     volume_header->logical_volume_group_identifier,
+	     volume_header->volume_group_identifier,
 	     16 ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy logical volume group identifier.",
+		 "%s: unable to copy volume group identifier.",
 		 function );
 
 		return( -1 );

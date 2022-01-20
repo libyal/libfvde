@@ -218,7 +218,7 @@ int libfvde_volume_group_free(
 	return( result );
 }
 
-/* Retrieves the logical volume group identifier
+/* Retrieves the (logical) volume group identifier
  * The identifier is a UUID and is 16 bytes of size
  * Returns 1 if successful or -1 on error
  */
@@ -260,7 +260,7 @@ int libfvde_volume_group_get_identifier(
 		return( -1 );
 	}
 #endif
-	if( libfvde_volume_header_get_logical_volume_group_identifier(
+	if( libfvde_volume_header_get_volume_group_identifier(
 	     internal_volume_group->volume_header,
 	     uuid_data,
 	     uuid_data_size,
@@ -270,7 +270,7 @@ int libfvde_volume_group_get_identifier(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve logical volume group identifier from volume header.",
+		 "%s: unable to retrieve volume group identifier from volume header.",
 		 function );
 
 		result = -1;
