@@ -273,7 +273,7 @@ int libfvde_metadata_read_type_0x0011(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: metadata size\t\t\t\t: %" PRIu32 "\n",
+		 "%s: metadata size\t\t\t: %" PRIu32 "\n",
 		 function,
 		 metadata_size );
 
@@ -281,7 +281,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 4 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown1\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -289,7 +289,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 8 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: checksum\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: checksum\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -297,7 +297,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 12 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: initial value\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: initial value\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -305,7 +305,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 16 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown2\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown2\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -313,7 +313,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 20 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown3\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown3\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -321,7 +321,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 24 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown4\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown4\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -329,7 +329,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 28 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown5\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown5\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -345,7 +345,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 72 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown7\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown7\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -353,7 +353,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 76 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown8\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown8\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -369,7 +369,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 104 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown10\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown10\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -377,7 +377,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 108 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown11\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown11\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -385,7 +385,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 112 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown12\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown12\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -393,7 +393,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 116 ] ),
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown13a\t\t\t\t\t: 0x%04" PRIx16 "\n",
+		 "%s: unknown13a\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 value_16bit );
 
@@ -401,7 +401,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 118 ] ),
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown13b\t\t\t\t\t: 0x%04" PRIx16 "\n",
+		 "%s: unknown13b\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 value_16bit );
 
@@ -409,7 +409,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 120 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown14\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown14\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -417,7 +417,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 124 ] ),
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown15a\t\t\t\t\t: 0x%04" PRIx16 "\n",
+		 "%s: unknown15a\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 value_16bit );
 
@@ -425,7 +425,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 126 ] ),
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown15b\t\t\t\t\t: 0x%04" PRIx16 "\n",
+		 "%s: unknown15b\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 value_16bit );
 
@@ -433,7 +433,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 128 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown16\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown16\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -446,12 +446,12 @@ int libfvde_metadata_read_type_0x0011(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 
 		libcnotify_printf(
-		 "%s: volume groups descriptor offset\t\t: 0x%08" PRIx32 "\n",
+		 "%s: volume groups descriptor offset\t: 0x%08" PRIx32 "\n",
 		 function,
 		 volume_groups_descriptor_offset );
 
 		libcnotify_printf(
-		 "%s: volume group XML offset\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: volume group XML offset\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 xml_offset );
 
@@ -459,7 +459,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 164 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: volume group XML size\t\t\t: %" PRIu32 "\n",
+		 "%s: volume group XML size\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -467,7 +467,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 168 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: volume group XML size copy\t\t\t: %" PRIu32 "\n",
+		 "%s: volume group XML size copy\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -475,12 +475,12 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 172 ] ),
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown18\t\t\t\t\t: 0x%04" PRIx16 "\n",
+		 "%s: unknown18\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 value_16bit );
 
 		libcnotify_printf(
-		 "%s: physical volume index\t\t\t: %" PRIu16 "\n",
+		 "%s: physical volume index\t\t: %" PRIu16 "\n",
 		 function,
 		 metadata->physical_volume_index );
 
@@ -488,7 +488,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 176 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: volume group number of blocks\t\t: %" PRIu64 "\n",
+		 "%s: volume group number of blocks\t: %" PRIu64 "\n",
 		 function,
 		 value_64bit );
 
@@ -505,7 +505,7 @@ int libfvde_metadata_read_type_0x0011(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: number of entries\t\t\t\t: %" PRIu32 "\n",
+		 "%s: number of entries\t\t\t: %" PRIu32 "\n",
 		 function,
 		 number_of_entries );
 
@@ -513,7 +513,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ 188 ] ),
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: unknown19\t\t\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: unknown19\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
@@ -545,7 +545,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown1\t\t\t\t: %" PRIu64 "\n",
+			 "%s: entry: %03d unknown1\t\t\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -554,7 +554,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset + 8 ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown2\t\t\t\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %03d unknown2\t\t\t: 0x%08" PRIx64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -563,7 +563,7 @@ int libfvde_metadata_read_type_0x0011(
 			 &( block_data[ block_data_offset + 16 ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d metadata block number\t\t: %" PRIu64 "\n",
+			 "%s: entry: %03d metadata block number\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -622,17 +622,17 @@ int libfvde_metadata_read_type_0x0011(
 
 	byte_stream_copy_to_uint64_little_endian(
 	 &( block_data[ volume_groups_descriptor_offset + 32 ] ),
-	 metadata->primary_encrypted_metadata_offset );
+	 metadata->encrypted_metadata1_offset );
 
-	metadata->primary_encrypted_metadata_volume_index = (uint16_t) ( metadata->primary_encrypted_metadata_offset >> 48 );
-	metadata->primary_encrypted_metadata_offset      &= 0x0000ffffffffffffUL;
+	metadata->encrypted_metadata1_volume_index = (uint16_t) ( metadata->encrypted_metadata1_offset >> 48 );
+	metadata->encrypted_metadata1_offset      &= 0x0000ffffffffffffUL;
 
 	byte_stream_copy_to_uint64_little_endian(
 	 &( block_data[ volume_groups_descriptor_offset + 40 ] ),
-	 metadata->secondary_encrypted_metadata_offset );
+	 metadata->encrypted_metadata2_offset );
 
-	metadata->secondary_encrypted_metadata_volume_index = (uint16_t) ( metadata->secondary_encrypted_metadata_offset >> 48 );
-	metadata->secondary_encrypted_metadata_offset      &= 0x0000ffffffffffffUL;
+	metadata->encrypted_metadata2_volume_index = (uint16_t) ( metadata->encrypted_metadata2_offset >> 48 );
+	metadata->encrypted_metadata2_offset      &= 0x0000ffffffffffffUL;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -641,12 +641,12 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ volume_groups_descriptor_offset ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: unknown1\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 value_64bit );
 
 		libcnotify_printf(
-		 "%s: encrypted metadata number of blocks\t\t: %" PRIu64 "\n",
+		 "%s: encrypted metadata number of blocks\t: %" PRIu64 "\n",
 		 function,
 		 metadata->encrypted_metadata_size );
 
@@ -654,7 +654,7 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ volume_groups_descriptor_offset + 16 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown3\t\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: unknown3\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 value_64bit );
 
@@ -662,29 +662,29 @@ int libfvde_metadata_read_type_0x0011(
 		 &( block_data[ volume_groups_descriptor_offset + 24 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown4\t\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: unknown4\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 value_64bit );
 
 		libcnotify_printf(
-		 "%s: primary encrypted metadata block number\t: %" PRIu64 "\n",
+		 "%s: encrypted metadata: 1 block number\t: %" PRIu64 "\n",
 		 function,
-		 metadata->primary_encrypted_metadata_offset );
+		 metadata->encrypted_metadata1_offset );
 
 		libcnotify_printf(
-		 "%s: primary encrypted metadata volume index\t: %" PRIu16 "\n",
+		 "%s: encrypted metadata: 1 volume index\t: %" PRIu16 "\n",
 		 function,
-		 metadata->primary_encrypted_metadata_volume_index );
+		 metadata->encrypted_metadata1_volume_index );
 
 		libcnotify_printf(
-		 "%s: secondary encrypted metadata block number\t: %" PRIu64 "\n",
+		 "%s: encrypted metadata: 2 block number\t: %" PRIu64 "\n",
 		 function,
-		 metadata->secondary_encrypted_metadata_offset );
+		 metadata->encrypted_metadata2_offset );
 
 		libcnotify_printf(
-		 "%s: secondary encrypted metadata volume index\t: %" PRIu16 "\n",
+		 "%s: encrypted metadata: 2 volume index\t: %" PRIu16 "\n",
 		 function,
-		 metadata->secondary_encrypted_metadata_volume_index );
+		 metadata->encrypted_metadata2_volume_index );
 
 		libcnotify_printf(
 		 "\n" );
@@ -721,11 +721,11 @@ int libfvde_metadata_read_type_0x0011(
 		return( -1 );
 	}
 /* TODO add bounds check */
-	metadata->primary_encrypted_metadata_offset &= 0x0000ffffffffffffUL;
-	metadata->primary_encrypted_metadata_offset *= io_handle->block_size;
+	metadata->encrypted_metadata1_offset &= 0x0000ffffffffffffUL;
+	metadata->encrypted_metadata1_offset *= io_handle->block_size;
 
-	metadata->secondary_encrypted_metadata_offset &= 0x0000ffffffffffffUL;
-	metadata->secondary_encrypted_metadata_offset *= io_handle->block_size;
+	metadata->encrypted_metadata2_offset &= 0x0000ffffffffffffUL;
+	metadata->encrypted_metadata2_offset *= io_handle->block_size;
 
 	metadata->transaction_identifier = transaction_identifier;
 

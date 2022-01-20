@@ -52,21 +52,21 @@ struct libfvde_metadata
 	 */
 	uint64_t encrypted_metadata_size;
 
-	/* The primary encrypted metadata offset
+	/* The encrypted metadata 1 offset
 	 */
-	uint64_t primary_encrypted_metadata_offset;
+	uint64_t encrypted_metadata1_offset;
 
-	/* The primary encrypted metadata (physical) volume index
+	/* The encrypted metadata 1 (physical) volume index
 	 */
-	uint16_t primary_encrypted_metadata_volume_index;
+	uint16_t encrypted_metadata1_volume_index;
 
-	/* The secondary encrypted metadata offset
+	/* The encrypted metadata 2 offset
 	 */
-	uint64_t secondary_encrypted_metadata_offset;
+	uint64_t encrypted_metadata2_offset;
 
-	/* The secondary encrypted metadata (physical) volume index
+	/* The encrypted metadata 2 (physical) volume index
 	 */
-	uint16_t secondary_encrypted_metadata_volume_index;
+	uint16_t encrypted_metadata2_volume_index;
 
 	/* The volume group name
 	 */

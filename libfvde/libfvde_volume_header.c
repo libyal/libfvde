@@ -433,7 +433,7 @@ int libfvde_volume_header_read_data(
 			libcnotify_printf(
 			 "%s: metadata: %d block number\t\t: %" PRIu64 "\n",
 			 function,
-			 metadata_block_index,
+			 metadata_block_index + 1,
 			 volume_header->metadata_offsets[ metadata_block_index] );
 		}
 		libcnotify_printf(
@@ -648,7 +648,7 @@ int libfvde_volume_header_read_data(
 			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
 			 "%s: invalid metadata: %d block number value out of bounds.",
 			 function,
-			 metadata_block_index );
+			 metadata_block_index + 1 );
 
 			return( -1 );
 		}

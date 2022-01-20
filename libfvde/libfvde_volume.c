@@ -1931,33 +1931,33 @@ int libfvde_volume_close(
 			result = -1;
 		}
 	}
-	if( internal_volume->primary_encrypted_metadata != NULL )
+	if( internal_volume->encrypted_metadata1 != NULL )
 	{
 		if( libfvde_encrypted_metadata_free(
-		     &( internal_volume->primary_encrypted_metadata ),
+		     &( internal_volume->encrypted_metadata1 ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free primary encrypted metadata.",
+			 "%s: unable to free encrypted metadata 1.",
 			 function );
 
 			result = -1;
 		}
 	}
-	if( internal_volume->secondary_encrypted_metadata != NULL )
+	if( internal_volume->encrypted_metadata2 != NULL )
 	{
 		if( libfvde_encrypted_metadata_free(
-		     &( internal_volume->secondary_encrypted_metadata ),
+		     &( internal_volume->encrypted_metadata2 ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free secondary encrypted metadata.",
+			 "%s: unable to free encrypted metadata 2.",
 			 function );
 
 			result = -1;
@@ -2108,28 +2108,6 @@ int libfvde_internal_volume_open_read(
 
 		return( -1 );
 	}
-	if( internal_volume->primary_encrypted_metadata != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - primary encrypted metadata value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->secondary_encrypted_metadata != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - secondary encrypted metadata value already set.",
-		 function );
-
-		return( -1 );
-	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -2179,7 +2157,7 @@ int libfvde_internal_volume_open_read(
 		{
 			libcnotify_printf(
 			 "Reading metadata: %d\n",
-			 metadata_index );
+			 metadata_index + 1 );
 		}
 #endif
 		if( libfvde_metadata_initialize(
@@ -2192,7 +2170,7 @@ int libfvde_internal_volume_open_read(
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
 			 "%s: unable to create metadata: %d.",
 			 function,
-			 metadata_index );
+			 metadata_index + 1 );
 
 			goto on_error;
 		}
@@ -2211,7 +2189,7 @@ int libfvde_internal_volume_open_read(
 			 LIBCERROR_IO_ERROR_READ_FAILED,
 			 "%s: unable to read metadata: %d at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 			 function,
-			 metadata_index,
+			 metadata_index + 1,
 			 metadata_offset,
 			 metadata_offset );
 
@@ -2274,184 +2252,11 @@ int libfvde_internal_volume_open_read(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		libcnotify_printf(
-		 "Reading encrypted metadata:\n" );
-	}
-#endif
-	if( libfvde_encrypted_metadata_initialize(
-	     &( internal_volume->primary_encrypted_metadata ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create primary encrypted metadata.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfvde_encrypted_metadata_read(
-	     internal_volume->primary_encrypted_metadata,
-	     internal_volume->io_handle,
-	     file_io_handle,
-	     (off64_t) internal_volume->metadata->primary_encrypted_metadata_offset,
-	     internal_volume->metadata->encrypted_metadata_size,
-	     internal_volume->volume_header->key_data,
-	     128,
-	     internal_volume->volume_header->physical_volume_identifier,
-	     128,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read primary encrypted metadata.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfvde_encrypted_metadata_initialize(
-	     &( internal_volume->secondary_encrypted_metadata ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create secondary encrypted metadata.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfvde_encrypted_metadata_read(
-	     internal_volume->secondary_encrypted_metadata,
-	     internal_volume->io_handle,
-	     file_io_handle,
-	     (off64_t) internal_volume->metadata->secondary_encrypted_metadata_offset,
-	     internal_volume->metadata->encrypted_metadata_size,
-	     internal_volume->volume_header->key_data,
-	     128,
-	     internal_volume->volume_header->physical_volume_identifier,
-	     128,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read secondary encrypted metadata.",
-		 function );
-
-		goto on_error;
-	}
-	if( internal_volume->encrypted_root_plist != NULL )
-	{
-		if( libfvde_encryption_context_plist_decrypt(
-		     internal_volume->encrypted_root_plist,
-		     internal_volume->volume_header->key_data,
-		     128,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-			 LIBCERROR_ENCRYPTION_ERROR_DECRYPT_FAILED,
-			 "%s: unable to decrypt encrypted root plist.",
-			 function );
-
-			goto on_error;
-		}
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: physical volume size\t\t\t: %" PRIu64 "\n",
-		 function,
-		 internal_volume->volume_header->physical_volume_size );
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-	if( libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
-	     internal_volume->primary_encrypted_metadata,
-	     &number_of_logical_volumes,
-	     error ) == -1 )
+	if( number_of_physical_volumes == 1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of logical volume descriptors from primary encrypted metadata.",
-		 function );
-
-		goto on_error;
-	}
-	if( number_of_logical_volumes > 0 )
-	{
-		if( libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
-		     internal_volume->primary_encrypted_metadata,
-		     0,
-		     &logical_volume_descriptor,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve first logical volume descriptor from primary encrypted metadata.",
-			 function );
-
-			goto on_error;
-		}
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			if( libfvde_logical_volume_descriptor_get_first_block_number(
-			     logical_volume_descriptor,
-			     (uint16_t *) &file_io_pool_entry,
-			     (uint64_t *) &logical_volume_offset,
-			     error ) == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve first block number from logical volume descriptor.",
-				 function );
-
-				goto on_error;
-			}
-			logical_volume_offset *= internal_volume->io_handle->block_size;
-
-			libcnotify_printf(
-			 "%s: logical volume offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
-			 function,
-			 logical_volume_offset,
-			 logical_volume_offset );
-
-			if( libfvde_logical_volume_descriptor_get_size(
-			     logical_volume_descriptor,
-			     &logical_volume_size,
-			     error ) == -1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve size from first logical volume descriptor.",
-				 function );
-
-				goto on_error;
-			}
-			libcnotify_printf(
-			 "%s: logical volume size\t\t\t: %" PRIu64 "\n",
-			 function,
-			 logical_volume_size );
-		}
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
-
 		if( libbfio_pool_initialize(
 		     &( internal_volume->legacy_file_io_pool ),
 		     1,
@@ -2483,100 +2288,202 @@ int libfvde_internal_volume_open_read(
 
 			goto on_error;
 		}
-		if( libfvde_logical_volume_initialize(
-		      &( internal_volume->legacy_logical_volume ),
-		      internal_volume->io_handle,
-		      internal_volume->legacy_file_io_pool,
-		      logical_volume_descriptor,
-		      internal_volume->primary_encrypted_metadata,
-		      internal_volume->encrypted_root_plist,
-		      error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create logical volume.",
-			 function );
-
-			goto on_error;
-		}
-		if( internal_volume->legacy_volume_master_key_is_set != 0 )
-		{
-			if( libfvde_logical_volume_set_keys(
-			     internal_volume->legacy_logical_volume,
-			     internal_volume->legacy_volume_master_key,
-			     16,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable set user keys in logical volume.",
-				 function );
-
-				goto on_error;
-			}
-		}
-		if( internal_volume->legacy_user_password != NULL )
-		{
-			if( libfvde_logical_volume_set_utf8_password(
-			     internal_volume->legacy_logical_volume,
-			     internal_volume->legacy_user_password,
-			     internal_volume->legacy_user_password_size - 1,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable set user password in logical volume.",
-				 function );
-
-				goto on_error;
-			}
-		}
-		if( internal_volume->legacy_recovery_password != NULL )
-		{
-			if( libfvde_logical_volume_set_utf8_password(
-			     internal_volume->legacy_logical_volume,
-			     internal_volume->legacy_recovery_password,
-			     internal_volume->legacy_recovery_password_size - 1,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable set recovery password in logical volume.",
-				 function );
-
-				goto on_error;
-			}
-		}
-		if( libfvde_internal_logical_volume_open_read(
-		     (libfvde_internal_logical_volume_t *) internal_volume->legacy_logical_volume,
+		if( libfvde_internal_volume_open_read_physical_volume_files(
+		     internal_volume,
 		     internal_volume->legacy_file_io_pool,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read logical volume.",
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to read physical volume files from file IO pool.",
 			 function );
 
-			goto on_error;
+#if defined( HAVE_DEBUG_OUTPUT )
+			libcnotify_print_error_backtrace(
+			 *error );
+#endif
+			libcerror_error_free(
+			 error );
+		}
+		else
+		{
+			if( libfvde_encrypted_metadata_get_number_of_logical_volume_descriptors(
+			     internal_volume->encrypted_metadata1,
+			     &number_of_logical_volumes,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve number of logical volume descriptors from encrypted metadata 1.",
+				 function );
+
+				goto on_error;
+			}
+			if( number_of_logical_volumes == 1 )
+			{
+				if( libfvde_encrypted_metadata_get_logical_volume_descriptor_by_index(
+				     internal_volume->encrypted_metadata1,
+				     0,
+				     &logical_volume_descriptor,
+				     error ) == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve first logical volume descriptor from encrypted metadata 1.",
+					 function );
+
+					goto on_error;
+				}
+#if defined( HAVE_DEBUG_OUTPUT )
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+					 "%s: physical volume size\t\t\t: %" PRIu64 "\n",
+					 function,
+					 internal_volume->volume_header->physical_volume_size );
+
+					if( libfvde_logical_volume_descriptor_get_first_block_number(
+					     logical_volume_descriptor,
+					     (uint16_t *) &file_io_pool_entry,
+					     (uint64_t *) &logical_volume_offset,
+					     error ) == -1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+						 "%s: unable to retrieve first block number from logical volume descriptor.",
+						 function );
+
+						goto on_error;
+					}
+					logical_volume_offset *= internal_volume->io_handle->block_size;
+
+					libcnotify_printf(
+					 "%s: logical volume offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+					 function,
+					 logical_volume_offset,
+					 logical_volume_offset );
+
+					if( libfvde_logical_volume_descriptor_get_size(
+					     logical_volume_descriptor,
+					     &logical_volume_size,
+					     error ) == -1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+						 "%s: unable to retrieve size from first logical volume descriptor.",
+						 function );
+
+						goto on_error;
+					}
+					libcnotify_printf(
+					 "%s: logical volume size\t\t\t: %" PRIu64 "\n",
+					 function,
+					 logical_volume_size );
+
+					libcnotify_printf(
+					 "\n" );
+				}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+				if( libfvde_logical_volume_initialize(
+				      &( internal_volume->legacy_logical_volume ),
+				      internal_volume->io_handle,
+				      internal_volume->legacy_file_io_pool,
+				      logical_volume_descriptor,
+				      internal_volume->encrypted_metadata1,
+				      internal_volume->encrypted_root_plist,
+				      error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create logical volume.",
+					 function );
+
+					goto on_error;
+				}
+				if( internal_volume->legacy_volume_master_key_is_set != 0 )
+				{
+					if( libfvde_logical_volume_set_keys(
+					     internal_volume->legacy_logical_volume,
+					     internal_volume->legacy_volume_master_key,
+					     16,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+						 "%s: unable set user keys in logical volume.",
+						 function );
+
+						goto on_error;
+					}
+				}
+				if( internal_volume->legacy_user_password != NULL )
+				{
+					if( libfvde_logical_volume_set_utf8_password(
+					     internal_volume->legacy_logical_volume,
+					     internal_volume->legacy_user_password,
+					     internal_volume->legacy_user_password_size - 1,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+						 "%s: unable set user password in logical volume.",
+						 function );
+
+						goto on_error;
+					}
+				}
+				if( internal_volume->legacy_recovery_password != NULL )
+				{
+					if( libfvde_logical_volume_set_utf8_password(
+					     internal_volume->legacy_logical_volume,
+					     internal_volume->legacy_recovery_password,
+					     internal_volume->legacy_recovery_password_size - 1,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+						 "%s: unable set recovery password in logical volume.",
+						 function );
+
+						goto on_error;
+					}
+				}
+				if( libfvde_internal_logical_volume_open_read(
+				     (libfvde_internal_logical_volume_t *) internal_volume->legacy_logical_volume,
+				     internal_volume->legacy_file_io_pool,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read logical volume.",
+					 function );
+
+					goto on_error;
+				}
+			}
 		}
 	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "\n" );
-	}
-#endif
 	return( 1 );
 
 on_error:
@@ -2590,18 +2497,6 @@ on_error:
 	{
 		libbfio_pool_free(
 		 &( internal_volume->legacy_file_io_pool ),
-		 NULL );
-	}
-	if( internal_volume->secondary_encrypted_metadata != NULL )
-	{
-		libfvde_encrypted_metadata_free(
-		 &( internal_volume->secondary_encrypted_metadata ),
-		 NULL );
-	}
-	if( internal_volume->primary_encrypted_metadata != NULL )
-	{
-		libfvde_encrypted_metadata_free(
-		 &( internal_volume->primary_encrypted_metadata ),
 		 NULL );
 	}
 	if( internal_volume->metadata != NULL )
@@ -2660,6 +2555,45 @@ int libfvde_internal_volume_open_read_physical_volume_files(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid volume - missing volume header.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_volume->metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid volume - missing metadata.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO remove, for backwards compatibility
+ */
+	if( internal_volume->encrypted_metadata1 != NULL )
+	{
+		return( 1 );
+	}
+	if( internal_volume->encrypted_metadata1 != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - encrypted metadata 1 value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_volume->encrypted_metadata2 != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - encrypted metadata 2 value already set.",
 		 function );
 
 		return( -1 );
@@ -2842,6 +2776,94 @@ int libfvde_internal_volume_open_read_physical_volume_files(
 		}
 /* TODO determine physical volume index and check with pool
  */
+		if( file_io_pool_entry == internal_volume->metadata->encrypted_metadata1_volume_index )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "Reading encrypted metadata 1:\n" );
+			}
+#endif
+			if( libfvde_encrypted_metadata_initialize(
+			     &( internal_volume->encrypted_metadata1 ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create encrypted metadata 1.",
+				 function );
+
+				goto on_error;
+			}
+			if( libfvde_encrypted_metadata_read_from_file_io_handle(
+			     internal_volume->encrypted_metadata1,
+			     internal_volume->io_handle,
+			     file_io_handle,
+			     (off64_t) internal_volume->metadata->encrypted_metadata1_offset,
+			     internal_volume->metadata->encrypted_metadata_size,
+			     volume_header->key_data,
+			     128,
+			     volume_header->physical_volume_identifier,
+			     128,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read encrypted metadata 1.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		if( file_io_pool_entry == internal_volume->metadata->encrypted_metadata2_volume_index )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "Reading encrypted metadata 2:\n" );
+			}
+#endif
+			if( libfvde_encrypted_metadata_initialize(
+			     &( internal_volume->encrypted_metadata2 ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create encrypted metadata 2.",
+				 function );
+
+				goto on_error;
+			}
+			if( libfvde_encrypted_metadata_read_from_file_io_handle(
+			     internal_volume->encrypted_metadata2,
+			     internal_volume->io_handle,
+			     file_io_handle,
+			     (off64_t) internal_volume->metadata->encrypted_metadata2_offset,
+			     internal_volume->metadata->encrypted_metadata_size,
+			     volume_header->key_data,
+			     128,
+			     volume_header->physical_volume_identifier,
+			     128,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read encrypted metadata 2.",
+				 function );
+
+				goto on_error;
+			}
+		}
 		if( libfvde_volume_header_free(
 		     &volume_header,
 		     error ) != 1 )
@@ -2856,9 +2878,39 @@ int libfvde_internal_volume_open_read_physical_volume_files(
 			goto on_error;
 		}
 	}
+	if( internal_volume->encrypted_root_plist != NULL )
+	{
+		if( libfvde_encryption_context_plist_decrypt(
+		     internal_volume->encrypted_root_plist,
+		     internal_volume->volume_header->key_data,
+		     128,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+			 LIBCERROR_ENCRYPTION_ERROR_DECRYPT_FAILED,
+			 "%s: unable to decrypt encrypted root plist.",
+			 function );
+
+			goto on_error;
+		}
+	}
 	return( 1 );
 
 on_error:
+	if( internal_volume->encrypted_metadata2 != NULL )
+	{
+		libfvde_encrypted_metadata_free(
+		 &( internal_volume->encrypted_metadata2 ),
+		 NULL );
+	}
+	if( internal_volume->encrypted_metadata1 != NULL )
+	{
+		libfvde_encrypted_metadata_free(
+		 &( internal_volume->encrypted_metadata1 ),
+		 NULL );
+	}
 	if( volume_header != NULL )
 	{
 		libfvde_volume_header_free(
@@ -3289,7 +3341,7 @@ int libfvde_volume_get_volume_group(
 	      internal_volume->physical_volume_file_io_pool,
 	      internal_volume->volume_header,
 	      internal_volume->metadata,
-	      internal_volume->primary_encrypted_metadata,
+	      internal_volume->encrypted_metadata1,
 	      internal_volume->encrypted_root_plist,
 	      error ) != 1 )
 	{

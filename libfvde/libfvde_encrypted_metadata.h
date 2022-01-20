@@ -240,7 +240,7 @@ int libfvde_encrypted_metadata_read_type_0x0605(
      size_t block_data_size,
      libcerror_error_t **error );
 
-int libfvde_encrypted_metadata_read(
+int libfvde_encrypted_metadata_read_from_file_io_handle(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      libfvde_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,

@@ -55,13 +55,13 @@ struct libfvde_internal_volume
 	 */
 	libfvde_metadata_t *metadata;
 
-	/* The primary encrypted metadata
+	/* The encrypted metadata 1
 	 */
-	libfvde_encrypted_metadata_t *primary_encrypted_metadata;
+	libfvde_encrypted_metadata_t *encrypted_metadata1;
 
-	/* The secondary encrypted metadata
+	/* The encrypted metadata 2
 	 */
-	libfvde_encrypted_metadata_t *secondary_encrypted_metadata;
+	libfvde_encrypted_metadata_t *encrypted_metadata2;
 
 	/* The EncryptedRoot.plist
 	 */

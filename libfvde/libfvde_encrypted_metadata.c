@@ -460,7 +460,7 @@ int libfvde_encrypted_metadata_read_type_0x0010(
 			libcnotify_printf(
 			 "%s: metadata: %d block number\t\t: %" PRIu64 "\n",
 			 function,
-			 metadata_block_index,
+			 metadata_block_index + 1,
 			 value_64bit );
 		}
 		libcnotify_printf(
@@ -5344,7 +5344,7 @@ int libfvde_encrypted_metadata_read_type_0x0605(
 /* Reads the encrypted metadata
  * Returns 1 if successful or -1 on error
  */
-int libfvde_encrypted_metadata_read(
+int libfvde_encrypted_metadata_read_from_file_io_handle(
      libfvde_encrypted_metadata_t *encrypted_metadata,
      libfvde_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
@@ -5363,7 +5363,7 @@ int libfvde_encrypted_metadata_read(
 	uint8_t *encrypted_data                  = NULL;
 	uint8_t *encrypted_metadata_data         = NULL;
 	uint8_t *metadata_block_data             = NULL;
-	static char *function                    = "libfvde_encrypted_metadata_read";
+	static char *function                    = "libfvde_encrypted_metadata_read_from_file_io_handle";
 	ssize_t read_count                       = 0;
 	uint64_t calculated_block_number         = 0;
 	uint8_t empty_block_found                = 0;

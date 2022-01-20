@@ -4188,10 +4188,10 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfvde_encrypted_metadata_read function
+/* Tests the libfvde_encrypted_metadata_read_from_file_io_handle function
  * Returns 1 if successful or 0 if not
  */
-int fvde_test_encrypted_metadata_read(
+int fvde_test_encrypted_metadata_read_from_file_io_handle(
      void )
 {
 	libcerror_error_t *error                         = NULL;
@@ -4219,7 +4219,7 @@ int fvde_test_encrypted_metadata_read(
 
 	/* Test error cases
 	 */
-	result = libfvde_encrypted_metadata_read(
+	result = libfvde_encrypted_metadata_read_from_file_io_handle(
 	          NULL,
 	          NULL,
 	          NULL,
@@ -4243,7 +4243,7 @@ int fvde_test_encrypted_metadata_read(
 	libcerror_error_free(
 	 &error );
 
-	result = libfvde_encrypted_metadata_read(
+	result = libfvde_encrypted_metadata_read_from_file_io_handle(
 	          encrypted_metadata,
 	          NULL,
 	          NULL,
@@ -4417,8 +4417,8 @@ int main(
 	 fvde_test_encrypted_metadata_read_type_0x0505 );
 
 	FVDE_TEST_RUN(
-	 "libfvde_encrypted_metadata_read",
-	 fvde_test_encrypted_metadata_read );
+	 "libfvde_encrypted_metadata_read_from_file_io_handle",
+	 fvde_test_encrypted_metadata_read_from_file_io_handle );
 
 	/* TODO: add tests for libfvde_encrypted_metadata_get_volume_master_key */
 
