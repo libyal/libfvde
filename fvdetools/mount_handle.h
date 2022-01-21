@@ -78,10 +78,6 @@ struct mount_handle
 	 */
 	size_t user_password_length;
 
-	/* The libbfio file IO handle
-	 */
-	libbfio_handle_t *file_io_handle;
-
 	/* The libbfio physical volume file IO pool
 	 */
 	libbfio_pool_t *physical_volume_file_io_pool;
@@ -131,7 +127,7 @@ int mount_handle_set_encrypted_root_plist(
      const system_character_t *filename,
      libcerror_error_t **error );
 
-int mount_handle_set_keys(
+int mount_handle_set_key(
      mount_handle_t *mount_handle,
      const system_character_t *string,
      libcerror_error_t **error );

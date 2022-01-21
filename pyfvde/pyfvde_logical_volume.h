@@ -101,7 +101,7 @@ PyObject *pyfvde_logical_volume_is_locked(
            pyfvde_logical_volume_t *pyfvde_logical_volume,
            PyObject *arguments );
 
-PyObject *pyfvde_logical_volume_set_keys(
+PyObject *pyfvde_logical_volume_set_key(
            pyfvde_logical_volume_t *pyfvde_logical_volume,
            PyObject *arguments,
            PyObject *keywords );

@@ -1553,7 +1553,7 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 	{
 		return( 0 );
 	}
-	if( (size64_t) ( internal_logical_volume->current_offset + buffer_size ) >= internal_logical_volume->logical_volume_descriptor->size )
+	if( (size64_t) buffer_size > ( internal_logical_volume->logical_volume_descriptor->size - internal_logical_volume->current_offset ) )
 	{
 		buffer_size = (size_t) ( internal_logical_volume->logical_volume_descriptor->size - internal_logical_volume->current_offset );
 	}
@@ -2545,18 +2545,18 @@ int libfvde_logical_volume_is_locked(
 	return( is_locked );
 }
 
-/* Sets the keys
+/* Sets the key
  * This function needs to be used before the unlock function
  * Returns 1 if successful or -1 on error
  */
-int libfvde_logical_volume_set_keys(
+int libfvde_logical_volume_set_key(
      libfvde_logical_volume_t *logical_volume,
      const uint8_t *volume_master_key,
      size_t volume_master_key_size,
      libcerror_error_t **error )
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
-	static char *function                                      = "libfvde_logical_volume_set_keys";
+	static char *function                                      = "libfvde_logical_volume_set_key";
 	int result                                                 = 1;
 
 	if( logical_volume == NULL )

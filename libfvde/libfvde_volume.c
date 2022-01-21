@@ -345,7 +345,7 @@ int libfvde_volume_signal_abort(
 }
 
 /* Opens a volume
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 int libfvde_volume_open(
      libfvde_volume_t *volume,
@@ -357,7 +357,6 @@ int libfvde_volume_open(
 	libfvde_internal_volume_t *internal_volume = NULL;
 	static char *function                      = "libfvde_volume_open";
 	size_t filename_length                     = 0;
-	int result                                 = 0;
 
 	if( volume == NULL )
 	{
@@ -480,42 +479,39 @@ int libfvde_volume_open(
 
 		goto on_error;
 	}
-	else
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
 	{
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-		if( libcthreads_read_write_lock_grab_for_write(
-		     internal_volume->read_write_lock,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to grab read/write lock for writing.",
-			 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
 
-			return( -1 );
-		}
-#endif
-		internal_volume->file_io_handle_created_in_library = 1;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-		if( libcthreads_read_write_lock_release_for_write(
-		     internal_volume->read_write_lock,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to release read/write lock for writing.",
-			 function );
-
-			return( -1 );
-		}
-#endif
+		return( -1 );
 	}
-	return( result );
+#endif
+	internal_volume->file_io_handle_created_in_library = 1;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( 1 );
 
 on_error:
 	if( file_io_handle != NULL )
@@ -530,7 +526,7 @@ on_error:
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
 /* Opens a volume
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 int libfvde_volume_open_wide(
      libfvde_volume_t *volume,
@@ -542,7 +538,6 @@ int libfvde_volume_open_wide(
 	libfvde_internal_volume_t *internal_volume = NULL;
 	static char *function                      = "libfvde_volume_open_wide";
 	size_t filename_length                     = 0;
-	int result                                 = 0;
 
 	if( volume == NULL )
 	{
@@ -665,42 +660,39 @@ int libfvde_volume_open_wide(
 
 		goto on_error;
 	}
-	else
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
 	{
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-		if( libcthreads_read_write_lock_grab_for_write(
-		     internal_volume->read_write_lock,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to grab read/write lock for writing.",
-			 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
 
-			return( -1 );
-		}
-#endif
-		internal_volume->file_io_handle_created_in_library = 1;
-
-#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
-		if( libcthreads_read_write_lock_release_for_write(
-		     internal_volume->read_write_lock,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to release read/write lock for writing.",
-			 function );
-
-			return( -1 );
-		}
-#endif
+		return( -1 );
 	}
-	return( result );
+#endif
+	internal_volume->file_io_handle_created_in_library = 1;
+
+#if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( 1 );
 
 on_error:
 	if( file_io_handle != NULL )
@@ -2415,7 +2407,7 @@ int libfvde_internal_volume_open_read(
 				}
 				if( internal_volume->legacy_volume_master_key_is_set != 0 )
 				{
-					if( libfvde_logical_volume_set_keys(
+					if( libfvde_logical_volume_set_key(
 					     internal_volume->legacy_logical_volume,
 					     internal_volume->legacy_volume_master_key,
 					     16,
@@ -2425,7 +2417,7 @@ int libfvde_internal_volume_open_read(
 						 error,
 						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 						 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-						 "%s: unable set user keys in logical volume.",
+						 "%s: unable set key in logical volume.",
 						 function );
 
 						goto on_error;

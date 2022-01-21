@@ -1,4 +1,4 @@
-.Dd January 19, 2022
+.Dd January 22, 2022
 .Dt fvdeinfo
 .Os libfvde
 .Sh NAME
@@ -7,6 +7,7 @@
 .Sh SYNOPSIS
 .Nm fvdeinfo
 .Op Fl e Ar plist_path
+.Op Fl k Ar key
 .Op Fl o Ar offset
 .Op Fl p Ar password
 .Op Fl r Ar password
@@ -32,6 +33,8 @@ The options are as follows:
 specify the path of the EncryptedRoot.plist.wipekey file
 .It Fl h
 shows this help
+.It Fl k Ar key
+specify the volume master key formatted in base16
 .It Fl o Ar offset
 specify the volume offset
 .It Fl p Ar password

@@ -68,7 +68,7 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use fvdemount to mount a FileVault Drive Encrypted (FVDE) volume\n\n" );
 
-	fprintf( stream, "Usage: fvdemount [ -e plist_path ] [ -k keys ] [ -o offset ] [ -p password ]\n"
+	fprintf( stream, "Usage: fvdemount [ -e plist_path ] [ -k key ] [ -o offset ] [ -p password ]\n"
 	                 "                 [ -r recovery_password ] [ -X extended_options ] [ -huvV ]\n"
 	                 "                 sources mount_point\n\n" );
 
@@ -145,7 +145,7 @@ int main( int argc, char * const argv[] )
 	system_character_t *mount_point                      = NULL;
 	system_character_t *option_encrypted_root_plist_path = NULL;
 	system_character_t *option_extended_options          = NULL;
-	system_character_t *option_keys                      = NULL;
+	system_character_t *option_key                       = NULL;
 	system_character_t *option_offset                    = NULL;
 	system_character_t *option_password                  = NULL;
 	system_character_t *option_recovery_password         = NULL;
@@ -231,7 +231,7 @@ int main( int argc, char * const argv[] )
 				return( EXIT_SUCCESS );
 
 			case (system_integer_t) 'k':
-				option_keys = optarg;
+				option_key = optarg;
 
 				break;
 
@@ -332,16 +332,16 @@ int main( int argc, char * const argv[] )
 			goto on_error;
 		}
 	}
-	if( option_keys != NULL )
+	if( option_key != NULL )
 	{
-		if( mount_handle_set_keys(
+		if( mount_handle_set_key(
 		     fvdemount_mount_handle,
-		     option_keys,
+		     option_key,
 		     &error ) != 1 )
 		{
 			fprintf(
 			 stderr,
-			 "Unable to set keys.\n" );
+			 "Unable to set key.\n" );
 
 			goto on_error;
 		}

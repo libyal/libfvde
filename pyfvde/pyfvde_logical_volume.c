@@ -122,10 +122,10 @@ PyMethodDef pyfvde_logical_volume_object_methods[] = {
 	  "\n"
 	  "Determines if the logical volume is locked." },
 
-	{ "set_keys",
-	  (PyCFunction) pyfvde_logical_volume_set_keys,
+	{ "set_key",
+	  (PyCFunction) pyfvde_logical_volume_set_key,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "set_keys(key) -> None\n"
+	  "set_key(key) -> None\n"
 	  "\n"
 	  "Sets the keys." },
 
@@ -1319,10 +1319,10 @@ PyObject *pyfvde_logical_volume_is_locked(
 	return( Py_False );
 }
 
-/* Sets the keys
+/* Sets the key
  * Returns a Python object if successful or NULL on error
  */
-PyObject *pyfvde_logical_volume_set_keys(
+PyObject *pyfvde_logical_volume_set_key(
            pyfvde_logical_volume_t *pyfvde_logical_volume,
            PyObject *arguments,
            PyObject *keywords )
@@ -1378,7 +1378,7 @@ PyObject *pyfvde_logical_volume_set_keys(
 	}
 	Py_BEGIN_ALLOW_THREADS
 
-	result = libfvde_logical_volume_set_keys(
+	result = libfvde_logical_volume_set_key(
 	          pyfvde_logical_volume->logical_volume,
 	          (uint8_t *) key_data,
 	          (size_t) ( key_data_size * 8 ),

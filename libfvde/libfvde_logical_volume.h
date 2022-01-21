@@ -255,7 +255,7 @@ int libfvde_logical_volume_is_locked(
      libcerror_error_t **error );
 
 LIBFVDE_EXTERN \
-int libfvde_logical_volume_set_keys(
+int libfvde_logical_volume_set_key(
      libfvde_logical_volume_t *logical_volume,
      const uint8_t *volume_master_key,
      size_t volume_master_key_size,

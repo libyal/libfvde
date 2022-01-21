@@ -407,15 +407,15 @@ int mount_handle_set_encrypted_root_plist(
 	return( 1 );
 }
 
-/* Sets the keys
+/* Sets the key
  * Returns 1 if successful or -1 on error
  */
-int mount_handle_set_keys(
+int mount_handle_set_key(
      mount_handle_t *mount_handle,
      const system_character_t *string,
      libcerror_error_t **error )
 {
-	static char *function   = "mount_handle_set_keys";
+	static char *function   = "mount_handle_set_key";
 	size_t string_length    = 0;
 	uint32_t base16_variant = 0;
 
@@ -1026,7 +1026,7 @@ int mount_handle_open(
 		}
 		if( mount_handle->key_data_size != 0 )
 		{
-			if( libfvde_logical_volume_set_keys(
+			if( libfvde_logical_volume_set_key(
 			     logical_volume,
 			     mount_handle->key_data,
 			     16,
@@ -1036,7 +1036,7 @@ int mount_handle_open(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set keys.",
+				 "%s: unable to set key.",
 				 function );
 
 				goto on_error;
@@ -1094,23 +1094,80 @@ int mount_handle_open(
 				goto on_error;
 			}
 		}
-		result = libfvde_logical_volume_is_locked(
+		result = libfvde_logical_volume_unlock(
 		          logical_volume,
-		          error );
+			          error );
 
 		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to determine if logical volume is locked.",
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to unlock logical volume.",
 			 function );
 
 			goto on_error;
 		}
-		else if( result != 0 )
+		else if( ( result == 0 )
+		      && ( mount_handle->unattended_mode == 0 ) )
 		{
+/* TODO print logical volume identifier and/or name */
+			fprintf(
+			 stdout,
+			 "Logical volume: %d is locked and a password is needed to unlock it.\n\n",
+			 logical_volume_index + 1 );
+
+			if( fvdetools_prompt_for_password(
+			     stdout,
+			     "Password",
+			     password,
+			     64,
+			     error ) != 1 )
+			{
+				fprintf(
+				 stderr,
+				 "Unable to retrieve password.\n" );
+
+				goto on_error;
+			}
+			password_length = system_string_length(
+			                   password );
+
+			if( password_length > 0 )
+			{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				if( libfvde_logical_volume_set_utf16_password(
+				     logical_volume,
+				     (uint16_t *) password,
+				     password_length,
+				     error ) != 1 )
+#else
+				if( libfvde_logical_volume_set_utf8_password(
+				     logical_volume,
+				     (uint8_t *) password,
+				     password_length,
+				     error ) != 1 )
+#endif
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to set password.",
+					 function );
+
+					goto on_error;
+				}
+				memory_set(
+				 password,
+				 0,
+				 64 );
+			}
+			fprintf(
+			 stdout,
+			 "\n\n" );
+
 			result = libfvde_logical_volume_unlock(
 			          logical_volume,
 			          error );
@@ -1126,86 +1183,11 @@ int mount_handle_open(
 
 				goto on_error;
 			}
-			else if( ( result == 0 )
-			      && ( mount_handle->unattended_mode == 0 ) )
+			else if( result == 0 )
 			{
-/* TODO print logical volume identifier and/or name */
 				fprintf(
 				 stdout,
-				 "Logical volume: %d is locked and a password is needed to unlock it.\n\n",
-				 logical_volume_index + 1 );
-
-				if( fvdetools_prompt_for_password(
-				     stdout,
-				     "Password",
-				     password,
-				     64,
-				     error ) != 1 )
-				{
-					fprintf(
-					 stderr,
-					 "Unable to retrieve password.\n" );
-
-					goto on_error;
-				}
-				password_length = system_string_length(
-				                   password );
-
-				if( password_length > 0 )
-				{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-					if( libfvde_logical_volume_set_utf16_password(
-					     logical_volume,
-					     (uint16_t *) password,
-					     password_length,
-					     error ) != 1 )
-#else
-					if( libfvde_logical_volume_set_utf8_password(
-					     logical_volume,
-					     (uint8_t *) password,
-					     password_length,
-					     error ) != 1 )
-#endif
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-						 "%s: unable to set password.",
-						 function );
-
-						goto on_error;
-					}
-					memory_set(
-					 password,
-					 0,
-					 64 );
-				}
-				fprintf(
-				 stdout,
-				 "\n\n" );
-
-				result = libfvde_logical_volume_unlock(
-				          logical_volume,
-				          error );
-
-				if( result == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-					 "%s: unable to unlock logical volume.",
-					 function );
-
-					goto on_error;
-				}
-				else if( result == 0 )
-				{
-					fprintf(
-					 stdout,
-					 "Unable to unlock volume.\n\n" );
-				}
+				 "Unable to unlock volume.\n\n" );
 			}
 		}
 		if( mount_file_system_append_logical_volume(
@@ -1389,19 +1371,6 @@ int mount_handle_close(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 		 "%s: unable to free physical volume file IO pool.",
-		 function );
-
-		result = -1;
-	}
-	if( libbfio_handle_free(
-	     &( mount_handle->file_io_handle ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free file IO handle.",
 		 function );
 
 		result = -1;

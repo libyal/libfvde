@@ -216,7 +216,7 @@ int libfvde_volume_signal_abort(
      libfvde_error_t **error );
 
 /* Opens a volume
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_volume_open(
@@ -228,7 +228,7 @@ int libfvde_volume_open(
 #if defined( LIBFVDE_HAVE_WIDE_CHARACTER_TYPE )
 
 /* Opens a volume
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_volume_open_wide(
@@ -544,7 +544,7 @@ int libfvde_volume_get_logical_volume_identifier(
  * This function needs to be used before one of the open or unlock functions
  * Returns 1 if successful or -1 on error
  *
- * This function is deprecated use libfvde_logical_volume_set_keys instead
+ * This function is deprecated use libfvde_logical_volume_set_key instead
  */
 LIBFVDE_DEPRECATED \
 LIBFVDE_EXTERN \
@@ -884,12 +884,12 @@ int libfvde_logical_volume_is_locked(
      libfvde_logical_volume_t *logical_volume,
      libfvde_error_t **error );
 
-/* Sets the keys
+/* Sets the key
  * This function needs to be used before the unlock function
  * Returns 1 if successful or -1 on error
  */
 LIBFVDE_EXTERN \
-int libfvde_logical_volume_set_keys(
+int libfvde_logical_volume_set_key(
      libfvde_logical_volume_t *logical_volume,
      const uint8_t *volume_master_key,
      size_t volume_master_key_size,

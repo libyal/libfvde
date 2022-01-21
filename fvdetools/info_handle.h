@@ -125,7 +125,7 @@ int info_handle_set_encrypted_root_plist(
      const system_character_t *filename,
      libcerror_error_t **error );
 
-int info_handle_set_keys(
+int info_handle_set_key(
      info_handle_t *info_handle,
      const system_character_t *string,
      libcerror_error_t **error );
