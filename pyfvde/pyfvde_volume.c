@@ -113,6 +113,13 @@ PyMethodDef pyfvde_volume_object_methods[] = {
 	  "\n"
 	  "Determines if the volume is locked." },
 
+	{ "unlock",
+	  (PyCFunction) pyfvde_volume_unlock,
+	  METH_NOARGS,
+	  "unlock() -> Boolean\n"
+	  "\n"
+	  "Unlocks the volume." },
+
 	{ "read_buffer",
 	  (PyCFunction) pyfvde_volume_read_buffer,
 	  METH_VARARGS | METH_KEYWORDS,
@@ -1432,6 +1439,69 @@ PyObject *pyfvde_volume_is_locked(
 		 error,
 		 PyExc_IOError,
 		 "%s: unable to determine if volume is locked.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	if( result != 0 )
+	{
+		Py_IncRef(
+		 (PyObject *) Py_True );
+
+		return( Py_True );
+	}
+	Py_IncRef(
+	 (PyObject *) Py_False );
+
+	return( Py_False );
+}
+
+/* Unlocks the volume
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfvde_volume_unlock(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments PYFVDE_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfvde_volume_unlock";
+	int result               = 0;
+
+	PYFVDE_UNREFERENCED_PARAMETER( arguments )
+
+	if( PyErr_WarnEx(
+	     PyExc_DeprecationWarning,
+	     "Call to deprecated function: unlock",
+	     1 ) < 0 )
+	{
+		return( NULL );
+	}
+	if( pyfvde_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid volume.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfvde_volume_unlock(
+	          pyfvde_volume->volume,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfvde_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to unlock volume.",
 		 function );
 
 		libcerror_error_free(

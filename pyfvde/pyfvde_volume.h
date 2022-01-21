@@ -95,6 +95,10 @@ PyObject *pyfvde_volume_is_locked(
            pyfvde_volume_t *pyfvde_volume,
            PyObject *arguments );
 
+PyObject *pyfvde_volume_unlock(
+           pyfvde_volume_t *pyfvde_volume,
+           PyObject *arguments );
+
 PyObject *pyfvde_volume_read_buffer(
            pyfvde_volume_t *pyfvde_volume,
            PyObject *arguments,

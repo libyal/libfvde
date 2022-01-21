@@ -1298,7 +1298,7 @@ PyObject *pyfvde_logical_volume_is_locked(
 		pyfvde_error_raise(
 		 error,
 		 PyExc_IOError,
-		 "%s: unable to determine if logical volume is .",
+		 "%s: unable to determine if logical volume is locked.",
 		 function );
 
 		libcerror_error_free(
@@ -1442,7 +1442,7 @@ PyObject *pyfvde_logical_volume_set_password(
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid .",
+		 "%s: invalid password.",
 		 function );
 
 		return( NULL );
@@ -1465,7 +1465,7 @@ PyObject *pyfvde_logical_volume_set_password(
 		pyfvde_error_raise(
 		 error,
 		 PyExc_IOError,
-		 "%s: unable to set .",
+		 "%s: unable to set password.",
 		 function );
 
 		libcerror_error_free(
@@ -1516,7 +1516,7 @@ PyObject *pyfvde_logical_volume_set_recovery_password(
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid .",
+		 "%s: invalid recovery password.",
 		 function );
 
 		return( NULL );
@@ -1539,7 +1539,7 @@ PyObject *pyfvde_logical_volume_set_recovery_password(
 		pyfvde_error_raise(
 		 error,
 		 PyExc_IOError,
-		 "%s: unable to set .",
+		 "%s: unable to set recovery password.",
 		 function );
 
 		libcerror_error_free(

@@ -2054,7 +2054,6 @@ int libfvde_internal_volume_open_read(
 	libfvde_metadata_t *safe_metadata                              = NULL;
 	static char *function                                          = "libfvde_internal_volume_open_read";
 	off64_t metadata_offset                                        = 0;
-	int file_io_pool_entry                                         = 0;
 	int metadata_index                                             = 0;
 	int number_of_logical_volumes                                  = 0;
 	int number_of_physical_volumes                                 = 0;
@@ -2062,6 +2061,7 @@ int libfvde_internal_volume_open_read(
 #if defined( HAVE_DEBUG_OUTPUT )
 	size64_t logical_volume_size                                   = 0;
 	off64_t logical_volume_offset                                  = 0;
+	int file_io_pool_entry                                         = 0;
 #endif
 
 	if( internal_volume == NULL )
