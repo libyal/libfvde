@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fvde_test_encryption_context_plist"
-	ProjectGUID="{8002CE15-A04F-485F-85D0-4E3FFC4BEFD2}"
-	RootNamespace="fvde_test_encryption_context_plist"
+	Name="fvde_test_tools_signal"
+	ProjectGUID="{CE7963A8-5F02-480C-A65F-C4708675F745}"
+	RootNamespace="fvde_test_tools_signal"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,11 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\fvde_test_encryption_context_plist.c"
+				RelativePath="..\..\fvdetools\fvdetools_signal.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\fvde_test_memory.c"
+				RelativePath="..\..\tests\fvde_test_tools_signal.c"
 				>
 			</File>
 		</Filter>
@@ -190,19 +190,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\fvdetools\fvdetools_signal.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\fvde_test_libcerror.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\fvde_test_libfvde.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\tests\fvde_test_macros.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fvde_test_memory.h"
 				>
 			</File>
 			<File

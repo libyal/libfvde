@@ -133,6 +133,7 @@ stamp-h[1-9]
 /tests/fvde_test_compression
 /tests/fvde_test_deflate
 /tests/fvde_test_encrypted_metadata
+/tests/fvde_test_encryption_context
 /tests/fvde_test_encryption_context_plist
 /tests/fvde_test_error
 /tests/fvde_test_io_handle
@@ -147,6 +148,8 @@ stamp-h[1-9]
 /tests/fvde_test_sector_data
 /tests/fvde_test_segment_descriptor
 /tests/fvde_test_support
+/tests/fvde_test_tools_output
+/tests/fvde_test_tools_signal
 /tests/fvde_test_volume
 /tests/fvde_test_volume_data_handle
 /tests/fvde_test_volume_group

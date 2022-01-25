@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fvde_test_segment_descriptor"
-	ProjectGUID="{1BE4EC1D-D4C1-422E-9D0D-C042FDB6BCB0}"
+	ProjectGUID="{0AE7208E-9D33-42C3-A958-ECEAAE2FFDF9}"
 	RootNamespace="fvde_test_segment_descriptor"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

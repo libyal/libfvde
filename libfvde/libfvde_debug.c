@@ -40,8 +40,8 @@ const char *libfvde_debug_print_encryption_method(
 {
 	switch( encryption_method )
 	{
-		case LIBFVDE_ENCRYPTION_METHOD_AES_XTS:
-			return( "AES-XTS" );
+		case LIBFVDE_ENCRYPTION_METHOD_AES_128_XTS:
+			return( "AES-XTS 128-bit" );
 	}
 	return( "_UNKNOWN_" );
 }

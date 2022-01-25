@@ -26,9 +26,7 @@
 #include <common.h>
 #include <types.h>
 
-#include "libfvde_encryption.h"
-#include "libfvde_io_handle.h"
-#include "libfvde_libcaes.h"
+#include "libfvde_encryption_context.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 
@@ -60,7 +58,7 @@ int libfvde_sector_data_free(
 
 int libfvde_sector_data_read(
      libfvde_sector_data_t *sector_data,
-     libcaes_tweaked_context_t *xts_context,
+     libfvde_encryption_context_t *encryption_context,
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      off64_t file_offset,

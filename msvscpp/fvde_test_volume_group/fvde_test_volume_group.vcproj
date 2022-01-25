@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fvde_test_volume_group"
-	ProjectGUID="{EFED8371-14EC-4447-9F75-C6235E964544}"
+	ProjectGUID="{086B0679-3ABC-4DA9-A83C-ACE07E944E69}"
 	RootNamespace="fvde_test_volume_group"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

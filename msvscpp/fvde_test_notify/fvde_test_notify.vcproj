@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fvde_test_notify"
-	ProjectGUID="{213AF83E-AB96-43A1-8784-D28A29162CA5}"
+	ProjectGUID="{AF41FB39-005C-4A4E-AEBC-03A01F26E38D}"
 	RootNamespace="fvde_test_notify"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

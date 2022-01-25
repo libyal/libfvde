@@ -35,8 +35,8 @@ libfvde_la_SOURCES = \
 	libfvde_debug.c libfvde_debug.h \
 	libfvde_definitions.h \
 	libfvde_deflate.c libfvde_deflate.h \
-	libfvde_encryption.c libfvde_encryption.h \
 	libfvde_encrypted_metadata.c libfvde_encrypted_metadata.h \
+	libfvde_encryption_context.c libfvde_encryption_context.h \
 	libfvde_encryption_context_plist.c libfvde_encryption_context_plist.h \
 	libfvde_error.c libfvde_error.h \
 	libfvde_extern.h \

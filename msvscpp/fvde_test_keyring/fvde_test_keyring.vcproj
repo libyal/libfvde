@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fvde_test_keyring"
-	ProjectGUID="{938D9AF3-F85F-4484-931F-5F146300353A}"
+	ProjectGUID="{7AA6780C-6AB7-473C-B1DE-CF0FB4C3C1DE}"
 	RootNamespace="fvde_test_keyring"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

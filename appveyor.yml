@@ -1,5 +1,5 @@
 environment:
-  pypi_token:
+  PYPI_TOKEN:
     secure: VHuZiUWgTqTciKE2nsv/LgRYIn7M3YT0SM9cBD/AgZEHBl/mNJHEpy7Rwuw50jYItWnSZ1t72zmBy/UUqt3021Hfy6jp07hHj0eFHj12Kyxz9TMo4OCj8cp2FdiFkj9UJhHBl1dAgn24QfR7IjBg3/+PcIpwfaAaDZMwx/KKjy37bN8VzlrX5L0qzMI6sYghss+ElI3t4dpng2dwMcvc2Ul3YAsbZRj4GfDSXxarmftIggwK32UOmdsIR6z1owpjummUJ+aNOFEijBL4vDImvw==
   matrix:
   - TARGET: vs2008
@@ -80,7 +80,7 @@ environment:
   - TARGET: python39-x64
     BUILD_ENVIRONMENT: python
     APPVEYOR_BUILD_WORKER_IMAGE: macos
-    PYTHON: "/usr/local/opt/python@3.9/bin/python3"
+    PYTHON: "/usr/local/opt/python@3.10/bin/python3"
     HOMEBREW_NO_INSTALL_CLEANUP: 1
     CFLAGS: "-I/usr/local/include"
     LDFLAGS: "-L/usr/local/lib"
@@ -209,8 +209,8 @@ install:
     }
 - sh: if test ${BUILD_ENVIRONMENT} = "xcode" || test ${BUILD_ENVIRONMENT} = "python"; then brew update -q; fi
 - sh: if test ${BUILD_ENVIRONMENT} = "xcode" || test ${BUILD_ENVIRONMENT} = "python"; then brew install -q gettext gnu-sed || true; fi
-- sh: if test ${BUILD_ENVIRONMENT} = "python"; then brew install -q python3 twine-pypi || true; fi
-- ps: If ($env:BUILD_ENVIRONMENT -eq "python" -and $isWindows) {
+- sh: if test ${BUILD_ENVIRONMENT} = "python"; then brew install -q python3 || true; fi
+- ps: If ($env:BUILD_ENVIRONMENT -eq "python") {
     Invoke-Expression "${env:PYTHON} -m pip install -U pip setuptools twine wheel" }
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin] (
     C:\cygwin\setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com -P gettext-devel -P bison -P flex -P zlib-devel -P libssl-devel -P python2-devel -P python3-devel )

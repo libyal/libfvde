@@ -26,8 +26,8 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfvde_encryption_context.h"
 #include "libfvde_io_handle.h"
-#include "libfvde_libcaes.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libfdata.h"
@@ -48,9 +48,9 @@ struct libfvde_volume_data_handle
 	 */
 	off64_t logical_volume_offset;
 
-	/* The XTS context
+	/* The encryption context
 	 */
-	libcaes_tweaked_context_t *xts_context;
+	libfvde_encryption_context_t *encryption_context;
 
 	/* Value to indicate the logical volume is encrypted
 	 */

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fvde_test_compression"
-	ProjectGUID="{89CD0612-1AD0-4613-ACCC-F77B94F19339}"
+	ProjectGUID="{BF82D180-7E2A-4A81-B91A-9AC177984BB0}"
 	RootNamespace="fvde_test_compression"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

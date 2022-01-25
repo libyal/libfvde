@@ -32,11 +32,11 @@
 #include "libfvde_debug.h"
 #include "libfvde_definitions.h"
 #include "libfvde_encrypted_metadata.h"
+#include "libfvde_encryption_context.h"
 #include "libfvde_encryption_context_plist.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_keyring.h"
 #include "libfvde_libbfio.h"
-#include "libfvde_libcaes.h"
 #include "libfvde_libcdata.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
@@ -5356,18 +5356,16 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
      size_t tweak_key_bit_size,
      libcerror_error_t **error )
 {
-	uint8_t tweak_value[ 16 ];
-
-	libcaes_tweaked_context_t *xts_context   = NULL;
-	libfvde_metadata_block_t *metadata_block = NULL;
-	uint8_t *encrypted_data                  = NULL;
-	uint8_t *encrypted_metadata_data         = NULL;
-	uint8_t *metadata_block_data             = NULL;
-	static char *function                    = "libfvde_encrypted_metadata_read_from_file_io_handle";
-	ssize_t read_count                       = 0;
-	uint64_t calculated_block_number         = 0;
-	uint8_t empty_block_found                = 0;
-	int result                               = 0;
+	libfvde_encryption_context_t *encryption_context = NULL;
+	libfvde_metadata_block_t *metadata_block         = NULL;
+	uint8_t *encrypted_data                          = NULL;
+	uint8_t *encrypted_metadata_data                 = NULL;
+	uint8_t *metadata_block_data                     = NULL;
+	static char *function                            = "libfvde_encrypted_metadata_read_from_file_io_handle";
+	ssize_t read_count                               = 0;
+	uint64_t calculated_block_number                 = 0;
+	uint8_t empty_block_found                        = 0;
+	int result                                       = 0;
 
 	if( encrypted_metadata == NULL )
 	{
@@ -5447,22 +5445,22 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 
 		goto on_error;
 	}
-	if( libcaes_tweaked_context_initialize(
-	     &xts_context,
+	if( libfvde_encryption_context_initialize(
+	     &encryption_context,
+	     LIBFVDE_ENCRYPTION_METHOD_AES_128_XTS,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
 		 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-		 "%s: unable to initialize XTS context.",
+		 "%s: unable to initialize encryption context.",
 		 function );
 
 		goto on_error;
 	}
-	if( libcaes_tweaked_context_set_keys(
-	     xts_context,
-	     LIBCAES_CRYPT_MODE_DECRYPT,
+	if( libfvde_encryption_context_set_keys(
+	     encryption_context,
 	     key,
 	     key_bit_size,
 	     tweak_key,
@@ -5473,7 +5471,7 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to set AES-XTS keys.",
+		 "%s: unable to set keys in encryption context.",
 		 function );
 
 		goto on_error;
@@ -5536,33 +5534,14 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 		}
 		else
 		{
-			if( memory_set(
-			     tweak_value,
-			     0,
-			     16 ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-				 "%s: unable to copy block number to tweak value.",
-				 function );
-
-				return( -1 );
-			}
-			byte_stream_copy_from_uint64_little_endian(
-			 tweak_value,
-			 calculated_block_number );
-
-			if( libcaes_crypt_xts(
-			     xts_context,
-			     LIBCAES_CRYPT_MODE_DECRYPT,
-			     tweak_value,
-			     16,
+			if( libfvde_encryption_context_crypt(
+			     encryption_context,
+			     LIBFVDE_ENCRYPTION_CRYPT_MODE_DECRYPT,
 			     encrypted_metadata_data,
 			     8192,
 			     metadata_block_data,
 			     8192,
+			     calculated_block_number,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -5874,15 +5853,15 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 
 	metadata_block_data = NULL;
 
-	if( libcaes_tweaked_context_free(
-	     &xts_context,
+	if( libfvde_encryption_context_free(
+	     &encryption_context,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free AES-XTS context.",
+		 "%s: unable to free encryption context.",
 		 function );
 
 		goto on_error;
@@ -5957,10 +5936,10 @@ on_error:
 		memory_free(
 		 metadata_block_data );
 	}
-	if( xts_context != NULL )
+	if( encryption_context != NULL )
 	{
-		libcaes_tweaked_context_free(
-		 &xts_context,
+		libfvde_encryption_context_free(
+		 &encryption_context,
 		 NULL );
 	}
 	if( encrypted_data != NULL )

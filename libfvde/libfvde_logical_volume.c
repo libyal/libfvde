@@ -26,6 +26,7 @@
 
 #include "libfvde_definitions.h"
 #include "libfvde_encrypted_metadata.h"
+#include "libfvde_encryption_context.h"
 #include "libfvde_encryption_context_plist.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_libbfio.h"
@@ -801,7 +802,7 @@ int libfvde_internal_logical_volume_open_read_keys(
 		}
 	}
 	if( ( internal_logical_volume->volume_master_key_is_set != 0 )
-	 && ( internal_logical_volume->volume_data_handle->xts_context == NULL ) )
+	 && ( internal_logical_volume->volume_data_handle->encryption_context == NULL ) )
 	{
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -871,22 +872,22 @@ int libfvde_internal_logical_volume_open_read_keys(
 			 0 );
 		}
 #endif
-		if( libcaes_tweaked_context_initialize(
-		     &( internal_logical_volume->volume_data_handle->xts_context ),
+		if( libfvde_encryption_context_initialize(
+		     &( internal_logical_volume->volume_data_handle->encryption_context ),
+		     LIBFVDE_ENCRYPTION_METHOD_AES_128_XTS,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create AES-XTS context.",
+			 "%s: unable to create encryption context.",
 			 function );
 
 			goto on_error;
 		}
-		if( libcaes_tweaked_context_set_keys(
-		     internal_logical_volume->volume_data_handle->xts_context,
-		     LIBCAES_CRYPT_MODE_DECRYPT,
+		if( libfvde_encryption_context_set_keys(
+		     internal_logical_volume->volume_data_handle->encryption_context,
 		     internal_logical_volume->keyring->volume_master_key,
 		     128,
 		     internal_logical_volume->keyring->volume_tweak_key,
@@ -897,7 +898,7 @@ int libfvde_internal_logical_volume_open_read_keys(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set keys in XTS context.",
+			 "%s: unable to set keys in encryption context.",
 			 function );
 
 			goto on_error;
@@ -918,7 +919,7 @@ int libfvde_internal_logical_volume_open_read_keys(
 		}
 		internal_logical_volume->volume_data_handle->is_encrypted = 1;
 	}
-	if( internal_logical_volume->volume_data_handle->xts_context != NULL )
+	if( internal_logical_volume->volume_data_handle->encryption_context != NULL )
 	{
 		return( 1 );
 	}
@@ -1096,7 +1097,7 @@ int libfvde_internal_logical_volume_open_read_volume_header(
 
 	if( libfvde_sector_data_read(
 	     sector_data,
-	     internal_logical_volume->volume_data_handle->xts_context,
+	     internal_logical_volume->volume_data_handle->encryption_context,
 	     file_io_pool,
 	     file_io_pool_entry,
 	     file_offset,

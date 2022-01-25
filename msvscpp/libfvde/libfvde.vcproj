@@ -194,7 +194,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libfvde\libfvde_encryption.c"
+				RelativePath="..\..\libfvde\libfvde_encryption_context.c"
 				>
 			</File>
 			<File
@@ -316,7 +316,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libfvde\libfvde_encryption.h"
+				RelativePath="..\..\libfvde\libfvde_encryption_context.h"
 				>
 			</File>
 			<File

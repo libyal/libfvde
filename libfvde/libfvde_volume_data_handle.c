@@ -25,9 +25,9 @@
 #include <types.h>
 
 #include "libfvde_definitions.h"
+#include "libfvde_encryption_context.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_libbfio.h"
-#include "libfvde_libcaes.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libfdata.h"
 #include "libfvde_sector_data.h"
@@ -151,17 +151,17 @@ int libfvde_volume_data_handle_free(
 	}
 	if( *volume_data_handle != NULL )
 	{
-		if( ( *volume_data_handle )->xts_context != NULL )
+		if( ( *volume_data_handle )->encryption_context != NULL )
 		{
-			if( libcaes_tweaked_context_free(
-			     &( ( *volume_data_handle )->xts_context ),
+			if( libfvde_encryption_context_free(
+			     &( ( *volume_data_handle )->encryption_context ),
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free XTS context.",
+				 "%s: unable to free encryption context.",
 				 function );
 
 				result = -1;
@@ -255,7 +255,7 @@ int libfvde_volume_data_handle_read_sector(
 	{
 		if( libfvde_sector_data_read(
 		     sector_data,
-		     volume_data_handle->xts_context,
+		     volume_data_handle->encryption_context,
 		     file_io_pool,
 		     element_data_file_index,
 		     element_data_offset,

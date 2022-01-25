@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fvde_test_deflate"
-	ProjectGUID="{FBB234FF-9655-47D9-8482-274D4B8BC27E}"
+	ProjectGUID="{F0B57900-443D-41BB-A913-8F7B1D4B17F5}"
 	RootNamespace="fvde_test_deflate"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

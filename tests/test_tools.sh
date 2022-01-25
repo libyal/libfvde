@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tests library functions and types.
+# Tests tools functions and types.
 #
 # Version: 20200705
 
@@ -7,9 +7,9 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="checksum compression deflate encrypted_metadata encryption_context encryption_context_plist error io_handle keyring logical_volume logical_volume_descriptor metadata metadata_block notify physical_volume physical_volume_descriptor sector_data segment_descriptor volume_data_handle volume_group volume_header";
-LIBRARY_TESTS_WITH_INPUT="support volume";
-OPTION_SETS="offset password recovery_password";
+TOOLS_TESTS="output signal";
+TOOLS_TESTS_WITH_INPUT="";
+OPTION_SETS="";
 
 INPUT_GLOB="*";
 
@@ -18,7 +18,7 @@ run_test()
 	local TEST_NAME=$1;
 
 	local TEST_DESCRIPTION="Testing: ${TEST_NAME}";
-	local TEST_EXECUTABLE="./fvde_test_${TEST_NAME}";
+	local TEST_EXECUTABLE="./fvde_test_tools_${TEST_NAME}";
 
 	if ! test -x "${TEST_EXECUTABLE}";
 	then
@@ -37,7 +37,7 @@ run_test_with_input()
 	local TEST_NAME=$1;
 
 	local TEST_DESCRIPTION="Testing: ${TEST_NAME}";
-	local TEST_EXECUTABLE="./fvde_test_${TEST_NAME}";
+	local TEST_EXECUTABLE="./fvde_test_tools_${TEST_NAME}";
 
 	if ! test -x "${TEST_EXECUTABLE}";
 	then
@@ -59,7 +59,7 @@ run_test_with_input()
 		return ${EXIT_IGNORE};
 	fi
 
-	local TEST_PROFILE_DIRECTORY=$(get_test_profile_directory "input" "libfvde");
+	local TEST_PROFILE_DIRECTORY=$(get_test_profile_directory "input" "fvdetools");
 
 	local IGNORE_LIST=$(read_ignore_list "${TEST_PROFILE_DIRECTORY}");
 
@@ -129,7 +129,7 @@ run_test_with_input()
 	return ${RESULT};
 }
 
-if test -n "${SKIP_LIBRARY_TESTS}";
+if test -n "${SKIP_TOOLS_TESTS}";
 then
 	exit ${EXIT_IGNORE};
 fi
@@ -152,7 +152,7 @@ source ${TEST_RUNNER};
 
 RESULT=${EXIT_IGNORE};
 
-for TEST_NAME in ${LIBRARY_TESTS};
+for TEST_NAME in ${TOOLS_TESTS};
 do
 	run_test "${TEST_NAME}";
 	RESULT=$?;
@@ -168,7 +168,7 @@ then
 	exit ${RESULT};
 fi
 
-for TEST_NAME in ${LIBRARY_TESTS_WITH_INPUT};
+for TEST_NAME in ${TOOLS_TESTS_WITH_INPUT};
 do
 	if test -d "input";
 	then

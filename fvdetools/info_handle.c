@@ -1587,11 +1587,11 @@ int info_handle_physical_volume_fprint(
 	 info_handle->notify_stream,
 	 "\tEncryption method\t\t: " );
 
-	if( encryption_method == LIBFVDE_ENCRYPTION_METHOD_AES_XTS )
+	if( encryption_method == LIBFVDE_ENCRYPTION_METHOD_AES_128_XTS )
 	{
 		fprintf(
 		 info_handle->notify_stream,
-		 "AES-XTS" );
+		 "AES-XTS 128-bit" );
 	}
 	else
 	{

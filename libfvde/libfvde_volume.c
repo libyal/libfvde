@@ -31,7 +31,6 @@
 #include "libfvde_definitions.h"
 #include "libfvde_encrypted_metadata.h"
 #include "libfvde_encryption_context_plist.h"
-#include "libfvde_encryption.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"

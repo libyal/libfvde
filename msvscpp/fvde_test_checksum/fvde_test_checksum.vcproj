@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="fvde_test_checksum"
-	ProjectGUID="{1C90AC92-3764-40AB-B299-F766CEE01BBB}"
+	ProjectGUID="{3BF3D2D0-BFD9-4FA8-8501-75CBB2097DAA}"
 	RootNamespace="fvde_test_checksum"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"

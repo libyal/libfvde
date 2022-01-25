@@ -3,6 +3,7 @@ MSVSCPP_FILES = \
 	fvde_test_compression/fvde_test_compression.vcproj \
 	fvde_test_deflate/fvde_test_deflate.vcproj \
 	fvde_test_encrypted_metadata/fvde_test_encrypted_metadata.vcproj \
+	fvde_test_encryption_context/fvde_test_encryption_context.vcproj \
 	fvde_test_encryption_context_plist/fvde_test_encryption_context_plist.vcproj \
 	fvde_test_error/fvde_test_error.vcproj \
 	fvde_test_io_handle/fvde_test_io_handle.vcproj \
@@ -17,6 +18,8 @@ MSVSCPP_FILES = \
 	fvde_test_sector_data/fvde_test_sector_data.vcproj \
 	fvde_test_segment_descriptor/fvde_test_segment_descriptor.vcproj \
 	fvde_test_support/fvde_test_support.vcproj \
+	fvde_test_tools_output/fvde_test_tools_output.vcproj \
+	fvde_test_tools_signal/fvde_test_tools_signal.vcproj \
 	fvde_test_volume/fvde_test_volume.vcproj \
 	fvde_test_volume_data_handle/fvde_test_volume_data_handle.vcproj \
 	fvde_test_volume_group/fvde_test_volume_group.vcproj \

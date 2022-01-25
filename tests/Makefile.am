@@ -32,6 +32,7 @@ endif
 
 TESTS = \
 	test_library.sh \
+	test_tools.sh \
 	test_fvdeinfo.sh \
 	$(TESTS_PYFVDE)
 
@@ -45,7 +46,8 @@ check_SCRIPTS = \
 	test_library.sh \
 	test_manpage.sh \
 	test_python_module.sh \
-	test_runner.sh
+	test_runner.sh \
+	test_tools.sh
 
 EXTRA_DIST = \
 	$(check_SCRIPTS)
@@ -55,6 +57,7 @@ check_PROGRAMS = \
 	fvde_test_compression \
 	fvde_test_deflate \
 	fvde_test_encrypted_metadata \
+	fvde_test_encryption_context \
 	fvde_test_encryption_context_plist \
 	fvde_test_error \
 	fvde_test_io_handle \
@@ -69,6 +72,8 @@ check_PROGRAMS = \
 	fvde_test_sector_data \
 	fvde_test_segment_descriptor \
 	fvde_test_support \
+	fvde_test_tools_output \
+	fvde_test_tools_signal \
 	fvde_test_volume \
 	fvde_test_volume_data_handle \
 	fvde_test_volume_group \
@@ -121,6 +126,18 @@ fvde_test_encrypted_metadata_SOURCES = \
 
 fvde_test_encrypted_metadata_LDADD = \
 	@LIBCDATA_LIBADD@ \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_encryption_context_SOURCES = \
+	fvde_test_encryption_context.c \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_encryption_context_LDADD = \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 
@@ -299,6 +316,28 @@ fvde_test_support_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_tools_output_SOURCES = \
+	../fvdetools/fvdetools_output.c ../fvdetools/fvdetools_output.h \
+	fvde_test_libcerror.h \
+	fvde_test_macros.h \
+	fvde_test_tools_output.c \
+	fvde_test_unused.h
+
+fvde_test_tools_output_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
+
+fvde_test_tools_signal_SOURCES = \
+	../fvdetools/fvdetools_signal.c ../fvdetools/fvdetools_signal.h \
+	fvde_test_libcerror.h \
+	fvde_test_macros.h \
+	fvde_test_tools_signal.c \
+	fvde_test_unused.h
+
+fvde_test_tools_signal_LDADD = \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 

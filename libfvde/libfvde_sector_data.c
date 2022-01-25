@@ -26,9 +26,7 @@
 #include <types.h>
 
 #include "libfvde_definitions.h"
-#include "libfvde_encryption.h"
-#include "libfvde_io_handle.h"
-#include "libfvde_libcaes.h"
+#include "libfvde_encryption_context.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcnotify.h"
@@ -196,7 +194,7 @@ int libfvde_sector_data_free(
  */
 int libfvde_sector_data_read(
      libfvde_sector_data_t *sector_data,
-     libcaes_tweaked_context_t *xts_context,
+     libfvde_encryption_context_t *encryption_context,
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      off64_t file_offset,
@@ -204,8 +202,6 @@ int libfvde_sector_data_read(
      uint8_t is_encrypted,
      libcerror_error_t **error )
 {
-	uint8_t tweak_value[ 16 ];
-
 	uint8_t *encrypted_data = NULL;
 	static char *function   = "libfvde_sector_data_read";
 	ssize_t read_count      = 0;
@@ -300,33 +296,14 @@ int libfvde_sector_data_read(
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-		if( memory_set(
-		     tweak_value,
-		     0,
-		     16 ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to copy block number to tweak value.",
-			 function );
-
-			goto on_error;
-		}
-		byte_stream_copy_from_uint64_little_endian(
-		 tweak_value,
-		 block_number );
-
-		if( libcaes_crypt_xts(
-		     xts_context,
-		     LIBCAES_CRYPT_MODE_DECRYPT,
-		     tweak_value,
-		     16,
+		if( libfvde_encryption_context_crypt(
+		     encryption_context,
+		     LIBFVDE_ENCRYPTION_CRYPT_MODE_DECRYPT,
 		     encrypted_data,
 		     sector_data->data_size,
 		     sector_data->data,
 		     sector_data->data_size,
+		     block_number,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
