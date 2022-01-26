@@ -300,7 +300,7 @@ int libfvde_logical_volume_descriptor_get_family_identifier(
 
 /* Retrieves the size of the UTF-8 encoded volume group name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_descriptor_get_utf8_name_size(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
@@ -319,6 +319,11 @@ int libfvde_logical_volume_descriptor_get_utf8_name_size(
 		 function );
 
 		return( -1 );
+	}
+	if( ( logical_volume_descriptor->name == NULL )
+	 || ( logical_volume_descriptor->name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf8_string_size_from_utf8_stream(
 	     logical_volume_descriptor->name,
@@ -340,7 +345,7 @@ int libfvde_logical_volume_descriptor_get_utf8_name_size(
 
 /* Retrieves the UTF-8 encoded volume group name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_descriptor_get_utf8_name(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
@@ -360,6 +365,11 @@ int libfvde_logical_volume_descriptor_get_utf8_name(
 		 function );
 
 		return( -1 );
+	}
+	if( ( logical_volume_descriptor->name == NULL )
+	 || ( logical_volume_descriptor->name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf8_string_copy_from_utf8_stream(
 	     utf8_string,
@@ -382,7 +392,7 @@ int libfvde_logical_volume_descriptor_get_utf8_name(
 
 /* Retrieves the size of the UTF-16 encoded volume group name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_descriptor_get_utf16_name_size(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
@@ -401,6 +411,11 @@ int libfvde_logical_volume_descriptor_get_utf16_name_size(
 		 function );
 
 		return( -1 );
+	}
+	if( ( logical_volume_descriptor->name == NULL )
+	 || ( logical_volume_descriptor->name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf16_string_size_from_utf8_stream(
 	     logical_volume_descriptor->name,
@@ -422,7 +437,7 @@ int libfvde_logical_volume_descriptor_get_utf16_name_size(
 
 /* Retrieves the UTF-16 encoded volume group name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_descriptor_get_utf16_name(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
@@ -442,6 +457,11 @@ int libfvde_logical_volume_descriptor_get_utf16_name(
 		 function );
 
 		return( -1 );
+	}
+	if( ( logical_volume_descriptor->name == NULL )
+	 || ( logical_volume_descriptor->name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf16_string_copy_from_utf8_stream(
 	     utf16_string,
@@ -572,6 +592,102 @@ int libfvde_logical_volume_descriptor_get_first_block_number(
 	}
 	*volume_index = segment_descriptor->physical_volume_index;
 	*block_number = logical_volume_descriptor->base_physical_block_number + segment_descriptor->physical_block_number;
+
+	return( 1 );
+}
+
+/* Retrieves the last block number
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_logical_volume_descriptor_get_last_block_number(
+     libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     uint16_t *volume_index,
+     uint64_t *block_number,
+     libcerror_error_t **error )
+{
+	libfvde_segment_descriptor_t *segment_descriptor = NULL;
+	static char *function                            = "libfvde_logical_volume_descriptor_get_last_block_number";
+	int number_of_segment_descriptors                = 0;
+
+	if( logical_volume_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid logical volume descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( volume_index == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume index.",
+		 function );
+
+		return( -1 );
+	}
+	if( block_number == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid block number.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     logical_volume_descriptor->segment_descriptors,
+	     &number_of_segment_descriptors,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of segment descriptors from array.",
+		 function );
+
+		return( -1 );
+	}
+	number_of_segment_descriptors -= 1;
+
+	if( libcdata_array_get_entry_by_index(
+	     logical_volume_descriptor->segment_descriptors,
+	     number_of_segment_descriptors,
+	     (intptr_t **) &segment_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve segment descriptor: %d from array.",
+		 function,
+		 number_of_segment_descriptors );
+
+		return( -1 );
+	}
+	if( segment_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing segment descriptor: %d.",
+		 function,
+		 number_of_segment_descriptors );
+
+		return( -1 );
+	}
+	*volume_index = segment_descriptor->physical_volume_index;
+	*block_number = logical_volume_descriptor->base_physical_block_number + segment_descriptor->physical_block_number + segment_descriptor->number_of_blocks;
 
 	return( 1 );
 }

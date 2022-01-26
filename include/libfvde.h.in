@@ -635,7 +635,7 @@ int libfvde_volume_group_get_identifier(
 
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_volume_group_get_utf8_name_size(
@@ -645,7 +645,7 @@ int libfvde_volume_group_get_utf8_name_size(
 
 /* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_volume_group_get_utf8_name(
@@ -656,7 +656,7 @@ int libfvde_volume_group_get_utf8_name(
 
 /* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_volume_group_get_utf16_name_size(
@@ -666,7 +666,7 @@ int libfvde_volume_group_get_utf16_name_size(
 
 /* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_volume_group_get_utf16_name(
@@ -827,7 +827,7 @@ int libfvde_logical_volume_get_identifier(
 
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_logical_volume_get_utf8_name_size(
@@ -837,7 +837,7 @@ int libfvde_logical_volume_get_utf8_name_size(
 
 /* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_logical_volume_get_utf8_name(
@@ -848,7 +848,7 @@ int libfvde_logical_volume_get_utf8_name(
 
 /* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_logical_volume_get_utf16_name_size(
@@ -858,7 +858,7 @@ int libfvde_logical_volume_get_utf16_name_size(
 
 /* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFVDE_EXTERN \
 int libfvde_logical_volume_get_utf16_name(

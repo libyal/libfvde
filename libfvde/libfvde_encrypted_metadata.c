@@ -4285,20 +4285,25 @@ int libfvde_encrypted_metadata_read_type_0x0205(
  */
 int libfvde_encrypted_metadata_read_type_0x0304(
      libfvde_encrypted_metadata_t *encrypted_metadata,
+     uint64_t object_identifier,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error )
 {
-	static char *function      = "libfvde_encrypted_metadata_read_type_0x0304";
-	size_t block_data_offset   = 0;
-	uint32_t block_number      = 0;
-	uint32_t entry_index       = 0;
-	uint32_t number_of_blocks  = 0;
-	uint32_t number_of_entries = 0;
+	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
+	libfvde_segment_descriptor_t *segment_descriptor               = NULL;
+	static char *function                                          = "libfvde_encrypted_metadata_read_type_0x0304";
+	size_t block_data_offset                                       = 0;
+	uint32_t block_number                                          = 0xffffffffUL;
+	uint32_t entry_index                                           = 0;
+	uint32_t number_of_blocks                                      = 0;
+	uint32_t number_of_entries                                     = 0;
+	int result                                                     = 0;
+	int segment_descriptor_index                                   = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint64_t value_64bit       = 0;
-	uint32_t value_32bit       = 0;
+	uint64_t value_64bit                                           = 0;
+	uint32_t value_32bit                                           = 0;
 #endif
 
 	if( encrypted_metadata == NULL )
@@ -4334,6 +4339,45 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 		 function );
 
 		return( -1 );
+	}
+	if( libfvde_encrypted_metadata_get_last_logical_volume_descriptor(
+	     encrypted_metadata,
+	     &logical_volume_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve last logical volume descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( logical_volume_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing logical volume descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcdata_array_empty(
+	     logical_volume_descriptor->segment_descriptors,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libfvde_segment_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty segment descriptors array.",
+		 function );
+
+		goto on_error;
 	}
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 0 ] ),
@@ -4371,19 +4415,39 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 		 "%s: invalid number of entries value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	for( entry_index = 0;
 	     entry_index < number_of_entries;
 	     entry_index++ )
 	{
-		byte_stream_copy_to_uint32_little_endian(
-		 &( block_data[ block_data_offset + 16 ] ),
-		 number_of_blocks );
+		if( libfvde_segment_descriptor_initialize(
+		     &segment_descriptor,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+			 "%s: unable to create segment descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset + 8 ] ),
+		 segment_descriptor->logical_block_number );
 
 		byte_stream_copy_to_uint32_little_endian(
+		 &( block_data[ block_data_offset + 16 ] ),
+		 segment_descriptor->number_of_blocks );
+
+		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ block_data_offset + 32 ] ),
-		 block_number );
+		 segment_descriptor->physical_block_number );
+
+		segment_descriptor->physical_volume_index  = (uint16_t) ( segment_descriptor->physical_block_number >> 48 );
+		segment_descriptor->physical_block_number &= 0x0000ffffffffffffUL;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -4397,20 +4461,17 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 			 entry_index,
 			 value_64bit );
 
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset + 8 ] ),
-			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %03d logical block number\t: %" PRIi64 "\n",
 			 function,
 			 entry_index,
-			 value_64bit );
+			 segment_descriptor->logical_block_number );
 
 			libcnotify_printf(
 			 "%s: entry: %03d number of blocks\t: %" PRIu32 "\n",
 			 function,
 			 entry_index,
-			 number_of_blocks );
+			 segment_descriptor->number_of_blocks );
 
 			byte_stream_copy_to_uint32_little_endian(
 			 &( block_data[ block_data_offset + 20 ] ),
@@ -4440,19 +4501,16 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 			 value_32bit );
 
 			libcnotify_printf(
-			 "%s: entry: %03d block number\t\t: %" PRIu32 "\n",
+			 "%s: entry: %03d physical block number\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
-			 block_number );
+			 segment_descriptor->physical_block_number );
 
-			byte_stream_copy_to_uint32_little_endian(
-			 &( block_data[ block_data_offset + 36 ] ),
-			 value_32bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown6\t\t: 0x%08" PRIx32 "\n",
+			 "%s: entry: %03d physical volume index\t: %" PRIu16 "\n",
 			 function,
 			 entry_index,
-			 value_32bit );
+			 segment_descriptor->physical_volume_index );
 
 			libcnotify_printf(
 			 "\n" );
@@ -4460,8 +4518,58 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
 		block_data_offset += 40;
+
+		result = libcdata_array_insert_entry(
+		          logical_volume_descriptor->segment_descriptors,
+		          &segment_descriptor_index,
+		          (intptr_t *) segment_descriptor,
+		          (int (*)(intptr_t *, intptr_t *, libcerror_error_t **)) &libfvde_segment_descriptor_compare,
+		          LIBCDATA_INSERT_FLAG_UNIQUE_ENTRIES,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to insert segment descriptor: %d in array.",
+			 function,
+			 entry_index );
+
+			goto on_error;
+		}
+		else if( result == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported overlapping segment descriptor: %d.",
+			 function,
+			 entry_index );
+
+			goto on_error;
+		}
+		if( block_number > segment_descriptor->physical_block_number )
+		{
+			block_number = segment_descriptor->physical_block_number;
+		}
+		number_of_blocks  += segment_descriptor->number_of_blocks;
+		segment_descriptor = NULL;
 	}
+	logical_volume_descriptor->object_identifier_0x0304 = object_identifier;
+
 	return( 1 );
+
+on_error:
+	if( segment_descriptor != NULL )
+	{
+		libfvde_segment_descriptor_free(
+		 &segment_descriptor,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Reads the encrypted metadata block type 0x0305
@@ -5732,6 +5840,7 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 					case 0x0304:
 						result = libfvde_encrypted_metadata_read_type_0x0304(
 							  encrypted_metadata,
+							  metadata_block->object_identifier,
 							  metadata_block->data,
 							  metadata_block->data_size,
 							  error );
@@ -6662,8 +6771,10 @@ int libfvde_encrypted_metadata_get_last_logical_volume_descriptor(
      libfvde_logical_volume_descriptor_t **logical_volume_descriptor,
      libcerror_error_t **error )
 {
-	static char *function                    = "libfvde_encrypted_metadata_get_last_logical_volume_descriptor";
-	int number_of_logical_volume_descriptors = 0;
+	libfvde_logical_volume_descriptor_t *safe_logical_volume_descriptor = NULL;
+	static char *function                                               = "libfvde_encrypted_metadata_get_last_logical_volume_descriptor";
+	int logical_volume_descriptor_index                                 = 0;
+	int number_of_logical_volume_descriptors                            = 0;
 
 	if( encrypted_metadata == NULL )
 	{
@@ -6703,24 +6814,64 @@ int libfvde_encrypted_metadata_get_last_logical_volume_descriptor(
 	}
 	if( number_of_logical_volume_descriptors == 0 )
 	{
-		return( 0 );
-	}
-	if( libcdata_array_get_entry_by_index(
-	     encrypted_metadata->logical_volume_descriptors,
-	     number_of_logical_volume_descriptors - 1,
-	     (intptr_t **) logical_volume_descriptor,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve logical volume descriptor: %d from array.",
-		 function,
-		 number_of_logical_volume_descriptors - 1 );
+		if( libfvde_logical_volume_descriptor_initialize(
+		     &safe_logical_volume_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create logical volume descriptor.",
+			 function );
 
-		return( -1 );
+			goto on_error;
+		}
+		if( libcdata_array_append_entry(
+		     encrypted_metadata->logical_volume_descriptors,
+		     &logical_volume_descriptor_index,
+		     (intptr_t *) safe_logical_volume_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append logical volume descriptor to array.",
+			 function );
+
+			goto on_error;
+		}
+		*logical_volume_descriptor = safe_logical_volume_descriptor;
+	}
+	else
+	{
+		if( libcdata_array_get_entry_by_index(
+		     encrypted_metadata->logical_volume_descriptors,
+		     number_of_logical_volume_descriptors - 1,
+		     (intptr_t **) logical_volume_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve logical volume descriptor: %d from array.",
+			 function,
+			 number_of_logical_volume_descriptors - 1 );
+
+			goto on_error;
+		}
 	}
 	return( 1 );
+
+on_error:
+	if( safe_logical_volume_descriptor != NULL )
+	{
+		libfvde_logical_volume_descriptor_free(
+		 &safe_logical_volume_descriptor,
+		 NULL );
+	}
+	return( -1 );
 }
 

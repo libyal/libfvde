@@ -202,6 +202,7 @@ int libfvde_encrypted_metadata_read_type_0x0205(
 
 int libfvde_encrypted_metadata_read_type_0x0304(
      libfvde_encrypted_metadata_t *encrypted_metadata,
+     uint64_t object_identifier,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error );

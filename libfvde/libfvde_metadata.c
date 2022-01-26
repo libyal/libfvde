@@ -1436,7 +1436,7 @@ on_error:
 
 /* Retrieves the size of the UTF-8 encoded volume group name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_metadata_get_utf8_volume_group_name_size(
      libfvde_metadata_t *metadata,
@@ -1455,6 +1455,11 @@ int libfvde_metadata_get_utf8_volume_group_name_size(
 		 function );
 
 		return( -1 );
+	}
+	if( ( metadata->volume_group_name == NULL )
+	 || ( metadata->volume_group_name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf8_string_size_from_utf8_stream(
 	     metadata->volume_group_name,
@@ -1476,7 +1481,7 @@ int libfvde_metadata_get_utf8_volume_group_name_size(
 
 /* Retrieves the UTF-8 encoded volume group name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_metadata_get_utf8_volume_group_name(
      libfvde_metadata_t *metadata,
@@ -1496,6 +1501,11 @@ int libfvde_metadata_get_utf8_volume_group_name(
 		 function );
 
 		return( -1 );
+	}
+	if( ( metadata->volume_group_name == NULL )
+	 || ( metadata->volume_group_name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf8_string_copy_from_utf8_stream(
 	     utf8_string,
@@ -1518,7 +1528,7 @@ int libfvde_metadata_get_utf8_volume_group_name(
 
 /* Retrieves the size of the UTF-16 encoded volume group name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_metadata_get_utf16_volume_group_name_size(
      libfvde_metadata_t *metadata,
@@ -1537,6 +1547,11 @@ int libfvde_metadata_get_utf16_volume_group_name_size(
 		 function );
 
 		return( -1 );
+	}
+	if( ( metadata->volume_group_name == NULL )
+	 || ( metadata->volume_group_name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf16_string_size_from_utf8_stream(
 	     metadata->volume_group_name,
@@ -1558,7 +1573,7 @@ int libfvde_metadata_get_utf16_volume_group_name_size(
 
 /* Retrieves the UTF-16 encoded volume group name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_metadata_get_utf16_volume_group_name(
      libfvde_metadata_t *metadata,
@@ -1578,6 +1593,11 @@ int libfvde_metadata_get_utf16_volume_group_name(
 		 function );
 
 		return( -1 );
+	}
+	if( ( metadata->volume_group_name == NULL )
+	 || ( metadata->volume_group_name_size == 0 ) )
+	{
+		return( 0 );
 	}
 	if( libuna_utf16_string_copy_from_utf8_stream(
 	     utf16_string,

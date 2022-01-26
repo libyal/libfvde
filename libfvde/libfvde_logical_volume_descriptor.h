@@ -62,6 +62,10 @@ struct libfvde_logical_volume_descriptor
 	 */
 	size64_t size;
 
+	/* The object identifier of the corresponding metadata block 0x0304
+	 */
+	uint64_t object_identifier_0x0304;
+
 	/* The object identifier of the corresponding metadata block 0x0305
 	 */
 	uint64_t object_identifier_0x0305;
@@ -127,6 +131,12 @@ int libfvde_logical_volume_descriptor_get_size(
      libcerror_error_t **error );
 
 int libfvde_logical_volume_descriptor_get_first_block_number(
+     libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     uint16_t *volume_index,
+     uint64_t *block_number,
+     libcerror_error_t **error );
+
+int libfvde_logical_volume_descriptor_get_last_block_number(
      libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
      uint16_t *volume_index,
      uint64_t *block_number,

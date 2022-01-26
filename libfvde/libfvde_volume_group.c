@@ -295,7 +295,7 @@ int libfvde_volume_group_get_identifier(
 
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_volume_group_get_utf8_name_size(
      libfvde_volume_group_t *volume_group,
@@ -304,7 +304,7 @@ int libfvde_volume_group_get_utf8_name_size(
 {
 	libfvde_internal_volume_group_t *internal_volume_group = NULL;
 	static char *function                                  = "libfvde_volume_group_get_utf8_name_size";
-	int result                                             = 1;
+	int result                                             = 0;
 
 	if( volume_group == NULL )
 	{
@@ -334,10 +334,12 @@ int libfvde_volume_group_get_utf8_name_size(
 		return( -1 );
 	}
 #endif
-	if( libfvde_metadata_get_utf8_volume_group_name_size(
-	     internal_volume_group->metadata,
-	     utf8_string_size,
-	     error ) != 1 )
+	result = libfvde_metadata_get_utf8_volume_group_name_size(
+	          internal_volume_group->metadata,
+	          utf8_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -368,7 +370,7 @@ int libfvde_volume_group_get_utf8_name_size(
 
 /* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_volume_group_get_utf8_name(
      libfvde_volume_group_t *volume_group,
@@ -378,7 +380,7 @@ int libfvde_volume_group_get_utf8_name(
 {
 	libfvde_internal_volume_group_t *internal_volume_group = NULL;
 	static char *function                                  = "libfvde_volume_group_get_utf8_name";
-	int result                                             = 1;
+	int result                                             = 0;
 
 	if( volume_group == NULL )
 	{
@@ -408,11 +410,13 @@ int libfvde_volume_group_get_utf8_name(
 		return( -1 );
 	}
 #endif
-	if( libfvde_metadata_get_utf8_volume_group_name(
-	     internal_volume_group->metadata,
-	     utf8_string,
-	     utf8_string_size,
-	     error ) != 1 )
+	result = libfvde_metadata_get_utf8_volume_group_name(
+	          internal_volume_group->metadata,
+	          utf8_string,
+	          utf8_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -443,7 +447,7 @@ int libfvde_volume_group_get_utf8_name(
 
 /* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_volume_group_get_utf16_name_size(
      libfvde_volume_group_t *volume_group,
@@ -452,7 +456,7 @@ int libfvde_volume_group_get_utf16_name_size(
 {
 	libfvde_internal_volume_group_t *internal_volume_group = NULL;
 	static char *function                                  = "libfvde_volume_group_get_utf16_name_size";
-	int result                                             = 1;
+	int result                                             = 0;
 
 	if( volume_group == NULL )
 	{
@@ -482,10 +486,12 @@ int libfvde_volume_group_get_utf16_name_size(
 		return( -1 );
 	}
 #endif
-	if( libfvde_metadata_get_utf16_volume_group_name_size(
-	     internal_volume_group->metadata,
-	     utf16_string_size,
-	     error ) != 1 )
+	result = libfvde_metadata_get_utf16_volume_group_name_size(
+	          internal_volume_group->metadata,
+	          utf16_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -516,7 +522,7 @@ int libfvde_volume_group_get_utf16_name_size(
 
 /* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_volume_group_get_utf16_name(
      libfvde_volume_group_t *volume_group,
@@ -526,7 +532,7 @@ int libfvde_volume_group_get_utf16_name(
 {
 	libfvde_internal_volume_group_t *internal_volume_group = NULL;
 	static char *function                                  = "libfvde_volume_group_get_utf16_name";
-	int result                                             = 1;
+	int result                                             = 0;
 
 	if( volume_group == NULL )
 	{
@@ -556,11 +562,13 @@ int libfvde_volume_group_get_utf16_name(
 		return( -1 );
 	}
 #endif
-	if( libfvde_metadata_get_utf16_volume_group_name(
-	     internal_volume_group->metadata,
-	     utf16_string,
-	     utf16_string_size,
-	     error ) != 1 )
+	result = libfvde_metadata_get_utf16_volume_group_name(
+	          internal_volume_group->metadata,
+	          utf16_string,
+	          utf16_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,

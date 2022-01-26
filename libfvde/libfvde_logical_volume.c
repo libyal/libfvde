@@ -378,6 +378,25 @@ int libfvde_internal_logical_volume_open_read(
 
 		result = -1;
 	}
+	if( volume_size == 0 )
+	{
+		if( libfvde_logical_volume_descriptor_get_last_block_number(
+		     internal_logical_volume->logical_volume_descriptor,
+		     (uint16_t *) &file_io_pool_entry,
+		     (uint64_t *) &volume_size,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve last block number from logical volume descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		volume_size *= internal_logical_volume->io_handle->block_size;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -2121,7 +2140,7 @@ int libfvde_logical_volume_get_identifier(
 
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_get_utf8_name_size(
      libfvde_logical_volume_t *logical_volume,
@@ -2130,7 +2149,7 @@ int libfvde_logical_volume_get_utf8_name_size(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_get_utf8_name_size";
-	int result                                                 = 1;
+	int result                                                 = 0;
 
 	if( logical_volume == NULL )
 	{
@@ -2160,10 +2179,12 @@ int libfvde_logical_volume_get_utf8_name_size(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_descriptor_get_utf8_name_size(
-	     internal_logical_volume->logical_volume_descriptor,
-	     utf8_string_size,
-	     error ) != 1 )
+	result = libfvde_logical_volume_descriptor_get_utf8_name_size(
+	          internal_logical_volume->logical_volume_descriptor,
+	          utf8_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -2194,7 +2215,7 @@ int libfvde_logical_volume_get_utf8_name_size(
 
 /* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_get_utf8_name(
      libfvde_logical_volume_t *logical_volume,
@@ -2204,7 +2225,7 @@ int libfvde_logical_volume_get_utf8_name(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_get_utf8_name";
-	int result                                                 = 1;
+	int result                                                 = 0;
 
 	if( logical_volume == NULL )
 	{
@@ -2234,11 +2255,13 @@ int libfvde_logical_volume_get_utf8_name(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_descriptor_get_utf8_name(
-	     internal_logical_volume->logical_volume_descriptor,
-	     utf8_string,
-	     utf8_string_size,
-	     error ) != 1 )
+	result = libfvde_logical_volume_descriptor_get_utf8_name(
+	          internal_logical_volume->logical_volume_descriptor,
+	          utf8_string,
+	          utf8_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -2269,7 +2292,7 @@ int libfvde_logical_volume_get_utf8_name(
 
 /* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_get_utf16_name_size(
      libfvde_logical_volume_t *logical_volume,
@@ -2278,7 +2301,7 @@ int libfvde_logical_volume_get_utf16_name_size(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_get_utf16_name_size";
-	int result                                                 = 1;
+	int result                                                 = 0;
 
 	if( logical_volume == NULL )
 	{
@@ -2308,10 +2331,12 @@ int libfvde_logical_volume_get_utf16_name_size(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_descriptor_get_utf16_name_size(
-	     internal_logical_volume->logical_volume_descriptor,
-	     utf16_string_size,
-	     error ) != 1 )
+	result = libfvde_logical_volume_descriptor_get_utf16_name_size(
+	          internal_logical_volume->logical_volume_descriptor,
+	          utf16_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -2342,7 +2367,7 @@ int libfvde_logical_volume_get_utf16_name_size(
 
 /* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfvde_logical_volume_get_utf16_name(
      libfvde_logical_volume_t *logical_volume,
@@ -2352,7 +2377,7 @@ int libfvde_logical_volume_get_utf16_name(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_get_utf16_name";
-	int result                                                 = 1;
+	int result                                                 = 0;
 
 	if( logical_volume == NULL )
 	{
@@ -2382,11 +2407,13 @@ int libfvde_logical_volume_get_utf16_name(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_descriptor_get_utf16_name(
-	     internal_logical_volume->logical_volume_descriptor,
-	     utf16_string,
-	     utf16_string_size,
-	     error ) != 1 )
+	result = libfvde_logical_volume_descriptor_get_utf16_name(
+	          internal_logical_volume->logical_volume_descriptor,
+	          utf16_string,
+	          utf16_string_size,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
