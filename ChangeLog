@@ -1,6 +1,9 @@
 TODO
 * format support
   - handle volume offset detection of partial encrypted logical volume
+  - use the VMK signature (a6 a6 a6 ...) to indicate the volume is unlocked not the unencrypted volume header?
+  - volume with no 0x001a, 0x0305 and 0x0505 ?
+  - remove libfvde_logical_volume_descriptor_get_last_block_number after debugging unsupported format variants?
 
 * libfvde
   - libfvde_segment_descriptor_compare check for overlapping ranges

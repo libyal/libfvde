@@ -54,6 +54,10 @@ struct libfvde_encrypted_metadata
 	 */
 	libcdata_array_t *logical_volume_descriptors;
 
+	/* The segment descriptors of metadata block 0x0304
+	 */
+	libcdata_array_t *segment_descriptors_0x0304;
+
 	/* The encryption context plist data
 	 */
 	uint8_t *encryption_context_plist_data;
@@ -202,7 +206,6 @@ int libfvde_encrypted_metadata_read_type_0x0205(
 
 int libfvde_encrypted_metadata_read_type_0x0304(
      libfvde_encrypted_metadata_t *encrypted_metadata,
-     uint64_t object_identifier,
      const uint8_t *block_data,
      size_t block_data_size,
      libcerror_error_t **error );

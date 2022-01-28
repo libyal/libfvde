@@ -280,7 +280,6 @@ int libfvde_internal_logical_volume_open_read(
 	libfvde_segment_descriptor_t *segment_descriptor = NULL;
 	static char *function                            = "libfvde_internal_logical_volume_open_read";
 	size64_t segment_size                            = 0;
-	size64_t volume_size                             = 0;
 	ssize_t read_count                               = 0;
 	off64_t segment_offset                           = 0;
 	off64_t volume_offset                            = 0;
@@ -366,7 +365,7 @@ int libfvde_internal_logical_volume_open_read(
 
 	if( libfvde_logical_volume_descriptor_get_size(
 	     internal_logical_volume->logical_volume_descriptor,
-	     &volume_size,
+	     &( internal_logical_volume->volume_size ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -378,12 +377,13 @@ int libfvde_internal_logical_volume_open_read(
 
 		result = -1;
 	}
-	if( volume_size == 0 )
+/* TODO remove after debugging unsupported format variants
+	if( internal_logical_volume->volume_size == 0 )
 	{
 		if( libfvde_logical_volume_descriptor_get_last_block_number(
 		     internal_logical_volume->logical_volume_descriptor,
 		     (uint16_t *) &file_io_pool_entry,
-		     (uint64_t *) &volume_size,
+		     (uint64_t *) &( internal_logical_volume->volume_size ),
 		     error ) == -1 )
 		{
 			libcerror_error_set(
@@ -395,8 +395,9 @@ int libfvde_internal_logical_volume_open_read(
 
 			goto on_error;
 		}
-		volume_size *= internal_logical_volume->io_handle->block_size;
+		internal_logical_volume->volume_size *= internal_logical_volume->io_handle->block_size;
 	}
+*/
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -633,9 +634,9 @@ int libfvde_internal_logical_volume_open_read(
 	}
 	segment_size = (size64_t) expected_logical_block_number * internal_logical_volume->io_handle->block_size;
 
-	if( segment_size < volume_size )
+	if( segment_size < internal_logical_volume->volume_size )
 	{
-		segment_size = volume_size - segment_size;
+		segment_size = internal_logical_volume->volume_size - segment_size;
 
 		if( libfdata_vector_append_segment(
 		     internal_logical_volume->sectors_vector,
@@ -2452,7 +2453,6 @@ int libfvde_logical_volume_get_size(
 {
 	libfvde_internal_logical_volume_t *internal_logical_volume = NULL;
 	static char *function                                      = "libfvde_logical_volume_get_size";
-	int result                                                 = 1;
 
 	if( logical_volume == NULL )
 	{
@@ -2461,6 +2461,17 @@ int libfvde_logical_volume_get_size(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid logical volume.",
+		 function );
+
+		return( -1 );
+	}
+	if( size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid size.",
 		 function );
 
 		return( -1 );
@@ -2482,20 +2493,8 @@ int libfvde_logical_volume_get_size(
 		return( -1 );
 	}
 #endif
-	if( libfvde_logical_volume_descriptor_get_size(
-	     internal_logical_volume->logical_volume_descriptor,
-	     size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve logical volume size from descriptor.",
-		 function );
+	*size = internal_logical_volume->volume_size;
 
-		result = -1;
-	}
 #if defined( HAVE_LIBFVDE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_logical_volume->read_write_lock,
@@ -2511,7 +2510,7 @@ int libfvde_logical_volume_get_size(
 		return( -1 );
 	}
 #endif
-	return( result );
+	return( 1 );
 }
 
 /* Determines if the logical volume is locked

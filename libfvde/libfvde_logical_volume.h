@@ -72,6 +72,10 @@ struct libfvde_internal_logical_volume
 	 */
 	off64_t current_offset;
 
+	/* The volume size
+	 */
+	size64_t volume_size;
+
 	/* The volume data handle
 	 */
 	libfvde_volume_data_handle_t *volume_data_handle;
