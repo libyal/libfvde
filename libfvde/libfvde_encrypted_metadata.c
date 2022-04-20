@@ -3609,12 +3609,12 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 		 &( block_data[ 0 ] ),
 		 value_64bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: unknown1\t\t\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
 		 value_64bit );
 
 		libcnotify_printf(
-		 "%s: number of entries\t\t\t: %" PRIu64 "\n",
+		 "%s: number of entries\t\t\t\t: %" PRIu64 "\n",
 		 function,
 		 number_of_entries );
 
@@ -3647,7 +3647,7 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 			 &( block_data[ block_data_offset ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d number of blocks\t: %" PRIu64 "\n",
+			 "%s: entry: %03d number of blocks\t\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -3656,7 +3656,7 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 			 &( block_data[ block_data_offset + 8 ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %03d unknown2\t\t: 0x%08" PRIx64 "\n",
+			 "%s: entry: %03d unknown2\t\t\t: 0x%08" PRIx64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -3665,7 +3665,7 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 			 &( block_data[ block_data_offset + 16 ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %02d 0x001d object identifier\t: %" PRIu64 "\n",
+			 "%s: entry: %03d 0x001d object identifier\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );
@@ -3674,7 +3674,7 @@ int libfvde_encrypted_metadata_read_type_0x0022(
 			 &( block_data[ block_data_offset + 24 ] ),
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: entry: %02d 0x001d object identifier\t: %" PRIu64 "\n",
+			 "%s: entry: %03d 0x001d object identifier\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
 			 value_64bit );

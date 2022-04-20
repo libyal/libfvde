@@ -40,7 +40,6 @@ DPKG_FILES = \
 	dpkg/rules \
 	dpkg/libfvde.install \
 	dpkg/libfvde-dev.install \
-	dpkg/libfvde-python.install \
 	dpkg/libfvde-python3.install \
 	dpkg/libfvde-tools.install \
 	dpkg/source/format
