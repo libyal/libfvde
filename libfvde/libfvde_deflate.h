@@ -1,7 +1,8 @@
 /*
  * Deflate (zlib) (un)compression functions
  *
- * Copyright (C) 2011-2022, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2022, Omar Choudary <choudary.omar@gmail.com>,
+ *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,6 +26,8 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfvde_bit_stream.h"
+#include "libfvde_huffman_tree.h"
 #include "libfvde_libcerror.h"
 
 #if defined( __cplusplus )
@@ -41,86 +44,21 @@ enum LIBFVDE_DEFLATE_BLOCK_TYPES
 	LIBFVDE_DEFLATE_BLOCK_TYPE_RESERVED		= 0x03
 };
 
-typedef struct libfvde_deflate_bit_stream libfvde_deflate_bit_stream_t;
-
-struct libfvde_deflate_bit_stream
-{
-	/* The byte stream
-	 */
-	const uint8_t *byte_stream;
-
-	/* The byte stream size
-	 */
-	size_t byte_stream_size;
-
-	/* The byte stream offset
-	 */
-	size_t byte_stream_offset;
-
-	/* The bit buffer
-	 */
-	uint32_t bit_buffer;
-
-	/* The number of bits remaining in the bit buffer
-	 */
-	uint8_t bit_buffer_size;
-};
-
-typedef struct libfvde_deflate_huffman_table libfvde_deflate_huffman_table_t;
-
-struct libfvde_deflate_huffman_table
-{
-	/* The maximum number of bits representable by the Huffman table
-	 */
-	uint8_t maximum_number_of_bits;
-
-/* TODO create initialize function that sets the size of codes array? */
-	/* The codes array
-	 */
-	int codes_array[ 288 ];
-
-	/* The code counts array
-	 */
-	int code_counts_array[ 16 ];
-
-	/* The number of codes
-	 */
-	int number_of_codes;
-};
-
-int libfvde_deflate_bit_stream_get_value(
-     libfvde_deflate_bit_stream_t *bit_stream,
-     uint8_t number_of_bits,
-     uint32_t *value_32bit,
+int libfvde_deflate_build_dynamic_huffman_trees(
+     libfvde_bit_stream_t *bit_stream,
+     libfvde_huffman_tree_t *literals_tree,
+     libfvde_huffman_tree_t *distances_tree,
      libcerror_error_t **error );
 
-int libfvde_deflate_huffman_table_construct(
-     libfvde_deflate_huffman_table_t *table,
-     const uint16_t *code_sizes_array,
-     int number_of_code_sizes,
-     libcerror_error_t **error );
-
-int libfvde_deflate_bit_stream_get_huffman_encoded_value(
-     libfvde_deflate_bit_stream_t *bit_stream,
-     libfvde_deflate_huffman_table_t *table,
-     uint32_t *value_32bit,
-     libcerror_error_t **error );
-
-int libfvde_deflate_initialize_dynamic_huffman_tables(
-     libfvde_deflate_bit_stream_t *bit_stream,
-     libfvde_deflate_huffman_table_t *literals_table,
-     libfvde_deflate_huffman_table_t *distances_table,
-     libcerror_error_t **error );
-
-int libfvde_deflate_initialize_fixed_huffman_tables(
-     libfvde_deflate_huffman_table_t *literals_table,
-     libfvde_deflate_huffman_table_t *distances_table,
+int libfvde_deflate_build_fixed_huffman_trees(
+     libfvde_huffman_tree_t *literals_tree,
+     libfvde_huffman_tree_t *distances_tree,
      libcerror_error_t **error );
 
 int libfvde_deflate_decode_huffman(
-     libfvde_deflate_bit_stream_t *bit_stream,
-     libfvde_deflate_huffman_table_t *literals_table,
-     libfvde_deflate_huffman_table_t *distances_table,
+     libfvde_bit_stream_t *bit_stream,
+     libfvde_huffman_tree_t *literals_tree,
+     libfvde_huffman_tree_t *distances_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
@@ -128,8 +66,8 @@ int libfvde_deflate_decode_huffman(
 
 int libfvde_deflate_calculate_adler32(
      uint32_t *checksum_value,
-     const uint8_t *buffer,
-     size_t size,
+     const uint8_t *data,
+     size_t data_size,
      uint32_t initial_value,
      libcerror_error_t **error );
 
@@ -139,12 +77,20 @@ int libfvde_deflate_read_data_header(
      size_t *compressed_data_offset,
      libcerror_error_t **error );
 
+int libfvde_deflate_read_block_header(
+     libfvde_bit_stream_t *bit_stream,
+     uint8_t *block_type,
+     uint8_t *last_block_flag,
+     libcerror_error_t **error );
+
 int libfvde_deflate_read_block(
-     libfvde_deflate_bit_stream_t *bit_stream,
+     libfvde_bit_stream_t *bit_stream,
+     uint8_t block_type,
+     libfvde_huffman_tree_t *fixed_huffman_literals_tree,
+     libfvde_huffman_tree_t *fixed_huffman_distances_tree,
      uint8_t *uncompressed_data,
      size_t uncompressed_data_size,
      size_t *uncompressed_data_offset,
-     uint8_t *last_block_flag,
      libcerror_error_t **error );
 
 int libfvde_deflate_decompress(

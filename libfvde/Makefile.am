@@ -29,6 +29,7 @@ libfvde_la_SOURCES = \
 	fvde_metadata.h \
 	fvde_volume.h \
 	libfvde.c \
+	libfvde_bit_stream.c libfvde_bit_stream.h \
 	libfvde_checksum.c libfvde_checksum.h \
 	libfvde_codepage.h \
 	libfvde_compression.c libfvde_compression.h \
@@ -40,6 +41,7 @@ libfvde_la_SOURCES = \
 	libfvde_encryption_context_plist.c libfvde_encryption_context_plist.h \
 	libfvde_error.c libfvde_error.h \
 	libfvde_extern.h \
+	libfvde_huffman_tree.c libfvde_huffman_tree.h \
 	libfvde_io_handle.c libfvde_io_handle.h \
 	libfvde_keyring.c libfvde_keyring.h \
 	libfvde_libbfio.h \

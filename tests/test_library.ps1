@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "checksum compression deflate encrypted_metadata encryption_context encryption_context_plist error io_handle keyring logical_volume logical_volume_descriptor metadata metadata_block notify physical_volume physical_volume_descriptor sector_data segment_descriptor volume_data_handle volume_group volume_header"
+$LibraryTests = "bit_stream checksum compression deflate encrypted_metadata encryption_context encryption_context_plist error huffman_tree io_handle keyring logical_volume logical_volume_descriptor metadata metadata_block notify physical_volume physical_volume_descriptor sector_data segment_descriptor volume_data_handle volume_group volume_header"
 $LibraryTestsWithInput = "support volume"
 $OptionSets = "offset password recovery_password"
 

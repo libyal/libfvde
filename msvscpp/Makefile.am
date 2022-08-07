@@ -1,4 +1,5 @@
 MSVSCPP_FILES = \
+	fvde_test_bit_stream/fvde_test_bit_stream.vcproj \
 	fvde_test_checksum/fvde_test_checksum.vcproj \
 	fvde_test_compression/fvde_test_compression.vcproj \
 	fvde_test_deflate/fvde_test_deflate.vcproj \
@@ -6,6 +7,7 @@ MSVSCPP_FILES = \
 	fvde_test_encryption_context/fvde_test_encryption_context.vcproj \
 	fvde_test_encryption_context_plist/fvde_test_encryption_context_plist.vcproj \
 	fvde_test_error/fvde_test_error.vcproj \
+	fvde_test_huffman_tree/fvde_test_huffman_tree.vcproj \
 	fvde_test_io_handle/fvde_test_io_handle.vcproj \
 	fvde_test_keyring/fvde_test_keyring.vcproj \
 	fvde_test_logical_volume/fvde_test_logical_volume.vcproj \

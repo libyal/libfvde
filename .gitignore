@@ -129,6 +129,7 @@ stamp-h[1-9]
 /fvdetools/fvdemount
 /fvdetools/fvdewipekey
 /tests/*.exe
+/tests/fvde_test_bit_stream
 /tests/fvde_test_checksum
 /tests/fvde_test_compression
 /tests/fvde_test_deflate
@@ -136,6 +137,7 @@ stamp-h[1-9]
 /tests/fvde_test_encryption_context
 /tests/fvde_test_encryption_context_plist
 /tests/fvde_test_error
+/tests/fvde_test_huffman_tree
 /tests/fvde_test_io_handle
 /tests/fvde_test_keyring
 /tests/fvde_test_logical_volume

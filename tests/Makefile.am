@@ -53,6 +53,7 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	fvde_test_bit_stream \
 	fvde_test_checksum \
 	fvde_test_compression \
 	fvde_test_deflate \
@@ -60,6 +61,7 @@ check_PROGRAMS = \
 	fvde_test_encryption_context \
 	fvde_test_encryption_context_plist \
 	fvde_test_error \
+	fvde_test_huffman_tree \
 	fvde_test_io_handle \
 	fvde_test_keyring \
 	fvde_test_logical_volume \
@@ -78,6 +80,18 @@ check_PROGRAMS = \
 	fvde_test_volume_data_handle \
 	fvde_test_volume_group \
 	fvde_test_volume_header
+
+fvde_test_bit_stream_SOURCES = \
+	fvde_test_bit_stream.c \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_bit_stream_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
 
 fvde_test_checksum_SOURCES = \
 	fvde_test_checksum.c \
@@ -161,6 +175,18 @@ fvde_test_error_SOURCES = \
 
 fvde_test_error_LDADD = \
 	../libfvde/libfvde.la
+
+fvde_test_huffman_tree_SOURCES = \
+	fvde_test_huffman_tree.c \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_unused.h
+
+fvde_test_huffman_tree_LDADD = \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@
 
 fvde_test_io_handle_SOURCES = \
 	fvde_test_io_handle.c \
