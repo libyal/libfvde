@@ -20,8 +20,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBMODI_HUFFMAN_TREE_H )
-#define _LIBMODI_HUFFMAN_TREE_H
+#if !defined( _LIBFVDE_HUFFMAN_TREE_H )
+#define _LIBFVDE_HUFFMAN_TREE_H
 
 #include <common.h>
 #include <types.h>
@@ -76,5 +76,5 @@ int libfvde_huffman_tree_get_symbol_from_bit_stream(
 }
 #endif
 
-#endif /* !defined( _LIBMODI_HUFFMAN_TREE_H ) */
+#endif /* !defined( _LIBFVDE_HUFFMAN_TREE_H ) */
 
