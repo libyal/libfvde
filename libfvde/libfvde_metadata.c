@@ -1269,8 +1269,7 @@ int libfvde_metadata_read_file_io_handle(
 
 		return( -1 );
 	}
-/* TODO a minimal size check */
-	if( ( io_handle->metadata_size == 0 )
+	if( ( io_handle->metadata_size < 8192 )
 	 || ( io_handle->metadata_size > (uint32_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(

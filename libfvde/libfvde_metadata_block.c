@@ -273,24 +273,14 @@ int libfvde_metadata_block_read_data(
 
 		return( -1 );
 	}
-	if( block_data_size > (size_t) SSIZE_MAX )
+	if( ( block_data_size < sizeof( fvde_metadata_block_header_t ) )
+	 || ( block_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid block data size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( block_data_size < sizeof( fvde_metadata_block_header_t ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: block data size value too small.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: block data size value out of bounds.",
 		 function );
 
 		return( -1 );
