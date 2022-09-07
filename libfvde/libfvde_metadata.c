@@ -240,8 +240,7 @@ int libfvde_metadata_read_type_0x0011(
 
 		return( -1 );
 	}
-/* TODO data size check */
-	if( ( block_data_size < 48 )
+	if( ( block_data_size < 192 )
 	 || ( block_data_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
@@ -588,7 +587,7 @@ int libfvde_metadata_read_type_0x0011(
 		return( -1 );
 	}
 	if( ( volume_groups_descriptor_offset < 248 )
-	 || ( volume_groups_descriptor_offset > io_handle->metadata_size ) )
+	 || ( volume_groups_descriptor_offset > block_data_size ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -602,14 +601,14 @@ int libfvde_metadata_read_type_0x0011(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		if( block_data_offset < ( io_handle->metadata_size - 64 ) )
+		if( block_data_offset < ( block_data_size - 64 ) )
 		{
 			libcnotify_printf(
 			 "%s: remaining data:\n",
 			 function );
 			libcnotify_print_data(
 			 &( block_data[ block_data_offset ] ),
-			 io_handle->metadata_size - ( block_data_offset + 64 ),
+			 block_data_size - ( block_data_offset + 64 ),
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 		}
 	}
@@ -695,7 +694,7 @@ int libfvde_metadata_read_type_0x0011(
 	metadata->encrypted_metadata_size *= io_handle->block_size;
 
 	if( ( xml_offset < 248 )
-	 || ( xml_offset > io_handle->metadata_size ) )
+	 || ( xml_offset > block_data_size ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1342,7 +1341,7 @@ int libfvde_metadata_read_file_io_handle(
 	if( libfvde_metadata_block_read_data(
 	     metadata_block,
 	     metadata_block_data,
-	     8192,
+	     (size_t) io_handle->metadata_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
