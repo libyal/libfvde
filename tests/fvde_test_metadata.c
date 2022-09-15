@@ -329,6 +329,7 @@ int fvde_test_metadata_read_volume_group_plist(
 	result = libfvde_metadata_read_volume_group_plist(
 	          metadata,
 	          fvde_test_metadata_volume_group_plist_data1,
+	          358,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -345,6 +346,7 @@ int fvde_test_metadata_read_volume_group_plist(
 	result = libfvde_metadata_read_volume_group_plist(
 	          NULL,
 	          fvde_test_metadata_volume_group_plist_data1,
+	          358,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(
@@ -362,6 +364,43 @@ int fvde_test_metadata_read_volume_group_plist(
 	result = libfvde_metadata_read_volume_group_plist(
 	          metadata,
 	          NULL,
+	          358,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_metadata_read_volume_group_plist(
+	          metadata,
+	          fvde_test_metadata_volume_group_plist_data1,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_metadata_read_volume_group_plist(
+	          metadata,
+	          fvde_test_metadata_volume_group_plist_data1,
+	          0,
 	          &error );
 
 	FVDE_TEST_ASSERT_EQUAL_INT(

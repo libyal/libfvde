@@ -709,6 +709,7 @@ int libfvde_metadata_read_type_0x0011(
 	if( libfvde_metadata_read_volume_group_plist(
 	     metadata,
 	     &( block_data[ xml_offset - 64 ] ),
+	     block_data_size - xml_offset,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -738,6 +739,7 @@ int libfvde_metadata_read_type_0x0011(
 int libfvde_metadata_read_volume_group_plist(
      libfvde_metadata_t *metadata,
      const uint8_t *xml_plist_data,
+     size_t xml_plist_data_size,
      libcerror_error_t **error )
 {
 	libfplist_property_t *array_entry_property                       = NULL;
@@ -789,6 +791,18 @@ int libfvde_metadata_read_volume_group_plist(
 
 		return( -1 );
 	}
+	if( ( xml_plist_data_size < 5 )
+	 || ( xml_plist_data_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid XML plist data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 /* TODO return 0 if not a valid plist? */
 	if( ( xml_plist_data[ 0 ] == (uint8_t) '<' )
 	 && ( xml_plist_data[ 1 ] == (uint8_t) 'd' )
@@ -807,20 +821,10 @@ int libfvde_metadata_read_volume_group_plist(
 #endif
 /* TODO for now determine the XML string length */
 /* TODO refactor this to a separate function */
-		xml_length = narrow_string_length(
-			      (char *) xml_plist_data );
+		xml_length = strnlen(
+			      (char *) xml_plist_data,
+		              xml_plist_data_size );
 
-		if( xml_length > (size_t) ( INT_MAX - 1 ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid XML length value out of bounds.",
-			 function );
-
-			goto on_error;
-		}
 		if( libfplist_property_list_initialize(
 		     &property_list,
 		     error ) != 1 )

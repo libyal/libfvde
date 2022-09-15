@@ -100,6 +100,7 @@ int libfvde_metadata_read_type_0x0011(
 int libfvde_metadata_read_volume_group_plist(
      libfvde_metadata_t *metadata,
      const uint8_t *xml_plist_data,
+     size_t xml_plist_data_size,
      libcerror_error_t **error );
 
 int libfvde_metadata_read_file_io_handle(
