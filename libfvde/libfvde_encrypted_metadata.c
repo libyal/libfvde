@@ -5364,13 +5364,13 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 			 "%s: entry: %03d physical block number\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
-			 value_64bit & 0x0000ffffffffffffUL );
+			 physical_block_number & 0x0000ffffffffffffUL );
 
 			libcnotify_printf(
 			 "%s: entry: %03d physical volume index\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
-			 value_64bit >> 48 );
+			 physical_block_number >> 48 );
 
 			libcnotify_printf(
 			 "\n" );

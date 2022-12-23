@@ -1203,9 +1203,9 @@ Seen: 0, 0x00400000
 |===
 
 [NOTE]
-The block number is relative from the corresponding entry in the metadata
-block data type 0x0505 if available, otherwise lock number is relative from
-the start of the physical volume.
+The physical volume block number is relative from the corresponding entry in
+the metadata block data type 0x0505 if available, otherwise the block number
+is relative from the start of the physical volume.
 
 === Metadata block data type 0x0404
 
@@ -1232,8 +1232,7 @@ The data area descriptor is 48 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 8 | | physiscal block number
 | 8 | 8 | | number of blocks
-| 16 | 8 | | data type +
-See section: <<data_area_type,Data area type>>
+| 16 | 8 | | Object identifier of the logical volume or a predefined <<data_area_object_identifier,data area object identifier>>
 | 24 | 8 | | [yellow-background]*Unknown (copy number?)* +
 [yellow-background]*Where 0 is the original?*
 | 32 | 8 | | [yellow-background]*Unknown (empty values)*
