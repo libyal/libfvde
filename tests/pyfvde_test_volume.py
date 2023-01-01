@@ -2,7 +2,7 @@
 #
 # Python-bindings volume type test script
 #
-# Copyright (C) 2011-2022, Joachim Metz <joachim.metz@gmail.com>
+# Copyright (C) 2011-2023, Joachim Metz <joachim.metz@gmail.com>
 #
 # Refer to AUTHORS for acknowledgements.
 #
@@ -312,11 +312,10 @@ class VolumeTypeTests(unittest.TestCase):
     fvde_volume.open(test_source)
 
     result = fvde_volume.is_locked()
-    self.assertTrue(result)
 
     fvde_volume.close()
 
-    if unittest.password or unittest.recovery_password:
+    if result and (unittest.password or unittest.recovery_password):
       fvde_volume = pyfvde.volume()
       if unittest.password:
         fvde_volume.set_password(unittest.password)

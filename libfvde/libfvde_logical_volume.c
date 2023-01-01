@@ -1,7 +1,7 @@
 /*
  * Logical volume functions
  *
- * Copyright (C) 2011-2022, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2023, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -1570,6 +1570,8 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 
 		return( -1 );
 	}
+	internal_logical_volume->io_handle->abort = 0;
+
 	if( (size64_t) internal_logical_volume->current_offset >= internal_logical_volume->logical_volume_descriptor->size )
 	{
 		return( 0 );
@@ -1596,8 +1598,9 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve sector data at offset: %" PRIi64 ".",
+			 "%s: unable to retrieve sector data at offset: %" PRIi64 " (0x%08 " PRIx64 ").",
 			 function,
+			 internal_logical_volume->current_offset,
 			 internal_logical_volume->current_offset );
 
 			return( -1 );
@@ -1608,8 +1611,9 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing sector data at offset: %" PRIi64 ".",
+			 "%s: missing sector data at offset: %" PRIi64 " (0x%08 " PRIx64 ").",
 			 function,
+			 internal_logical_volume->current_offset,
 			 internal_logical_volume->current_offset );
 
 			return( -1 );

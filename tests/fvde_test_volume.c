@@ -1,7 +1,7 @@
 /*
  * Library volume type test program
  *
- * Copyright (C) 2011-2022, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2023, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -1403,7 +1403,7 @@ int fvde_test_volume_is_locked(
 	/* Test regular cases
 	 */
 	result = libfvde_volume_is_locked(
-	          NULL,
+	          volume,
 	          &error );
 
 	FVDE_TEST_ASSERT_NOT_EQUAL_INT(

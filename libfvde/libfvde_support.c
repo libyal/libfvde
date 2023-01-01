@@ -1,7 +1,7 @@
 /*
  * Support functions
  *
- * Copyright (C) 2011-2022, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2023, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -408,10 +408,10 @@ int libfvde_check_volume_signature_file_io_handle(
 			goto on_error;
 		}
 	}
-	else if( memory_compare(
-	          signature,
-	          "CS",
-	          2 ) == 0 )
+	if( memory_compare(
+	     signature,
+	     "CS",
+	     2 ) == 0 )
 	{
         	result = 1;
 	}
