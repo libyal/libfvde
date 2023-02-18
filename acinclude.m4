@@ -1,6 +1,6 @@
 dnl Checks for required headers and functions
 dnl
-dnl Version: 20201206
+dnl Version: 20230218
 
 dnl Function to detect if libfvde dependencies are available
 AC_DEFUN([AX_LIBFVDE_CHECK_LOCAL],
@@ -30,9 +30,7 @@ AC_DEFUN([AX_FVDETOOLS_CHECK_LOCAL],
   ])
 
   dnl Headers included in fvdetools/fvdemount.c
-  AC_CHECK_HEADERS([errno.h])
-
-  AC_HEADER_TIME
+  AC_CHECK_HEADERS([errno.h sys/time.h])
 
   dnl Functions included in fvdetools/mount_file_system.c and fvdetools/mount_file_entry.c
   AS_IF(
