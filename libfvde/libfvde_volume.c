@@ -1634,10 +1634,10 @@ int libfvde_internal_volume_open_physical_volume_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	static char *function                = "libfvde_internal_volume_open_physical_volume_file_io_handle";
-	int bfio_access_flags                = 0;
-	int file_io_handle_is_open           = 0;
-	int file_io_handle_opened_in_library = 0;
+	static char *function                    = "libfvde_internal_volume_open_physical_volume_file_io_handle";
+	uint8_t file_io_handle_opened_in_library = 0;
+	int bfio_access_flags                    = 0;
+	int file_io_handle_is_open               = 0;
 
 	if( internal_volume == NULL )
 	{
