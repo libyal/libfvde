@@ -110,11 +110,13 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f libfvde_definitions.h
-	/bin/rm -f libfvde.rc
-	/bin/rm -f Makefile
+	-rm -f libfvde_definitions.h
+	-rm -f libfvde.rc
+	-rm -f Makefile
 
-splint:
+sources-local: $(BUILT_SOURCES)
+
+splint-local:
 	@echo "Running splint on libfvde ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(libfvde_la_SOURCES)
 

@@ -152,7 +152,7 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
   def test_get_identifier(self):
     """Tests the get_identifier function and identifier property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -161,8 +161,10 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -179,7 +181,7 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
   def test_get_name(self):
     """Tests the get_name function and name property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -188,8 +190,10 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -206,7 +210,7 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
   def test_get_number_of_physical_volumes(self):
     """Tests the get_number_of_physical_volumes function and number_of_physical_volumes property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -215,8 +219,10 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -233,7 +239,7 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
   def test_physical_volume(self):
     """Tests the physical_volume function."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -242,8 +248,10 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -258,7 +266,7 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
   def test_get_number_of_logical_volumes(self):
     """Tests the get_number_of_logical_volumes function and number_of_logical_volumes property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -267,8 +275,10 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -285,7 +295,7 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
   def test_logical_volume(self):
     """Tests the logical_volume function."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -294,8 +304,10 @@ class VolumeGroupTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)

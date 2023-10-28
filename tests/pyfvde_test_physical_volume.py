@@ -152,7 +152,7 @@ class PhysicalVolumeTypeTests(unittest.TestCase):
 
   def test_get_identifier(self):
     """Tests the get_identifier function and identifier property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -161,8 +161,10 @@ class PhysicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -182,7 +184,7 @@ class PhysicalVolumeTypeTests(unittest.TestCase):
 
   def test_get_encryption_method(self):
     """Tests the get_encryption_method function and encryption_method property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -191,8 +193,10 @@ class PhysicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -212,7 +216,7 @@ class PhysicalVolumeTypeTests(unittest.TestCase):
 
   def test_get_size(self):
     """Tests the get_size function and size property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -221,8 +225,10 @@ class PhysicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)

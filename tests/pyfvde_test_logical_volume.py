@@ -152,7 +152,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_unlock(self):
     """Tests the unlock and is_locked functions."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -161,8 +161,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -195,7 +197,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_read_buffer(self):
     """Tests the read_buffer function."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -204,8 +206,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -301,7 +305,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_read_buffer_at_offset(self):
     """Tests the read_buffer_at_offset function."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -310,8 +314,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -396,7 +402,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_seek_offset(self):
     """Tests the seek_offset function."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -405,8 +411,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -483,7 +491,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_get_offset(self):
     """Tests the get_offset function."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -492,8 +500,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -515,7 +525,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_get_identifier(self):
     """Tests the get_identifier function and identifier property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -524,8 +534,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -549,7 +561,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_get_name(self):
     """Tests the get_name function and name property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -558,8 +570,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)
@@ -583,7 +597,7 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
   def test_get_size(self):
     """Tests the get_size function and size property."""
-    test_source = unittest.source
+    test_source = getattr(unittest, "source", None)
     if not test_source:
       raise unittest.SkipTest("missing source")
 
@@ -592,8 +606,10 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
     fvde_volume = pyfvde.volume()
 
+    test_offset = getattr(unittest, "offset", None)
+
     with DataRangeFileObject(
-        test_source, unittest.offset or 0, None) as file_object:
+        test_source, test_offset or 0, None) as file_object:
 
       fvde_volume = pyfvde.volume()
       fvde_volume.open_file_object(file_object)

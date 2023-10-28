@@ -1159,7 +1159,7 @@ PyObject *pyfvde_volume_open_physical_volume_files(
 		}
 		( filenames[ filename_index ] )[ filename_length ] = 0;
 
-#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
 		if( filename_wide != NULL )
 		{
 			PyMem_Free(
@@ -1228,7 +1228,7 @@ PyObject *pyfvde_volume_open_physical_volume_files(
 	return( Py_None );
 
 on_error:
-#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
 	if( filename_wide != NULL )
 	{
 		PyMem_Free(

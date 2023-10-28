@@ -1,6 +1,6 @@
 [metadata]
 name = libfvde-python
-version = 20231028
+version = @VERSION@
 description = Python bindings module for libfvde
 long_description = Python bindings module for libfvde
 author = Joachim Metz

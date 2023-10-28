@@ -19,9 +19,9 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f libfvde.h
-	/bin/rm -f libfvde/definitions.h
-	/bin/rm -f libfvde/features.h
-	/bin/rm -f libfvde/types.h
-	/bin/rm -f Makefile
+	-rm -f libfvde.h
+	-rm -f libfvde/definitions.h
+	-rm -f libfvde/features.h
+	-rm -f libfvde/types.h
+	-rm -f Makefile
 

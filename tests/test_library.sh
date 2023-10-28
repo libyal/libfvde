@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Tests library functions and types.
 #
-# Version: 20230410
+# Version: 20231007
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -9,7 +9,7 @@ EXIT_IGNORE=77;
 
 LIBRARY_TESTS="bit_stream checksum compression deflate encrypted_metadata encryption_context encryption_context_plist error huffman_tree io_handle keyring logical_volume logical_volume_descriptor metadata metadata_block notify physical_volume physical_volume_descriptor sector_data segment_descriptor volume_data_handle volume_group volume_header";
 LIBRARY_TESTS_WITH_INPUT="support volume";
-OPTION_SETS="offset password recovery_password";
+OPTION_SETS=("offset" "password" "recovery_password");
 
 INPUT_GLOB="*";
 
@@ -78,47 +78,54 @@ run_test_with_input()
 
 		local TEST_SET_DIRECTORY=$(get_test_set_directory "${TEST_PROFILE_DIRECTORY}" "${TEST_SET_INPUT_DIRECTORY}");
 
-		local OLDIFS=${IFS};
-
-		# IFS="\n" is not supported by all platforms.
-		IFS="
-";
-
 		if test -f "${TEST_SET_DIRECTORY}/files";
 		then
-			for INPUT_FILE in `cat ${TEST_SET_DIRECTORY}/files | sed "s?^?${TEST_SET_INPUT_DIRECTORY}/?"`;
-			do
-				if test "${OSTYPE}" = "msys";
-				then
-					# A test executable built with MinGW expects a Windows path.
-					INPUT_FILE=`echo ${INPUT_FILE} | sed 's?/?\\\\?g'`;
-				fi
-				run_test_on_input_file_with_options "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "${OPTION_SETS}" "${TEST_EXECUTABLE}" "${INPUT_FILE}";
-				RESULT=$?;
-
-				if test ${RESULT} -ne ${EXIT_SUCCESS};
-				then
-					break;
-				fi
-			done
+			IFS="" read -a INPUT_FILES <<< $(cat ${TEST_SET_DIRECTORY}/files | sed "s?^?${TEST_SET_INPUT_DIRECTORY}/?");
 		else
-			for INPUT_FILE in `ls -1d ${TEST_SET_INPUT_DIRECTORY}/${INPUT_GLOB}`;
-			do
-				if test "${OSTYPE}" = "msys";
-				then
-					# A test executable built with MinGW expects a Windows path.
-					INPUT_FILE=`echo ${INPUT_FILE} | sed 's?/?\\\\?g'`;
-				fi
-				run_test_on_input_file_with_options "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "${OPTION_SETS}" "${TEST_EXECUTABLE}" "${INPUT_FILE}";
-				RESULT=$?;
+			IFS="" read -a INPUT_FILES <<< $(ls -1d ${TEST_SET_INPUT_DIRECTORY}/${INPUT_GLOB});
+		fi
+		for INPUT_FILE in "${INPUT_FILES[@]}";
+		do
+			OPTION_INPUT_FILE="${INPUT_FILE}";
 
-				if test ${RESULT} -ne ${EXIT_SUCCESS};
+			if test "${OSTYPE}" = "msys";
+			then
+				# A test executable built with MinGW expects a Windows path.
+				INPUT_FILE=`echo ${INPUT_FILE} | sed 's?/?\\\\?g'`;
+			fi
+			local TESTED_WITH_OPTIONS=0;
+
+			for OPTION_SET in ${OPTION_SETS[@]};
+			do
+				local TEST_DATA_OPTION_FILE=$(get_test_data_option_file "${TEST_SET_DIRECTORY}" "${OPTION_INPUT_FILE}" "${OPTION_SET}");
+
+				if test -f ${TEST_DATA_OPTION_FILE};
 				then
-					break;
+					TESTED_WITH_OPTIONS=1;
+
+					IFS=" " read -a OPTIONS <<< $(read_test_data_option_file "${TEST_SET_DIRECTORY}" "${INPUT_FILE}" "${OPTION_SET}");
+
+					run_test_on_input_file "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "${OPTION_SET}" "${TEST_EXECUTABLE}" "${INPUT_FILE}" "${OPTIONS[@]}";
+					RESULT=$?;
+
+					if test ${RESULT} -ne ${EXIT_SUCCESS};
+					then
+						break;
+					fi
 				fi
 			done
-		fi
-		IFS=${OLDIFS};
+
+			if test ${TESTED_WITH_OPTIONS} -eq 0;
+			then
+				run_test_on_input_file "${TEST_SET_DIRECTORY}" "${TEST_DESCRIPTION}" "default" "" "${TEST_EXECUTABLE}" "${INPUT_FILE}";
+				RESULT=$?;
+			fi
+
+			if test ${RESULT} -ne ${EXIT_SUCCESS};
+			then
+				break;
+			fi
+		done
 
 		if test ${RESULT} -ne ${EXIT_SUCCESS};
 		then
