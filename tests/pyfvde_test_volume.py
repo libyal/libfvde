@@ -167,10 +167,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source defines offset")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     fvde_volume.open(test_source)
 
@@ -195,10 +199,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source not a regular file")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     test_offset = getattr(unittest, "offset", None)
 
@@ -225,10 +233,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("missing source")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     with self.assertRaises(IOError):
       fvde_volume.close()
@@ -244,10 +256,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source defines offset")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     # Test open and close.
     fvde_volume.open(test_source)
@@ -283,10 +299,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source not a regular file")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     test_offset = getattr(unittest, "offset", None)
 
@@ -322,12 +342,15 @@ class VolumeTypeTests(unittest.TestCase):
 
     fvde_volume.close()
 
-    if result and (unittest.password or unittest.recovery_password):
+    test_password = getattr(unittest, "password", None)
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+
+    if result and (test_password or test_recovery_password):
       fvde_volume = pyfvde.volume()
-      if unittest.password:
-        fvde_volume.set_password(unittest.password)
-      if unittest.recovery_password:
-        fvde_volume.set_recovery_password(unittest.recovery_password)
+      if test_password:
+        fvde_volume.set_password(test_password)
+      if test_recovery_password:
+        fvde_volume.set_recovery_password(test_recovery_password)
 
       fvde_volume.open(test_source)
 
@@ -347,10 +370,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source defines offset")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     fvde_volume.open(test_source)
 
@@ -433,10 +460,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source not a regular file")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     test_offset = getattr(unittest, "offset", None)
 
@@ -466,10 +497,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source defines offset")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     fvde_volume.open(test_source)
 
@@ -542,10 +577,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source defines offset")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     fvde_volume.open(test_source)
 
@@ -609,10 +648,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source not a regular file")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     test_offset = getattr(unittest, "offset", None)
 
@@ -637,10 +680,14 @@ class VolumeTypeTests(unittest.TestCase):
       raise unittest.SkipTest("source not a regular file")
 
     fvde_volume = pyfvde.volume()
-    if unittest.password:
-      fvde_volume.set_password(unittest.password)
-    if unittest.recovery_password:
-      fvde_volume.set_recovery_password(unittest.recovery_password)
+
+    test_password = getattr(unittest, "password", None)
+    if test_password:
+      fvde_volume.set_password(test_password)
+
+    test_recovery_password = getattr(unittest, "recovery_password", None)
+    if test_recovery_password:
+      fvde_volume.set_recovery_password(test_recovery_password)
 
     test_offset = getattr(unittest, "offset", None)
 

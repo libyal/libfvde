@@ -181,10 +181,13 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
       result = fvde_logical_volume.is_locked()
       if result:
-        if unittest.password:
-          fvde_logical_volume.set_password(unittest.password)
-        if unittest.recovery_password:
-          fvde_logical_volume.set_recovery_password(unittest.recovery_password)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+          fvde_logical_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+          fvde_logical_volume.set_recovery_password(test_recovery_password)
 
         result = fvde_logical_volume.unlock()
         self.assertTrue(result)
@@ -226,10 +229,13 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
       result = fvde_logical_volume.is_locked()
       if result:
-        if unittest.password:
-          fvde_logical_volume.set_password(unittest.password)
-        if unittest.recovery_password:
-          fvde_logical_volume.set_recovery_password(unittest.recovery_password)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+          fvde_logical_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+          fvde_logical_volume.set_recovery_password(test_recovery_password)
 
         result = fvde_logical_volume.unlock()
         self.assertTrue(result)
@@ -334,10 +340,13 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
       result = fvde_logical_volume.is_locked()
       if result:
-        if unittest.password:
-          fvde_logical_volume.set_password(unittest.password)
-        if unittest.recovery_password:
-          fvde_logical_volume.set_recovery_password(unittest.recovery_password)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+          fvde_logical_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+          fvde_logical_volume.set_recovery_password(test_recovery_password)
 
         result = fvde_logical_volume.unlock()
         self.assertTrue(result)
@@ -431,10 +440,13 @@ class LogicalVolumeTypeTests(unittest.TestCase):
 
       result = fvde_logical_volume.is_locked()
       if result:
-        if unittest.password:
-          fvde_logical_volume.set_password(unittest.password)
-        if unittest.recovery_password:
-          fvde_logical_volume.set_recovery_password(unittest.recovery_password)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+          fvde_logical_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+          fvde_logical_volume.set_recovery_password(test_recovery_password)
 
         result = fvde_logical_volume.unlock()
         self.assertTrue(result)
