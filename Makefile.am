@@ -23,8 +23,6 @@ SUBDIRS = \
 	libfvde \
 	fvdetools \
 	pyfvde \
-	pyfvde-python2 \
-	pyfvde-python3 \
 	po \
 	manuals \
 	tests \

@@ -32,7 +32,7 @@ Header files and libraries for developing applications for libfvde.
 Summary: Python 3 bindings for libfvde
 Group: System Environment/Libraries
 Requires: libfvde = %{version}-%{release} python3
-BuildRequires: python3-devel
+BuildRequires: python3-devel python3-setuptools
 
 %description -n libfvde-python3
 Python 3 bindings for libfvde
@@ -50,7 +50,7 @@ Several tools for reading FileVault Drive Encryption volumes
 %setup -q
 
 %build
-%configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir} --enable-python3
+%configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir} --enable-python
 make %{?_smp_mflags}
 
 %install
