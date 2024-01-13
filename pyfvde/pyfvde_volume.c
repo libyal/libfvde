@@ -1,7 +1,7 @@
 /*
  * Python object wrapper of libfvde_volume_t
  *
- * Copyright (C) 2011-2023, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2024, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -2161,12 +2161,17 @@ PyObject *pyfvde_volume_set_password(
 	{
 		PyErr_Clear();
 
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		password_string_wide = (wchar_t *) PyUnicode_AsWideCharString(
+		                                    string_object,
+		                                    &password_string_wide );
+#else
 		password_string_wide = (wchar_t *) PyUnicode_AsUnicode(
 		                                    string_object );
 
 		password_string_length = wide_string_length(
 		                          password_string_wide );
-
+#endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libfvde_volume_set_utf16_password(
@@ -2177,6 +2182,10 @@ PyObject *pyfvde_volume_set_password(
 
 		Py_END_ALLOW_THREADS
 
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		PyMem_Free(
+		 password_string_wide );
+#endif
 		if( result == -1 )
 		{
 			pyfvde_error_raise(
@@ -2421,12 +2430,17 @@ PyObject *pyfvde_volume_set_recovery_password(
 	{
 		PyErr_Clear();
 
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		recovery_password_string_wide = (wchar_t *) PyUnicode_AsWideCharString(
+		                                             string_object,
+		                                             &recovery_password_string_length );
+#else
 		recovery_password_string_wide = (wchar_t *) PyUnicode_AsUnicode(
 		                                             string_object );
 
 		recovery_password_string_length = wide_string_length(
 		                                   recovery_password_string_wide );
-
+#endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libfvde_volume_set_utf16_recovery_password(
@@ -2437,6 +2451,10 @@ PyObject *pyfvde_volume_set_recovery_password(
 
 		Py_END_ALLOW_THREADS
 
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		PyMem_Free(
+		 recovery_password_string_wide );
+#endif
 		if( result == -1 )
 		{
 			pyfvde_error_raise(
@@ -2673,8 +2691,14 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 	{
 		PyErr_Clear();
 
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		filename_wide = (wchar_t *) PyUnicode_AsWideCharString(
+		                             string_object,
+		                             NULL );
+#else
 		filename_wide = (wchar_t *) PyUnicode_AsUnicode(
 		                             string_object );
+#endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libfvde_volume_read_encrypted_root_plist_wide(
@@ -2684,6 +2708,10 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 
 		Py_END_ALLOW_THREADS
 
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		PyMem_Free(
+		 filename_wide );
+#endif
 		if( result == -1 )
 		{
 			pyfvde_error_raise(

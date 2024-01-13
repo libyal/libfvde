@@ -7,7 +7,7 @@ $ExitFailure = 1
 $ExitIgnore = 77
 
 $Profiles = @("fvdeinfo")
-$OptionsPerProfile = @("")
+$OptionsPerProfile = @("-u")
 $OptionSets = "offset password recovery_password"
 
 $InputGlob = "*"

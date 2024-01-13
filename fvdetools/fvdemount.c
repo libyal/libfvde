@@ -1,7 +1,7 @@
 /*
  * Mounts a FileVault Drive Encrypted (FVDE) volume
  *
- * Copyright (C) 2011-2023, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2024, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
