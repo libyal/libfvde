@@ -8,9 +8,7 @@ EXTRA_DIST = \
 	fvdemount.1 \
 	libfvde.3
 
-MAINTAINERCLEANFILES = \
+DISTCLEANFILES = \
+	Makefile \
 	Makefile.in
-
-distclean: clean
-	-rm -f Makefile
 

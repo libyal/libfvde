@@ -161,6 +161,7 @@ stamp-h[1-9]
 /tests/fvde_test_volume_group
 /tests/fvde_test_volume_header
 /tests/input
+/tests/notify_stream.log
 /tests/tmp*
 
 # Local library dependencies specific files

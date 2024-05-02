@@ -15,13 +15,11 @@ EXTRA_DIST = \
 	libfvde/features.h.in \
 	libfvde/types.h.in
 
-MAINTAINERCLEANFILES = \
+DISTCLEANFILES = \
+	libfvde.h \
+	libfvde/definitions.h \
+	libfvde/features.h \
+	libfvde/types.h \
+	Makefile \
 	Makefile.in
-
-distclean: clean
-	-rm -f libfvde.h
-	-rm -f libfvde/definitions.h
-	-rm -f libfvde/features.h
-	-rm -f libfvde/types.h
-	-rm -f Makefile
 

@@ -315,7 +315,7 @@ corrupt.
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
-| 1 | CRC-32C | CRC-32 using the Castagnoli polynomial of 0x1edc6f41, also known as CRC-32C. +
+| 1 | | CRC-32C (or CRC32-C), which uses the Castagnoli polynomial (0x1edc6f41) +
 The CRC-32 calculation does not use the XOR with 0xffffffff before and after the calculation, which is also referred to as weak CRC-32 calculation.
 |===
 
