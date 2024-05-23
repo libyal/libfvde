@@ -51,6 +51,12 @@ extern mount_handle_t *fvdemount_mount_handle;
 
 #endif /* ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 ) */
 
+#if defined( HAVE_DOKAN_LONG_PATHS )
+#define DOKAN_MAX_PATH 32768
+#else
+#define DOKAN_MAX_PATH MAX_PATH
+#endif
+
 /* Sets the values in a file information structure
  * The time values contain an unsigned 64-bit FILETIME timestamp
  * Returns 1 if successful or -1 on error
@@ -194,7 +200,7 @@ int mount_dokan_filldir(
 
 		return( -1 );
 	}
-	if( name_size > (size_t) MAX_PATH )
+	if( name_size > (size_t) DOKAN_MAX_PATH )
 	{
 		libcerror_error_set(
 		 error,
@@ -696,7 +702,7 @@ on_error:
 
 #endif /* ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 ) */
 
-/* Closes a file or direcotry
+/* Closes a file or directory
  * Returns 0 if successful or an error code otherwise
  */
 #if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
@@ -880,11 +886,11 @@ NTSTATUS __stdcall mount_dokan_ReadFile(
 		goto on_error;
 	}
 	read_count = mount_file_entry_read_buffer_at_offset(
-		      (mount_file_entry_t *) file_info->Context,
-		      buffer,
-		      (size_t) number_of_bytes_to_read,
-		      (off64_t) offset,
-		      &error );
+	              (mount_file_entry_t *) file_info->Context,
+	              buffer,
+	              (size_t) number_of_bytes_to_read,
+	              (off64_t) offset,
+	              &error );
 
 	if( read_count < 0 )
 	{
@@ -892,7 +898,7 @@ NTSTATUS __stdcall mount_dokan_ReadFile(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read from mount handle.",
+		 "%s: unable to read from file entry.",
 		 function );
 
 		result = MOUNT_DOKAN_ERROR_READ_FAULT;
@@ -1010,7 +1016,7 @@ NTSTATUS __stdcall mount_dokan_FindFiles(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set find data.",
+		 "%s: unable to set self find data.",
 		 function );
 
 		result = MOUNT_DOKAN_ERROR_GENERIC_FAILURE;
@@ -1048,7 +1054,7 @@ NTSTATUS __stdcall mount_dokan_FindFiles(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set find data.",
+		 "%s: unable to set parent find data.",
 		 function );
 
 		result = MOUNT_DOKAN_ERROR_GENERIC_FAILURE;
@@ -1172,7 +1178,7 @@ NTSTATUS __stdcall mount_dokan_FindFiles(
 			 &error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set find data for sub file entry: %d.",
+			 "%s: unable to set sub file entry: %d find data.",
 			 function,
 			 sub_file_entry_index );
 

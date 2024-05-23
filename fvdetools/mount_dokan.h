@@ -68,7 +68,6 @@ int mount_dokan_filldir(
      libcerror_error_t **error );
 
 #if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
-
 int __stdcall mount_dokan_CreateFile(
                const wchar_t *path,
                DWORD desired_access,
@@ -76,48 +75,7 @@ int __stdcall mount_dokan_CreateFile(
                DWORD creation_disposition,
                DWORD attribute_flags,
                DOKAN_FILE_INFO *file_info );
-
-int __stdcall mount_dokan_OpenDirectory(
-               const wchar_t *path,
-               DOKAN_FILE_INFO *file_info );
-
-int __stdcall mount_dokan_CloseFile(
-               const wchar_t *path,
-               DOKAN_FILE_INFO *file_info );
-
-int __stdcall mount_dokan_ReadFile(
-               const wchar_t *path,
-               void *buffer,
-               DWORD number_of_bytes_to_read,
-               DWORD *number_of_bytes_read,
-               LONGLONG offset,
-               DOKAN_FILE_INFO *file_info );
-
-int __stdcall mount_dokan_FindFiles(
-               const wchar_t *path,
-               PFillFindData fill_find_data,
-               DOKAN_FILE_INFO *file_info );
-
-int __stdcall mount_dokan_GetFileInformation(
-               const wchar_t *path,
-               BY_HANDLE_FILE_INFORMATION *file_information,
-               DOKAN_FILE_INFO *file_info );
-
-int __stdcall mount_dokan_GetVolumeInformation(
-               wchar_t *volume_name,
-               DWORD volume_name_size,
-               DWORD *volume_serial_number,
-               DWORD *maximum_filename_length,
-               DWORD *file_system_flags,
-               wchar_t *file_system_name,
-               DWORD file_system_name_size,
-               DOKAN_FILE_INFO *file_info );
-
-int __stdcall mount_dokan_Unmount(
-               DOKAN_FILE_INFO *file_info );
-
 #else
-
 NTSTATUS __stdcall mount_dokan_ZwCreateFile(
                     const wchar_t *path,
                     DOKAN_IO_SECURITY_CONTEXT *security_context,
@@ -127,11 +85,33 @@ NTSTATUS __stdcall mount_dokan_ZwCreateFile(
                     ULONG creation_disposition,
                     ULONG creation_options,
                     DOKAN_FILE_INFO *file_info );
+#endif
 
+#if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
+int __stdcall mount_dokan_OpenDirectory(
+               const wchar_t *path,
+               DOKAN_FILE_INFO *file_info );
+#endif
+
+#if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
+int __stdcall mount_dokan_CloseFile(
+               const wchar_t *path,
+               DOKAN_FILE_INFO *file_info );
+#else
 NTSTATUS __stdcall mount_dokan_CloseFile(
                     const wchar_t *path,
                     DOKAN_FILE_INFO *file_info );
+#endif
 
+#if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
+int __stdcall mount_dokan_ReadFile(
+               const wchar_t *path,
+               void *buffer,
+               DWORD number_of_bytes_to_read,
+               DWORD *number_of_bytes_read,
+               LONGLONG offset,
+               DOKAN_FILE_INFO *file_info );
+#else
 NTSTATUS __stdcall mount_dokan_ReadFile(
                     const wchar_t *path,
                     void *buffer,
@@ -139,17 +119,43 @@ NTSTATUS __stdcall mount_dokan_ReadFile(
                     DWORD *number_of_bytes_read,
                     LONGLONG offset,
                     DOKAN_FILE_INFO *file_info );
+#endif
 
+#if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
+int __stdcall mount_dokan_FindFiles(
+               const wchar_t *path,
+               PFillFindData fill_find_data,
+               DOKAN_FILE_INFO *file_info );
+#else
 NTSTATUS __stdcall mount_dokan_FindFiles(
                     const wchar_t *path,
                     PFillFindData fill_find_data,
                     DOKAN_FILE_INFO *file_info );
+#endif
 
+#if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
+int __stdcall mount_dokan_GetFileInformation(
+               const wchar_t *path,
+               BY_HANDLE_FILE_INFORMATION *file_information,
+               DOKAN_FILE_INFO *file_info );
+#else
 NTSTATUS __stdcall mount_dokan_GetFileInformation(
                     const wchar_t *path,
                     BY_HANDLE_FILE_INFORMATION *file_information,
                     DOKAN_FILE_INFO *file_info );
+#endif
 
+#if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
+int __stdcall mount_dokan_GetVolumeInformation(
+               wchar_t *volume_name,
+               DWORD volume_name_size,
+               DWORD *volume_serial_number,
+               DWORD *maximum_filename_length,
+               DWORD *file_system_flags,
+               wchar_t *file_system_name,
+               DWORD file_system_name_size,
+               DOKAN_FILE_INFO *file_info );
+#else
 NTSTATUS __stdcall mount_dokan_GetVolumeInformation(
                     wchar_t *volume_name,
                     DWORD volume_name_size,
@@ -159,8 +165,12 @@ NTSTATUS __stdcall mount_dokan_GetVolumeInformation(
                     wchar_t *file_system_name,
                     DWORD file_system_name_size,
                     DOKAN_FILE_INFO *file_info );
+#endif
 
-#endif /* ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 ) */
+#if ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 )
+int __stdcall mount_dokan_Unmount(
+               DOKAN_FILE_INFO *file_info );
+#endif
 
 #endif /* defined( HAVE_LIBDOKAN ) */
 

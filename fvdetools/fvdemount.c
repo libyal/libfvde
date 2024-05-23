@@ -1,5 +1,5 @@
 /*
- * Mounts a FileVault Drive Encrypted (FVDE) volume
+ * Mounts a FileVault Drive Encrypted (FVDE) volume.
  *
  * Copyright (C) 2011-2024, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
@@ -158,11 +158,19 @@ int main( int argc, char * const argv[] )
 	int unattended_mode                                  = 0;
 	int verbose                                          = 0;
 
-#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
 	struct fuse_operations fvdemount_fuse_operations;
 
+#if defined( HAVE_LIBFUSE3 )
+	/* Need to set this to 1 even if there no arguments, otherwise this causes
+	 * fuse: empty argv passed to fuse_session_new()
+	 */
+	char *fuse_argv[ 2 ]                                 = { program, NULL };
+	struct fuse_args fvdemount_fuse_arguments            = FUSE_ARGS_INIT(1, fuse_argv);
+#else
 	struct fuse_args fvdemount_fuse_arguments            = FUSE_ARGS_INIT(0, NULL);
 	struct fuse_chan *fvdemount_fuse_channel             = NULL;
+#endif
 	struct fuse *fvdemount_fuse_handle                   = NULL;
 
 #elif defined( HAVE_LIBDOKAN )
@@ -421,7 +429,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
 	if( option_extended_options != NULL )
 	{
 		/* This argument is required but ignored
@@ -477,6 +485,34 @@ int main( int argc, char * const argv[] )
 	fvdemount_fuse_operations.getattr    = &mount_fuse_getattr;
 	fvdemount_fuse_operations.destroy    = &mount_fuse_destroy;
 
+#if defined( HAVE_LIBFUSE3 )
+	fvdemount_fuse_handle = fuse_new(
+	                         &fvdemount_fuse_arguments,
+	                         &fvdemount_fuse_operations,
+	                         sizeof( struct fuse_operations ),
+	                         fvdemount_mount_handle );
+
+	if( fvdemount_fuse_handle == NULL )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to create fuse handle.\n" );
+
+		goto on_error;
+	}
+	result = fuse_mount(
+	          fvdemount_fuse_handle,
+	          mount_point );
+
+	if( result != 0 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to fuse mount file system.\n" );
+
+		goto on_error;
+	}
+#else
 	fvdemount_fuse_channel = fuse_mount(
 	                          mount_point,
 	                          &fvdemount_fuse_arguments );
@@ -504,6 +540,8 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+#endif /* defined( HAVE_LIBFUSE3 ) */
+
 	if( verbose == 0 )
 	{
 		if( fuse_daemonize(
@@ -558,10 +596,14 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	fvdemount_dokan_options.Version     = DOKAN_VERSION;
-	fvdemount_dokan_options.ThreadCount = 0;
-	fvdemount_dokan_options.MountPoint  = mount_point;
+	fvdemount_dokan_options.Version    = DOKAN_VERSION;
+	fvdemount_dokan_options.MountPoint = mount_point;
 
+#if DOKAN_MINIMUM_COMPATIBLE_VERSION >= 200
+	fvdemount_dokan_options.SingleThread = TRUE;
+#else
+	fvdemount_dokan_options.ThreadCount  = 0;
+#endif
 	if( verbose != 0 )
 	{
 		fvdemount_dokan_options.Options |= DOKAN_OPTION_STDERR;
@@ -631,10 +673,16 @@ int main( int argc, char * const argv[] )
 
 #endif /* ( DOKAN_VERSION >= 600 ) && ( DOKAN_VERSION < 800 ) */
 
+#if DOKAN_MINIMUM_COMPATIBLE_VERSION >= 200
+	DokanInit();
+#endif
 	result = DokanMain(
 	          &fvdemount_dokan_options,
 	          &fvdemount_dokan_operations );
 
+#if DOKAN_MINIMUM_COMPATIBLE_VERSION >= 200
+	DokanShutdown();
+#endif
 	switch( result )
 	{
 		case DOKAN_SUCCESS:
@@ -692,7 +740,7 @@ int main( int argc, char * const argv[] )
 
 	return( EXIT_FAILURE );
 
-#endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE ) */
+#endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE ) */
 
 on_error:
 	if( error != NULL )
@@ -702,7 +750,7 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
-#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
 	if( fvdemount_fuse_handle != NULL )
 	{
 		fuse_destroy(

@@ -1,5 +1,5 @@
 /*
- * Shows information obtained from a FileVault Drive Encryption (FVDE) encrypted volume
+ * Shows information obtained from a FileVault Drive Encryption (FVDE) encrypted volume.
  *
  * Copyright (C) 2011-2024, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
@@ -26,12 +26,18 @@
 #include <system_string.h>
 #include <types.h>
 
-#if defined( HAVE_UNISTD_H )
-#include <unistd.h>
+#include <stdio.h>
+
+#if defined( HAVE_IO_H ) || defined( WINAPI )
+#include <io.h>
 #endif
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
+#endif
+
+#if defined( HAVE_UNISTD_H )
+#include <unistd.h>
 #endif
 
 #include "fvdetools_getopt.h"
@@ -49,7 +55,7 @@
 info_handle_t *fvdeinfo_info_handle = NULL;
 int fvdeinfo_abort                  = 0;
 
-/* Prints the executable usage information
+/* Prints usage information
  */
 void usage_fprint(
       FILE *stream )
@@ -150,7 +156,7 @@ int main( int argc, char * const argv[] )
 	 1 );
 
 	if( libclocale_initialize(
-             "fvdetools",
+	     "fvdetools",
 	     &error ) != 1 )
 	{
 		fprintf(
@@ -159,9 +165,9 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-        if( fvdetools_output_initialize(
-             _IONBF,
-             &error ) != 1 )
+	if( fvdetools_output_initialize(
+	     _IONBF,
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
