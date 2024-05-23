@@ -1,6 +1,6 @@
 dnl Functions for libfplist
 dnl
-dnl Version: 20240413
+dnl Version: 20240523
 
 dnl Function to detect if libfplist is available
 dnl ac_libfplist_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -14,15 +14,7 @@ AC_DEFUN([AX_LIBFPLIST_CHECK_LIB],
     dnl treat them as auto-detection.
     AS_IF(
       [test "x$ac_cv_with_libfplist" != x && test "x$ac_cv_with_libfplist" != xauto-detect && test "x$ac_cv_with_libfplist" != xyes],
-      [AS_IF(
-        [test -d "$ac_cv_with_libfplist"],
-        [CFLAGS="$CFLAGS -I${ac_cv_with_libfplist}/include"
-        LDFLAGS="$LDFLAGS -L${ac_cv_with_libfplist}/lib"],
-        [AC_MSG_FAILURE(
-          [no such directory: $ac_cv_with_libfplist],
-          [1])
-        ])
-      ],
+      [AX_CHECK_LIB_DIRECTORY_EXISTS([libfplist])],
       [dnl Check for a pkg-config file
       AS_IF(
         [test "x$cross_compiling" != "xyes" && test "x$PKGCONFIG" != "x"],
@@ -46,108 +38,33 @@ AC_DEFUN([AX_LIBFPLIST_CHECK_LIB],
       AS_IF(
         [test "x$ac_cv_header_libfplist_h" = xno],
         [ac_cv_libfplist=no],
-        [dnl Check for the individual functions
-        ac_cv_libfplist=yes
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_get_version,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
+        [ac_cv_libfplist=yes
 
-        dnl Plist functions
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_list_initialize,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_list_free,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_list_copy_from_byte_stream,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_list_has_plist_root_element,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_list_get_root_property,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-
-        dnl Property functions
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_free,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_value_type,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_value_data_size,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_value_data,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_value_integer,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_value_string,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_value_uuid_string_copy_to_byte_stream,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_array_number_of_entries,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_array_entry_by_index,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
-
-        AC_CHECK_LIB(
-          fplist,
-          libfplist_property_get_sub_property_by_utf8_name,
-          [ac_cv_libfplist_dummy=yes],
-          [ac_cv_libfplist=no])
+        AX_CHECK_LIB_FUNCTIONS(
+          [libbfio],
+          [bfio],
+          [[libbfio_get_version],
+           [libfplist_property_list_initialize],
+           [libfplist_property_list_free],
+           [libfplist_property_list_copy_from_byte_stream],
+           [libfplist_property_list_has_plist_root_element],
+           [libfplist_property_list_get_root_property],
+           [libfplist_property_free],
+           [libfplist_property_get_value_type],
+           [libfplist_property_get_value_data_size],
+           [libfplist_property_get_value_data],
+           [libfplist_property_get_value_integer],
+           [libfplist_property_get_value_string],
+           [libfplist_property_value_uuid_string_copy_to_byte_stream],
+           [libfplist_property_get_array_number_of_entries],
+           [libfplist_property_get_array_entry_by_index],
+           [libfplist_property_get_sub_property_by_utf8_name]])
 
         ac_cv_libfplist_LIBADD="-lfplist"
         ])
       ])
 
-    AS_IF(
-      [test "x$ac_cv_libfplist" != xyes && test "x$ac_cv_with_libfplist" != x && test "x$ac_cv_with_libfplist" != xauto-detect && test "x$ac_cv_with_libfplist" != xyes],
-      [AC_MSG_FAILURE(
-        [unable to find supported libfplist in directory: $ac_cv_with_libfplist],
-        [1])
-      ])
+    AX_CHECK_LIB_DIRECTORY_MSG_ON_FAILURE([libfplist])
     ])
 
   AS_IF(
