@@ -158,12 +158,19 @@ fvde_test_encryption_context_LDADD = \
 fvde_test_encryption_context_plist_SOURCES = \
 	fvde_test_encryption_context_plist.c \
 	fvde_test_libcerror.h \
+	fvde_test_libfplist.h \
 	fvde_test_libfvde.h \
 	fvde_test_macros.h \
 	fvde_test_memory.c fvde_test_memory.h \
 	fvde_test_unused.h
 
 fvde_test_encryption_context_plist_LDADD = \
+	@LIBFPLIST_LIBADD@ \
+	@LIBFVALUE_CPPFLAGS@ \
+	@LIBFGUID_CPPFLAGS@ \
+	@LIBUNA_CPPFLAGS@ \
+	@LIBCNOTIFY_CPPFLAGS@ \
+	@LIBCDATA_CPPFLAGS@ \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 

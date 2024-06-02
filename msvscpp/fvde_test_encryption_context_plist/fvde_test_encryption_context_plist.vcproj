@@ -194,6 +194,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\fvde_test_libfplist.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\fvde_test_libfvde.h"
 				>
 			</File>
