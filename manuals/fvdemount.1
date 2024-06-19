@@ -14,26 +14,30 @@
 .Op Fl X Ar extended_options
 .Op Fl huvV
 .Ar sources
+.Ar mountpoint
 .Sh DESCRIPTION
 .Nm fvdemount
-is a utility to mount a FileVault Drive Encrypted (FVDE) volume
+is a utility to mount a FileVault Drive Encrypted (FVDE) volume.
 .Pp
 .Nm fvdemount
 is part of the
 .Nm libfvde
 package.
 .Nm libfvde
-is a library to acess the FileVault Drive Encryption (FVDE) format
+is a library to access the FileVault Drive Encryption (FVDE) format.
 .Pp
 .Ar sources
-one or more source files or devices.
+one or more source files or devices
+.Pp
+.Ar mountpoint
+the directory to serve as mount point
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl e Ar plist_path
 specify the path of the EncryptedRoot.plist.wipekey file
 .It Fl h
-shows this help
+usage help
 .It Fl k Ar key
 specify the volume master key formatted in base16
 .It Fl o Ar offset
@@ -57,7 +61,7 @@ None
 None
 .Sh EXAMPLES
 .Bd -literal
-# fvdemount -p Password /dev/sda1
+# fvdemount -p Password /dev/sda1 /mnt/fv
 fvdemount 20121113
 
 .Ed
