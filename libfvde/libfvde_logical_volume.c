@@ -375,7 +375,7 @@ int libfvde_internal_logical_volume_open_read(
 		 "%s: unable to retrieve logical volume size from descriptor.",
 		 function );
 
-		result = -1;
+		goto on_error;
 	}
 /* TODO remove after debugging unsupported format variants
 	if( internal_logical_volume->volume_size == 0 )
@@ -964,10 +964,13 @@ int libfvde_internal_logical_volume_open_read_volume_header_data(
      libcerror_error_t **error )
 {
 	static char *function     = "libfvde_internal_logical_volume_open_read_volume_header_data";
-	uint32_t block_size       = 0;
-	uint32_t number_of_blocks = 0;
 	uint16_t volume_signature = 0;
 	int result                = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint32_t block_size       = 0;
+	uint32_t number_of_blocks = 0;
+#endif
 
 	if( internal_logical_volume == NULL )
 	{
@@ -1010,6 +1013,7 @@ int libfvde_internal_logical_volume_open_read_volume_header_data(
 	if( ( volume_signature == 0x482b )
 	 || ( volume_signature == 0x4858 ) )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
 		byte_stream_copy_to_uint32_big_endian(
 		 &( data[ 40 ] ),
 		 block_size );
@@ -1018,7 +1022,6 @@ int libfvde_internal_logical_volume_open_read_volume_header_data(
 		 &( data[ 44 ] ),
 		 number_of_blocks );
 
-#if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(

@@ -36,6 +36,10 @@
 #include <stdlib.h>
 #endif
 
+#if defined( WINAPI ) || defined( __MINGW32__ )
+#include <windows.h>
+#endif
+
 #include "fvdetools_libcerror.h"
 #include "fvdetools_input.h"
 
@@ -49,7 +53,7 @@ int fvdetools_prompt_for_password(
      size_t password_size,
      libcerror_error_t **error )
 {
-#if !defined( WINAPI )
+#if !defined( WINAPI ) && !defined( __MINGW32__ )
 	struct termios echo_off_termios;
 	struct termios original_termios;
 #endif
@@ -59,7 +63,7 @@ int fvdetools_prompt_for_password(
 	size_t password_index        = 0;
 	int result                   = 1;
 
-#if defined( WINAPI )
+#if defined( WINAPI ) || defined( __MINGW32__ )
 	DWORD echo_off_mode          = 0;
 	HANDLE input_handle          = INVALID_HANDLE_VALUE;
 	DWORD original_mode          = 0;
@@ -99,7 +103,7 @@ int fvdetools_prompt_for_password(
 
 		return( -1 );
 	}
-#if defined( WINAPI )
+#if defined( WINAPI ) || defined( __MINGW32__ )
 	input_handle = GetStdHandle(
 	                STD_INPUT_HANDLE );
 
@@ -155,14 +159,14 @@ int fvdetools_prompt_for_password(
 
 		return( -1 );
 	}
-#endif /* defined( WINAPI ) */
+#endif /* defined( WINAPI ) || defined( __MINGW32__ ) */
 
 	fprintf(
 	 stream,
 	 "%" PRIs_SYSTEM ": ",
 	 request_string );
 
-#if defined( WINAPI )
+#if defined( WINAPI ) || defined( __MINGW32__ )
 	echo_off_mode = original_mode & ~( ENABLE_ECHO_INPUT );
 
 	if( SetConsoleMode(
@@ -195,13 +199,13 @@ int fvdetools_prompt_for_password(
 
 		return( -1 );
 	}
-#endif /* defined( WINAPI ) */
+#endif /* defined( WINAPI ) || defined( __MINGW32__ ) */
 
 	while( password_index < password_size )
 	{
 #if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		character = (system_character_t) getchar();
-#elif defined( WINAPI )
+#elif defined( WINAPI ) || defined( __MINGW32__ )
 		character = (system_character_t) _getwch();
 #else
 		character = (system_character_t) getwchar();
@@ -249,7 +253,7 @@ int fvdetools_prompt_for_password(
 	{
 		password[ password_index ] = (system_character_t) 0;
 	}
-#if defined( WINAPI )
+#if defined( WINAPI ) || defined( __MINGW32__ )
 	if( SetConsoleMode(
 	     input_handle,
 	     echo_off_mode ) == 0 )
@@ -278,7 +282,7 @@ int fvdetools_prompt_for_password(
 
 		return( -1 );
 	}
-#endif /* defined( WINAPI ) */
+#endif /* defined( WINAPI ) || defined( __MINGW32__ ) */
 
 	return( result );
 }

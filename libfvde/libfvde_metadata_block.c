@@ -244,11 +244,11 @@ int libfvde_metadata_block_read_data(
 	uint32_t calculated_checksum = 0;
 	uint32_t initial_value       = 0;
 	uint32_t stored_checksum     = 0;
-	uint16_t version             = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint64_t value_64bit         = 0;
 	uint32_t value_32bit         = 0;
+	uint16_t value_16bit         = 0;
 #endif
 
 	if( metadata_block == NULL )
@@ -323,10 +323,6 @@ int libfvde_metadata_block_read_data(
 	 initial_value );
 
 	byte_stream_copy_to_uint16_little_endian(
-	 ( (fvde_metadata_block_header_t *) block_data )->version,
-	 version );
-
-	byte_stream_copy_to_uint16_little_endian(
 	 ( (fvde_metadata_block_header_t *) block_data )->type,
 	 metadata_block->type );
 
@@ -371,10 +367,13 @@ int libfvde_metadata_block_read_data(
 			 "%s: signature\t\t\t\t: LVFwiped\n",
 			 function );
 		}
+		byte_stream_copy_to_uint16_little_endian(
+		 ( (fvde_metadata_block_header_t *) block_data )->version,
+		 value_16bit );
 		libcnotify_printf(
 		 "%s: version\t\t\t\t: %" PRIu16 "\n",
 		 function,
-		 version );
+		 value_16bit );
 
 		libcnotify_printf(
 		 "%s: type\t\t\t\t\t: 0x%04" PRIx16 "\n",

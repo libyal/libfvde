@@ -51,7 +51,9 @@ int mount_file_system_initialize(
      libcerror_error_t **error )
 {
 #if defined( WINAPI )
+	FILETIME filetime;
 	SYSTEMTIME systemtime;
+
 #elif defined( HAVE_CLOCK_GETTIME )
 	struct timespec time_structure;
 #endif
@@ -60,7 +62,6 @@ int mount_file_system_initialize(
 
 #if defined( WINAPI )
 	DWORD error_code      = 0;
-	uint64_t timestamp    = 0;
 #else
 	int64_t timestamp     = 0;
 #endif
@@ -154,7 +155,7 @@ int mount_file_system_initialize(
 
 	if( SystemTimeToFileTime(
 	     &systemtime,
-	     &timestamp ) == 0 )
+	     &filetime ) == 0 )
 	{
 		error_code = GetLastError();
 
@@ -168,6 +169,8 @@ int mount_file_system_initialize(
 
 		goto on_error;
 	}
+	( *file_system )->mounted_timestamp = ( (uint64_t) filetime.dwHighDateTime << 32 ) | filetime.dwLowDateTime;
+
 #elif defined( HAVE_CLOCK_GETTIME )
 	if( clock_gettime(
 	     CLOCK_REALTIME,
@@ -183,6 +186,8 @@ int mount_file_system_initialize(
 		goto on_error;
 	}
 	timestamp = ( (int64_t) time_structure.tv_sec * 1000000000 ) + time_structure.tv_nsec;
+
+	( *file_system )->mounted_timestamp = (uint64_t) timestamp;
 
 #else
 	timestamp = (int64_t) time( NULL );
@@ -200,9 +205,9 @@ int mount_file_system_initialize(
 	}
 	timestamp *= 1000000000;
 
-#endif /* defined( HAVE_CLOCK_GETTIME ) */
-
 	( *file_system )->mounted_timestamp = (uint64_t) timestamp;
+
+#endif /* defined( HAVE_CLOCK_GETTIME ) */
 
 	return( 1 );
 

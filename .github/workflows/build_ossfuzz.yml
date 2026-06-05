@@ -1,34 +1,34 @@
 # Build OSSFuzz fuzz targets from source.
 name: build_ossfuzz
 on:
+  pull_request:
   push:
-    branches: [main]
 permissions: read-all
 jobs:
   build_ossfuzz:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-        - os: ubuntu-24.04
-          compiler: 'gcc'
-          configure_options: ''
+        os: ["ubuntu-24.04"]
     steps:
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install git
+        sudo apt -y install git
     - uses: actions/checkout@v6
       with:
         repository: google/oss-fuzz
         path: oss-fuzz
     - name: Build OSSFuzz fuzz targets
+      env:
+        BRANCH: ${{ github.head_ref || github.ref_name }}
+        ORGANIZATION: ${{ github.event.pull_request.head.repo.owner.login || github.repository_owner }}
       working-directory: oss-fuzz
       run: |
         mkdir -p projects/libfvde
         cp projects/libyal/build.sh projects/libfvde/
         cp projects/libyal/project.yaml projects/libfvde/
         head -n 20 projects/libyal/Dockerfile > projects/libfvde/Dockerfile
-        echo "RUN git clone --depth 1 https://github.com/libyal/libfvde.git libfvde" >> projects/libfvde/Dockerfile
+        echo "RUN git clone --depth 1 https://github.com/${ORGANIZATION:-libyal}/libfvde.git -b ${BRANCH:-main} libfvde" >> projects/libfvde/Dockerfile
         tail -n 3 projects/libyal/Dockerfile >> projects/libfvde/Dockerfile
         python3 infra/helper.py build_image --pull libfvde
         python3 infra/helper.py build_fuzzers --sanitizer address libfvde

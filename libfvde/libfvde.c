@@ -38,6 +38,8 @@
 #pragma managed( push, off )
 #endif
 
+/* LCOV_EXCL_START */
+
 /* Defines the entry point for the DLL
  */
 BOOL WINAPI DllMain(
@@ -65,6 +67,8 @@ BOOL WINAPI DllMain(
 	}
 	return( TRUE );
 }
+
+/* LCOV_EXCL_STOP */
 
 /* Function that indicates the library is a DLL
  * Returns 1

@@ -25,6 +25,10 @@ AM_CPPFLAGS = \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFVDE_DLL_IMPORT@
 
+AM_TESTS_ENVIRONMENT = \
+	export PYTHON="@PYTHON@"; \
+	export TESTS_USE_WINAPI="@TESTS_USE_WINAPI@";
+
 if HAVE_PYTHON_TESTS
 TESTS_PYFVDE = \
 	test_python_module.sh
@@ -166,11 +170,11 @@ fvde_test_encryption_context_plist_SOURCES = \
 
 fvde_test_encryption_context_plist_LDADD = \
 	@LIBFPLIST_LIBADD@ \
-	@LIBFVALUE_CPPFLAGS@ \
-	@LIBFGUID_CPPFLAGS@ \
-	@LIBUNA_CPPFLAGS@ \
-	@LIBCNOTIFY_CPPFLAGS@ \
-	@LIBCDATA_CPPFLAGS@ \
+	@LIBFVALUE_LIBADD@ \
+	@LIBFGUID_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 
@@ -361,7 +365,8 @@ fvde_test_tools_output_SOURCES = \
 
 fvde_test_tools_output_LDADD = \
 	../libfvde/libfvde.la \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 fvde_test_tools_signal_SOURCES = \
 	../fvdetools/fvdetools_signal.c ../fvdetools/fvdetools_signal.h \

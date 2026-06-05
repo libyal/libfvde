@@ -28,6 +28,10 @@
 #include <errno.h>
 #endif
 
+#if defined( HAVE_FCNTL_H ) || defined( WINAPI )
+#include <fcntl.h>
+#endif
+
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
 #endif
@@ -56,7 +60,7 @@ extern mount_handle_t *fvdemount_mount_handle;
  * Returns 1 if successful or -1 on error
  */
 int mount_fuse_set_stat_info(
-     struct stat *stat_info,
+     mount_fuse_stat_t *stat_info,
      size64_t size,
      uint16_t file_mode,
      int64_t access_time,
@@ -129,7 +133,7 @@ int mount_fuse_filldir(
      void *buffer,
      fuse_fill_dir_t filler,
      const char *name,
-     struct stat *stat_info,
+     mount_fuse_stat_t *stat_info,
      mount_file_entry_t *file_entry,
      libcerror_error_t **error )
 {
@@ -227,7 +231,7 @@ int mount_fuse_filldir(
 	if( memory_set(
 	     stat_info,
 	     0,
-	     sizeof( struct stat ) ) == NULL )
+	     sizeof( mount_fuse_stat_t ) ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -342,7 +346,7 @@ int mount_fuse_open(
 
 		goto on_error;
 	}
-	if( ( file_info->flags & 0x03 ) != O_RDONLY )
+	if( ( file_info->flags & O_ACCMODE ) != O_RDONLY )
 	{
 		libcerror_error_set(
 		 &error,
@@ -682,7 +686,7 @@ int mount_fuse_readdir(
      struct fuse_file_info *file_info FVDETOOLS_ATTRIBUTE_UNUSED )
 #endif
 {
-	struct stat *stat_info                = NULL;
+	mount_fuse_stat_t *stat_info          = NULL;
 	libcerror_error_t *error              = NULL;
 	mount_file_entry_t *parent_file_entry = NULL;
 	mount_file_entry_t *sub_file_entry    = NULL;
@@ -748,7 +752,7 @@ int mount_fuse_readdir(
 		goto on_error;
 	}
 	stat_info = memory_allocate_structure(
-	             struct stat );
+	             mount_fuse_stat_t );
 
 	if( stat_info == NULL )
 	{
@@ -1071,12 +1075,12 @@ on_error:
 #if defined( HAVE_LIBFUSE3 )
 int mount_fuse_getattr(
      const char *path,
-     struct stat *stat_info,
+     mount_fuse_stat_t *stat_info,
      struct fuse_file_info *file_info FVDETOOLS_ATTRIBUTE_UNUSED )
 #else
 int mount_fuse_getattr(
      const char *path,
-     struct stat *stat_info )
+     mount_fuse_stat_t *stat_info )
 #endif
 {
 	libcerror_error_t *error       = NULL;
@@ -1131,7 +1135,7 @@ int mount_fuse_getattr(
 	if( memory_set(
 	     stat_info,
 	     0,
-	     sizeof( struct stat ) ) == NULL )
+	     sizeof( mount_fuse_stat_t ) ) == NULL )
 	{
 		libcerror_error_set(
 		 &error,

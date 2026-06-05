@@ -3468,8 +3468,11 @@ int libfvde_encrypted_metadata_read_type_0x0021(
      libcerror_error_t **error )
 {
 	static char *function      = "libfvde_encrypted_metadata_read_type_0x0021";
+
+#if defined( HAVE_DEBUG_OUTPUT )
 	uint32_t number_of_blocks  = 0;
 	uint16_t number_of_entries = 0;
+#endif
 
 	if( encrypted_metadata == NULL )
 	{
@@ -3505,15 +3508,14 @@ int libfvde_encrypted_metadata_read_type_0x0021(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	byte_stream_copy_to_uint16_little_endian(
 	 &( block_data[ 0 ] ),
 	 number_of_entries );
-
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 2 ] ),
 	 number_of_blocks );
 
-#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -4327,9 +4329,8 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 	libfvde_segment_descriptor_t *segment_descriptor = NULL;
 	static char *function                            = "libfvde_encrypted_metadata_read_type_0x0304";
 	size_t block_data_offset                         = 0;
-	uint32_t block_number                            = 0xffffffffUL;
+	uint64_t block_number                            = 0xffffffffffffffffUL;
 	uint32_t entry_index                             = 0;
-	uint32_t number_of_blocks                        = 0;
 	uint32_t number_of_entries                       = 0;
 	int result                                       = 0;
 	int segment_descriptor_index                     = 0;
@@ -4563,7 +4564,6 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 		{
 			block_number = segment_descriptor->physical_block_number;
 		}
-		number_of_blocks  += segment_descriptor->number_of_blocks;
 		segment_descriptor = NULL;
 	}
 	return( 1 );
@@ -4592,9 +4592,8 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 	libfvde_segment_descriptor_t *segment_descriptor               = NULL;
 	static char *function                                          = "libfvde_encrypted_metadata_read_type_0x0305";
 	size_t block_data_offset                                       = 0;
-	uint32_t block_number                                          = 0xffffffffUL;
+	uint64_t block_number                                          = 0xffffffffffffffffUL;
 	uint32_t entry_index                                           = 0;
-	uint32_t number_of_blocks                                      = 0;
 	uint32_t number_of_entries                                     = 0;
 	int result                                                     = 0;
 	int segment_descriptor_index                                   = 0;
@@ -4853,7 +4852,6 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 		{
 			block_number = segment_descriptor->physical_block_number;
 		}
-		number_of_blocks  += segment_descriptor->number_of_blocks;
 		segment_descriptor = NULL;
 	}
 	logical_volume_descriptor->object_identifier_0x0305 = object_identifier;
@@ -5634,7 +5632,7 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 			 "%s: unable to determine if encrypted medadata block data is empty.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		else if( result != 0 )
 		{
