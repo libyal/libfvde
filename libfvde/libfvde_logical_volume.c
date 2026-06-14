@@ -1894,11 +1894,11 @@ off64_t libfvde_internal_logical_volume_seek_offset(
 		return( -1 );
 	}
 	if( whence == SEEK_CUR )
-	{	
+	{
 		offset += internal_logical_volume->current_offset;
 	}
 	else if( whence == SEEK_END )
-	{	
+	{
 		offset += (off64_t) internal_logical_volume->logical_volume_descriptor->size;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )

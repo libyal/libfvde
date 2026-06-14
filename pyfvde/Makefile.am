@@ -1,5 +1,5 @@
 if HAVE_PYTHON
-AM_CFLAGS = \
+AM_CFPPLAGS = \
 	-I../include -I$(top_srcdir)/include \
 	-I../common -I$(top_srcdir)/common \
 	@LIBCERROR_CPPFLAGS@ \
@@ -49,7 +49,7 @@ pyfvde_la_LIBADD = \
 	@LIBBFIO_LIBADD@ \
 	@LIBFGUID_LIBADD@
 
-pyfvde_la_CPPFLAGS = $(PYTHON_CPPFLAGS)
+pyfvde_la_CPPFLAGS = $(AM_CFPPLAGS) $(PYTHON_CPPFLAGS)
 pyfvde_la_LDFLAGS  = -module -avoid-version $(PYTHON_LDFLAGS)
 
 endif

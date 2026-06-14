@@ -92,7 +92,7 @@ int libfvde_encryption_context_plist_initialize(
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 		 "%s: unable to clear plist.",
 		 function );
-	
+
 		memory_free(
 		 internal_plist );
 

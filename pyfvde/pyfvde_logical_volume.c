@@ -1262,7 +1262,7 @@ PyObject *pyfvde_logical_volume_get_size(
 	return( integer_object );
 }
 
-/* Determines if the logical volume is 
+/* Determines if the logical volume is locked
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfvde_logical_volume_is_locked(

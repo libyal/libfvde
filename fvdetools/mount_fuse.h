@@ -61,8 +61,16 @@ extern "C" {
 
 #if defined( _WIN32 ) || defined( WINFSP_VERSION )
 typedef struct fuse_stat mount_fuse_stat_t;
+#elif defined( __APPLE__ )
+typedef struct fuse_darwin_attr mount_fuse_stat_t;
 #else
 typedef struct stat mount_fuse_stat_t;
+#endif
+
+#if defined( __APPLE__ )
+#define mount_fuse_fill_dir_t fuse_darwin_fill_dir_t
+#else
+#define mount_fuse_fill_dir_t fuse_fill_dir_t
 #endif
 
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
@@ -78,7 +86,7 @@ int mount_fuse_set_stat_info(
 
 int mount_fuse_filldir(
      void *buffer,
-     fuse_fill_dir_t filler,
+     mount_fuse_fill_dir_t filler,
      const char *name,
      mount_fuse_stat_t *stat_info,
      mount_file_entry_t *file_entry,
@@ -107,7 +115,7 @@ int mount_fuse_opendir(
 int mount_fuse_readdir(
      const char *path,
      void *buffer,
-     fuse_fill_dir_t filler,
+     mount_fuse_fill_dir_t filler,
      off_t offset,
      struct fuse_file_info *file_info,
      enum fuse_readdir_flags flags );
@@ -115,7 +123,7 @@ int mount_fuse_readdir(
 int mount_fuse_readdir(
      const char *path,
      void *buffer,
-     fuse_fill_dir_t filler,
+     mount_fuse_fill_dir_t filler,
      off_t offset,
      struct fuse_file_info *file_info );
 #endif
