@@ -9,9 +9,6 @@ TEST_SET="public";
 TEST_INPUT_DIRECTORY="tests/input";
 TEST_FILES="cs_single_volume.raw";
 
-mkdir -p "${TEST_INPUT_DIRECTORY}/.fvdeinfo";
-echo "-u" > "${TEST_INPUT_DIRECTORY}/.fvdeinfo/options";
-
 mkdir -p "${TEST_INPUT_DIRECTORY}/${TEST_SET}";
 
 for TEST_FILE in ${TEST_FILES};

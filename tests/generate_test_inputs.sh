@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script to generate test_inputs.at
 #
-# Version: 20260616
+# Version: 20260617
 
 ignore_list_add() {
     if ! ignore_list_contains "$1"; then
@@ -92,9 +92,10 @@ test_files_pop() {
 }
 
 glob_test_files() {
+    TEST_FILES_GLOB=$2
     TEST_FILES=""
 
-    for LINE in "$1"/${INPUT_GLOB}; do
+    for LINE in "$1"/${TEST_FILES_GLOB}; do
         if test -e "${LINE}"; then
             test_files_push "${LINE}"
         fi
@@ -221,7 +222,13 @@ if test -d "${INPUT}"; then
         if test ${GLOB_FILES} -eq 0; then
             read_test_files "${INPUT}/.${TEST_PROFILE}/${TEST_SET}" "${INPUT}/${TEST_SET}"
         else
-            glob_test_files "${INPUT}/${TEST_SET}"
+            GLOB_FILE="${INPUT}/.${TEST_PROFILE}/glob"
+            if test -f "${GLOB_FILE}"; then
+                TEST_FILES_GLOB=`head -n 1 "${GLOB_FILE}" | sed 's/[\r\n]*$//'`
+            else
+                TEST_FILES_GLOB="${INPUT_GLOB}"
+            fi
+            glob_test_files "${INPUT}/${TEST_SET}" "${TEST_FILES_GLOB}"
         fi
         if test -z "${TEST_FILES}"; then
             echo "Skipping '${TEST_SET}' no test files"
