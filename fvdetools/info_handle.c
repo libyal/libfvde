@@ -1223,7 +1223,7 @@ on_error:
 }
 
 /* Closes the info handle
- * Returns the 0 if succesful or -1 on error
+ * Returns the 0 if successful or -1 on error
  */
 int info_handle_close(
      info_handle_t *info_handle,

@@ -83,7 +83,7 @@ enum LIBFVDE_ARGUMENT_ERROR
 	 */
 	LIBFVDE_ARGUMENT_ERROR_UNSUPPORTED_VALUE	= 8,
 
-	/* The argument contains a value that conficts with another argument
+	/* The argument contains a value that conflicts with another argument
 	 */
 	LIBFVDE_ARGUMENT_ERROR_CONFLICTING_VALUE	= 9
 };
@@ -215,7 +215,7 @@ enum LIBFVDE_OUTPUT_ERROR
 {
 	LIBFVDE_OUTPUT_ERROR_GENERIC			= 0,
 
-	/* There is insuficient space to write the output
+	/* There is insufficient space to write the output
 	 */
 	LIBFVDE_OUTPUT_ERROR_INSUFFICIENT_SPACE		= 1
 };
