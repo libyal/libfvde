@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [libfvde],
-  [20260622],
+  [20260624],
   [https://github.com/libyal/libfvde/issues])
 
 AC_CONFIG_SRCDIR(

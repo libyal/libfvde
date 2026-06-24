@@ -59,35 +59,6 @@
 info_handle_t *fvdeinfo_info_handle = NULL;
 int fvdeinfo_abort                  = 0;
 
-/* Prints usage information
- */
-void usage_fprint(
-      FILE *stream )
-{
-	if( stream == NULL )
-	{
-		return;
-	}
-	fprintf( stream, "Use fvdeinfo to determine information about a MacOS-X FileVault\n"
-	                 " Drive Encrypted (FVDE) volume\n\n" );
-
-	fprintf( stream, "Usage: fvdeinfo [ -e plist_path ] [ -k key ] [ -o offset ]\n"
-	                 "                [ -p password ] [ -r password ] [ -huvV ]\n"
-	                 "                sources\n\n" );
-
-	fprintf( stream, "\tsources: one or more source files or devices\n\n" );
-
-	fprintf( stream, "\t-e:      specify the path of the EncryptedRoot.plist.wipekey file\n" );
-	fprintf( stream, "\t-h:      shows this help\n" );
-	fprintf( stream, "\t-k:      specify the volume master key formatted in base16\n" );
-	fprintf( stream, "\t-o:      specify the volume offset\n" );
-	fprintf( stream, "\t-p:      specify the password\n" );
-	fprintf( stream, "\t-r:      specify the recovery password\n" );
-	fprintf( stream, "\t-u:      unattended mode (disables user interaction)\n" );
-	fprintf( stream, "\t-v:      verbose output to stderr\n" );
-	fprintf( stream, "\t-V:      print version\n" );
-}
-
 /* Signal handler for fvdeinfo
  */
 void fvdeinfo_signal_handler(
@@ -140,8 +111,25 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	system_character_t * const *sources                  = NULL;
+	const char *description = \
+		"Use fvdeinfo to determine information about a Core Storage (CS) volume.";
+
+	fvdetools_option_t options[ ] = {
+		{ 'e', "plist_path", "specify the path of the EncryptedRoot.plist.wipekey file" },
+		{ 'h', NULL, "shows this help" },
+		{ 'k', "key", "specify the volume master key formatted in base16" },
+		{ 'o', "offset", "specify the volume offset" },
+		{ 'p', "password", "specify the password (or passphrase)" },
+		{ 'r', "recovery_password", "specify the recovery password (or passphrase)" },
+		{ 'u', NULL, "unattended mode (disables user interaction)" },
+		{ 'v', NULL, "verbose output to stderr" },
+		{ 'V', NULL, "print version" },
+		{ 0, "source", "the source volume" },
+	};
+	system_character_t options_string[ 32 ];
+
 	libfvde_error_t *error                               = NULL;
+	system_character_t * const *sources                  = NULL;
 	system_character_t *option_encrypted_root_plist_path = NULL;
 	system_character_t *option_key                       = NULL;
 	system_character_t *option_password                  = NULL;
@@ -149,6 +137,7 @@ int main( int argc, char * const argv[] )
 	system_character_t *option_volume_offset             = NULL;
 	char *program                                        = "fvdeinfo";
 	system_integer_t option                              = 0;
+	int number_of_options                                = (int) ( sizeof( options ) / sizeof( fvdetools_option_t ) );
 	int number_of_sources                                = 0;
 	int unattended_mode                                  = 0;
 	int verbose                                          = 0;
@@ -188,10 +177,22 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
+	if( fvdetools_getopt_get_options_string(
+	     options,
+	     number_of_options,
+	     options_string,
+	     32 ) != 1 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to determine options string.\n" );
+
+		goto on_error;
+	}
 	while( ( option = fvdetools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "e:hk:o:p:r:uvV" ) ) ) != (system_integer_t) -1 )
+	                   options_string ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -202,8 +203,12 @@ int main( int argc, char * const argv[] )
 				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind - 1 ] );
 
-				usage_fprint(
-				 stdout );
+				fvdetools_getopt_usage_fprint(
+				 stdout,
+				 program,
+				 description,
+				 options,
+				 number_of_options );
 
 				return( EXIT_FAILURE );
 
@@ -213,8 +218,12 @@ int main( int argc, char * const argv[] )
 				break;
 
 			case (system_integer_t) 'h':
-				usage_fprint(
-				 stdout );
+				fvdetools_getopt_usage_fprint(
+				 stdout,
+				 program,
+				 description,
+				 options,
+				 number_of_options );
 
 				return( EXIT_SUCCESS );
 
@@ -259,10 +268,14 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Missing source file or device.\n" );
+		 "Missing source files or devices.\n" );
 
-		usage_fprint(
-		 stdout );
+		fvdetools_getopt_usage_fprint(
+		 stdout,
+		 program,
+		 description,
+		 options,
+		 number_of_options );
 
 		return( EXIT_FAILURE );
 	}

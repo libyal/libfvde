@@ -4,9 +4,7 @@ man_MANS = \
 	libfvde.3
 
 EXTRA_DIST = \
-	fvdeinfo.1 \
-	fvdemount.1 \
-	libfvde.3
+	$(man_MANS)
 
 DISTCLEANFILES = \
 	Makefile \

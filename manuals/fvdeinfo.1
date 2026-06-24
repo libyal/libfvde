@@ -1,28 +1,28 @@
-.Dd January 22, 2022
-.Dt fvdeinfo
-.Os libfvde
+.Dd June 24, 2026
+.Dt FVDEINFO 1
+.Os
 .Sh NAME
 .Nm fvdeinfo
-.Nd determines information about a FileVault Drive Encrypted (FVDE) volume
+.Nd determines information about a Core Storage (CS) volume
 .Sh SYNOPSIS
 .Nm fvdeinfo
 .Op Fl e Ar plist_path
 .Op Fl k Ar key
 .Op Fl o Ar offset
 .Op Fl p Ar password
-.Op Fl r Ar password
+.Op Fl r Ar recovery_password
 .Op Fl huvV
 .Ar sources
 .Sh DESCRIPTION
 .Nm fvdeinfo
-is a utility to determine information about a FileVault Drive Encrypted (FVDE) volume
+is a utility to determine information about a Core Storage (CS) volume
 .Pp
 .Nm fvdeinfo
 is part of the
 .Nm libfvde
 package.
 .Nm libfvde
-is a library to access the FileVault Drive Encryption (FVDE) format
+is a library to access the Core Storage (CS) format
 .Pp
 .Ar sources
 one or more source files or devices.
@@ -38,9 +38,9 @@ specify the volume master key formatted in base16
 .It Fl o Ar offset
 specify the volume offset
 .It Fl p Ar password
-specify the password
-.It Fl r Ar password
-specify the recovery password
+specify the password (or passphrase)
+.It Fl r Ar recovery_password
+specify the recovery password (or passphrase)
 .It Fl u
 unattended mode (disables user interaction)
 .It Fl v
@@ -78,14 +78,19 @@ Logical volume: 1
 .sp
 .Ed
 .Sh DIAGNOSTICS
-Errors, verbose and debug output are printed to stderr when verbose output \-v is enabled.
+Errors, verbose and debug output are printed to stderr when verbose output \
+\-v is enabled.
 Verbose and debug output are only printed when enabled at compilation.
-.Sh BUGS
-Please report bugs of any kind on the project issue tracker: https://github.com/libyal/libfvde/issues
-.Sh AUTHOR
-These man pages were written by Joachim Metz.
-.Sh COPYRIGHT
-Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>.
-This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .Sh SEE ALSO
 .Xr fvdemount 1
+.Sh AUTHORS
+.An Joachim Metz <joachim.metz@gmail.com>
+.Sh BUGS
+Please report bugs of any kind on the project issue tracker: \
+https://github.com/libyal/libfvde/issues
+.Sh COPYRIGHT
+Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>.
+.sp
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A \
+PARTICULAR PURPOSE.
