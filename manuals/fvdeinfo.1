@@ -1,4 +1,4 @@
-.Dd June 24, 2026
+.Dd June 26, 2026
 .Dt FVDEINFO 1
 .Os
 .Sh NAME
@@ -36,7 +36,7 @@ shows this help
 .It Fl k Ar key
 specify the volume master key formatted in base16
 .It Fl o Ar offset
-specify the volume offset
+specify the volume offset in bytes
 .It Fl p Ar password
 specify the password (or passphrase)
 .It Fl r Ar recovery_password
@@ -84,12 +84,13 @@ Verbose and debug output are only printed when enabled at compilation.
 .Sh SEE ALSO
 .Xr fvdemount 1
 .Sh AUTHORS
-.An Joachim Metz <joachim.metz@gmail.com>
+.An Omar Choudary <choudary.omar@gmail.com>, Joachim Metz <joachim.metz@gmail.com>
 .Sh BUGS
 Please report bugs of any kind on the project issue tracker: \
 https://github.com/libyal/libfvde/issues
 .Sh COPYRIGHT
-Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>, \
+Joachim Metz <joachim.metz@gmail.com>.
 .sp
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A \

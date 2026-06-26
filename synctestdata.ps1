@@ -3,9 +3,10 @@
 $TestsInputDirectory = "tests\input"
 $TestSet = "public"
 $TestFiles = "cs_single_volume.raw"
+
 If (-Not (Test-Path "${TestsInputDirectory}\.fvdeinfo"))
 {
-        New-Item -Name "${TestsInputDirectory}\.fvdeinfo" -ItemType "directory" | Out-Null
+	New-Item -Name "${TestsInputDirectory}\.fvdeinfo" -ItemType "directory" | Out-Null
 	Write-Output "-u" | Out-File -Encoding ascii -FilePath "${TestsInputDirectory}\.fvdeinfo\options"
 }
 

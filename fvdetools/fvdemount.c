@@ -1,5 +1,5 @@
 /*
- * Mounts a FileVault Drive Encrypted (FVDE) volume.
+ * Mounts a Core Storage (CS) volume.
  *
  * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
@@ -46,7 +46,6 @@
 
 #include "fvdetools_getopt.h"
 #include "fvdetools_i18n.h"
-#include "fvdetools_input.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"

@@ -13,8 +13,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Conflicts: libfvde1
 Replaces: libfvde1
 Suggests: libfvde-dbg
-Description: Library to access the FileVault Drive Encryption (FVDE) format
- libfvde is a library to access the FileVault Drive Encryption (FVDE) format.
+Description: Library to access the Core Storage (CS) format
+ libfvde is a library to access the Core Storage (CS) format.
 
 Package: libfvde-dbg
 Architecture: any
@@ -36,8 +36,8 @@ Architecture: any
 Depends: libfvde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Conflicts: libfvde-utils
 Replaces: libfvde-utils
-Description: Several tools for reading FileVault Drive Encryption volumes
- Several tools for reading FileVault Drive Encryption volumes.
+Description: Several tools for reading Core Storage (CS) volumes
+ Several tools for reading Core Storage (CS) volumes.
 
 Package: libfvde-tools-dbg
 Section: debug

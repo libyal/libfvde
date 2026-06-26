@@ -1,5 +1,5 @@
 /*
- * Library to access the FileVault Drive Encryption (FVDE) format
+ * Library to access the Core Storage (CS) format
  *
  * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>

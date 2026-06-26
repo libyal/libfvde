@@ -21,7 +21,7 @@ BEGIN
   BEGIN
     BLOCK "040904E4"
     BEGIN
-      VALUE "FileDescription",		"Library to access the FileVault Drive Encryption (FVDE) format\0"
+      VALUE "FileDescription",		"Library to access the Core Storage (CS) format\0"
       VALUE "FileVersion",		"@VERSION@" "\0"
       VALUE "InternalName",		"libfvde.dll\0"
       VALUE "LegalCopyright",		"(C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>, Joachim Metz <joachim.metz@gmail.com>\0"

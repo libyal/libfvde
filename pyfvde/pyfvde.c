@@ -66,14 +66,14 @@ PyMethodDef pyfvde_module_methods[] = {
 	  METH_VARARGS | METH_KEYWORDS,
 	  "check_volume_signature(filename) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature." },
+	  "Checks if a volume has a Core Storage (CS) volume signature." },
 
 	{ "check_volume_signature_file_object",
 	  (PyCFunction) pyfvde_check_volume_signature_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "check_volume_signature_file_object(file_object) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature using a file-like object." },
+	  "Checks if a volume has a Core Storage (CS) volume signature using a file-like object." },
 
 	{ "open",
 	  (PyCFunction) pyfvde_open_new_volume,
@@ -125,7 +125,7 @@ PyObject *pyfvde_get_version(
 	         NULL ) );
 }
 
-/* Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature
+/* Checks if a volume has a Core Storage (CS) volume signature
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfvde_check_volume_signature(
@@ -332,7 +332,7 @@ PyObject *pyfvde_check_volume_signature(
 	return( NULL );
 }
 
-/* Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature using a file-like object
+/* Checks if a volume has a Core Storage (CS) volume signature using a file-like object
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfvde_check_volume_signature_file_object(

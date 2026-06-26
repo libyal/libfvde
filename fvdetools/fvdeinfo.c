@@ -1,5 +1,5 @@
 /*
- * Shows information obtained from a FileVault Drive Encryption (FVDE) encrypted volume.
+ * Shows information obtained from a Core Storage (CS) volume.
  *
  * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
@@ -22,11 +22,8 @@
 
 #include <common.h>
 #include <file_stream.h>
-#include <memory.h>
 #include <system_string.h>
 #include <types.h>
-
-#include <stdio.h>
 
 #if defined( HAVE_FCNTL_H ) || defined( WINAPI )
 #include <fcntl.h>
@@ -45,8 +42,6 @@
 #endif
 
 #include "fvdetools_getopt.h"
-#include "fvdetools_i18n.h"
-#include "fvdetools_input.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
@@ -118,7 +113,7 @@ int main( int argc, char * const argv[] )
 		{ 'e', "plist_path", "specify the path of the EncryptedRoot.plist.wipekey file" },
 		{ 'h', NULL, "shows this help" },
 		{ 'k', "key", "specify the volume master key formatted in base16" },
-		{ 'o', "offset", "specify the volume offset" },
+		{ 'o', "offset", "specify the volume offset in bytes" },
 		{ 'p', "password", "specify the password (or passphrase)" },
 		{ 'r', "recovery_password", "specify the recovery password (or passphrase)" },
 		{ 'u', NULL, "unattended mode (disables user interaction)" },

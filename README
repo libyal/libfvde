@@ -1,13 +1,13 @@
-libfvde is a library to access FileVault Drive Encryption (FVDE) (or FileVault2) encrypted volumes.
+libfvde is a library to access Core Storage (CS) volumes, also known as FileVault Drive Encryption (FVDE) (or FileVault2) encrypted volumes.
 
-The FVDE format is used by Mac OS X, as of Lion (10.7), to encrypt data on a storage media volume.
+The CS format is used by Mac OS X, as of Lion (10.7), to encrypt data on a storage media volume.
 
 Project information:
 
 * Status: experimental
 * Licence: LGPL-3.0-or-later
 
-Supported Core Storage / FileVault2 implementations:
+Supported Core Storage implementations:
 
 * Mac OS X Lion (10.7)
 * Mac OS X Mountain Lion (10.8)
