@@ -1,7 +1,7 @@
 /*
- * OSS-Fuzz target for libfvde volume type
+ * OSS-Fuzz target for libfvde logical volume type
  *
- * Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2014-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -57,10 +57,22 @@ int LLVMFuzzerTestOneInput(
      const uint8_t *data,
      size_t size )
 {
-	libbfio_handle_t *file_io_handle = NULL;
-	libbfio_pool_t *file_io_pool     = NULL;
-	libfvde_volume_t *volume         = NULL;
-	int entry_index                  = 0;
+	uint8_t buffer[ 512 ];
+	uint8_t uuid[ 16 ];
+	uint8_t utf8_string[ 64 ];
+	uint16_t utf16_string[ 64 ];
+
+	libbfio_handle_t *file_io_handle         = NULL;
+	libbfio_pool_t *file_io_pool             = NULL;
+	libfvde_volume_t *volume                 = NULL;
+	libfvde_logical_volume_t *logical_volume = NULL;
+	libfvde_volume_group_t *volume_group     = NULL;
+	off64_t volume_offset                    = 0;
+	size64_t volume_size                     = 0;
+	size_t string_size                       = 0;
+	int entry_index                          = 0;
+	int number_of_logical_volumes            = 0;
+	int read_iterator                        = 0;
 
 	if( libbfio_memory_range_initialize(
 	     &file_io_handle,
@@ -117,6 +129,102 @@ int LLVMFuzzerTestOneInput(
 	     NULL ) != 1 )
 	{
 		goto on_error_libfvde_volume;
+	}
+	if( libfvde_volume_get_volume_group(
+	     volume,
+	     &volume_group,
+	     NULL ) == 1 )
+	{
+		if( libfvde_volume_group_get_number_of_logical_volumes(
+		     volume_group,
+		     &number_of_logical_volumes,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+		if( number_of_logical_volumes > 0 )
+		{
+			if( libfvde_volume_group_get_logical_volume_by_index(
+			     volume_group,
+			     0,
+			     &logical_volume,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_volume_group;
+			}
+			if( libfvde_logical_volume_get_identifier(
+			     logical_volume,
+			     uuid,
+			     16,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_logical_volume;
+			}
+			if( libfvde_logical_volume_get_utf8_name_size(
+			     logical_volume,
+			     &string_size,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_logical_volume;
+			}
+			if( libfvde_logical_volume_get_utf8_name(
+			     logical_volume,
+			     utf8_string,
+			     64,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_logical_volume;
+			}
+			if( libfvde_logical_volume_get_utf16_name_size(
+			     logical_volume,
+			     &string_size,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_logical_volume;
+			}
+			if( libfvde_logical_volume_get_utf16_name(
+			     logical_volume,
+			     utf16_string,
+			     64,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_logical_volume;
+			}
+			if( libfvde_logical_volume_get_size(
+			     logical_volume,
+			     &volume_size,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_logical_volume;
+			}
+			for( read_iterator = 0;
+			     read_iterator < 128;
+			     read_iterator++ )
+			{
+				if( volume_offset >= volume_size )
+				{
+					break;
+				}
+				if( libfvde_logical_volume_read_buffer_at_offset(
+				     logical_volume,
+				     buffer,
+				     497,
+				     volume_offset,
+				     NULL ) == -1 )
+				{
+					goto on_error_libfvde_logical_volume;
+				}
+				volume_offset += 497;
+			}
+on_error_libfvde_logical_volume:
+			libfvde_logical_volume_free(
+			 &logical_volume,
+			 NULL );
+		}
+on_error_libfvde_volume_group:
+		libfvde_volume_group_free(
+		 &volume_group,
+		 NULL );
 	}
 	libfvde_volume_close(
 	 volume,

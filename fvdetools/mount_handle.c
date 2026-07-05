@@ -1289,7 +1289,7 @@ int mount_handle_close(
 		return( -1 );
 	}
 	for( logical_volume_index = number_of_logical_volumes - 1;
-	     logical_volume_index > 0;
+	     logical_volume_index >= 0;
 	     logical_volume_index-- )
 	{
 		if( mount_file_system_get_logical_volume_by_index(

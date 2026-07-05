@@ -1,5 +1,5 @@
 /*
- * OSS-Fuzz target for libfvde volume type
+ * OSS-Fuzz target for libfvde volume group type
  *
  * Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -57,10 +57,17 @@ int LLVMFuzzerTestOneInput(
      const uint8_t *data,
      size_t size )
 {
-	libbfio_handle_t *file_io_handle = NULL;
-	libbfio_pool_t *file_io_pool     = NULL;
-	libfvde_volume_t *volume         = NULL;
-	int entry_index                  = 0;
+	uint8_t uuid[ 16 ];
+	uint8_t utf8_string[ 64 ];
+	uint16_t utf16_string[ 64 ];
+
+	libbfio_handle_t *file_io_handle     = NULL;
+	libbfio_pool_t *file_io_pool         = NULL;
+	libfvde_volume_t *volume             = NULL;
+	libfvde_volume_group_t *volume_group = NULL;
+	size_t string_size                   = 0;
+	int entry_index                      = 0;
+	int number_of_volumes                = 0;
 
 	if( libbfio_memory_range_initialize(
 	     &file_io_handle,
@@ -117,6 +124,68 @@ int LLVMFuzzerTestOneInput(
 	     NULL ) != 1 )
 	{
 		goto on_error_libfvde_volume;
+	}
+	if( libfvde_volume_get_volume_group(
+	     volume,
+	     &volume_group,
+	     NULL ) == 1 )
+	{
+		if( libfvde_volume_group_get_identifier(
+		     volume_group,
+		     uuid,
+		     64,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+		if( libfvde_volume_group_get_utf8_name_size(
+		     volume_group,
+		     &string_size,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+		if( libfvde_volume_group_get_utf8_name(
+		     volume_group,
+		     utf8_string,
+		     64,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+		if( libfvde_volume_group_get_utf16_name_size(
+		     volume_group,
+		     &string_size,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+		if( libfvde_volume_group_get_utf16_name(
+		     volume_group,
+		     utf16_string,
+		     64,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+		if( libfvde_volume_group_get_number_of_physical_volumes(
+		     volume_group,
+		     &number_of_volumes,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+		if( libfvde_volume_group_get_number_of_logical_volumes(
+		     volume_group,
+		     &number_of_volumes,
+		     NULL ) != 1 )
+		{
+			goto on_error_libfvde_volume_group;
+		}
+on_error_libfvde_volume_group:
+		libfvde_volume_group_free(
+		 &volume_group,
+		 NULL );
 	}
 	libfvde_volume_close(
 	 volume,
