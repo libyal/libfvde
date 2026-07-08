@@ -5634,9 +5634,9 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 
 			goto on_error;
 		}
-		else if( result != 0 )
+		else
 		{
-			empty_block_found = 1;
+			empty_block_found = result;
 		}
 		if( empty_block_found != 0 )
 		{
