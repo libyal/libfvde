@@ -29,708 +29,732 @@ import pyfvde
 
 
 class DataRangeFileObject(object):
-  """File-like object that maps an in-file data range."""
+    """File-like object that maps an in-file data range."""
 
-  def __init__(self, path, range_offset, range_size):
-    """Initializes a file-like object.
+    def __init__(self, path, range_offset, range_size):
+        """Initializes a file-like object.
 
-    Args:
-      path (str): path of the file that contains the data range.
-      range_offset (int): offset where the data range starts.
-      range_size (int): size of the data range starts, or None to indicate
-          the range should continue to the end of the parent file-like object.
-    """
-    super(DataRangeFileObject, self).__init__()
-    self._current_offset = 0
-    self._file_object = open(path, "rb")
-    self._range_offset = range_offset
-    self._range_size = range_size
+        Args:
+          path (str): path of the file that contains the data range.
+          range_offset (int): offset where the data range starts.
+          range_size (int): size of the data range starts, or None to indicate
+              the range should continue to the end of the parent file-like object.
+        """
+        super(DataRangeFileObject, self).__init__()
+        self._current_offset = 0
+        self._file_object = open(path, "rb")
+        self._range_offset = range_offset
+        self._range_size = range_size
 
-  def __enter__(self):
-    """Enters a with statement."""
-    return self
+    def __enter__(self):
+        """Enters a with statement."""
+        return self
 
-  def __exit__(self, unused_type, unused_value, unused_traceback):
-    """Exits a with statement."""
-    return
+    def __exit__(self, unused_type, unused_value, unused_traceback):
+        """Exits a with statement."""
+        return
 
-  def close(self):
-    """Closes the file-like object."""
-    if self._file_object:
-      self._file_object.close()
-      self._file_object = None
+    def close(self):
+        """Closes the file-like object."""
+        if self._file_object:
+            self._file_object.close()
+            self._file_object = None
 
-  def get_offset(self):
-    """Retrieves the current offset into the file-like object.
+    def get_offset(self):
+        """Retrieves the current offset into the file-like object.
 
-    Returns:
-      int: current offset in the data range.
-    """
-    return self._current_offset
+        Returns:
+          int: current offset in the data range.
+        """
+        return self._current_offset
 
-  def get_size(self):
-    """Retrieves the size of the file-like object.
+    def get_size(self):
+        """Retrieves the size of the file-like object.
 
-    Returns:
-      int: size of the data range.
-    """
-    return self._range_size
+        Returns:
+          int: size of the data range.
+        """
+        return self._range_size
 
-  def read(self, size=None):
-    """Reads a byte string from the file-like object at the current offset.
+    def read(self, size=None):
+        """Reads a byte string from the file-like object at the current offset.
 
-    The function will read a byte string of the specified size or
-    all of the remaining data if no size was specified.
+        The function will read a byte string of the specified size or
+        all of the remaining data if no size was specified.
 
-    Args:
-      size (Optional[int]): number of bytes to read, where None is all
-          remaining data.
+        Args:
+          size (Optional[int]): number of bytes to read, where None is all
+              remaining data.
 
-    Returns:
-      bytes: data read.
+        Returns:
+          bytes: data read.
 
-    Raises:
-      IOError: if the read failed.
-    """
-    if (self._range_offset < 0 or
-        (self._range_size is not None and self._range_size < 0)):
-      raise IOError("Invalid data range.")
+        Raises:
+          IOError: if the read failed.
+        """
+        if self._range_offset < 0 or (
+            self._range_size is not None and self._range_size < 0
+        ):
+            raise IOError("Invalid data range.")
 
-    if self._current_offset < 0:
-      raise IOError(
-          "Invalid current offset: {0:d} value less than zero.".format(
-              self._current_offset))
+        if self._current_offset < 0:
+            raise IOError(
+                "Invalid current offset: {0:d} value less than zero.".format(
+                    self._current_offset
+                )
+            )
 
-    if (self._range_size is not None and
-        self._current_offset >= self._range_size):
-      return b""
+        if self._range_size is not None and self._current_offset >= self._range_size:
+            return b""
 
-    if size is None:
-      size = self._range_size
-    if self._range_size is not None and self._current_offset + size > self._range_size:
-      size = self._range_size - self._current_offset
+        if size is None:
+            size = self._range_size
+        if (
+            self._range_size is not None
+            and self._current_offset + size > self._range_size
+        ):
+            size = self._range_size - self._current_offset
 
-    self._file_object.seek(
-        self._range_offset + self._current_offset, os.SEEK_SET)
+        self._file_object.seek(self._range_offset + self._current_offset, os.SEEK_SET)
 
-    data = self._file_object.read(size)
+        data = self._file_object.read(size)
 
-    self._current_offset += len(data)
+        self._current_offset += len(data)
 
-    return data
+        return data
 
-  def seek(self, offset, whence=os.SEEK_SET):
-    """Seeks to an offset within the file-like object.
+    def seek(self, offset, whence=os.SEEK_SET):
+        """Seeks to an offset within the file-like object.
 
-    Args:
-      offset (int): offset to seek to.
-      whence (Optional(int)): value that indicates whether offset is an absolute
-          or relative position within the file.
+        Args:
+          offset (int): offset to seek to.
+          whence (Optional(int)): value that indicates whether offset is an absolute
+              or relative position within the file.
 
-    Raises:
-      IOError: if the seek failed.
-    """
-    if self._current_offset < 0:
-      raise IOError(
-          "Invalid current offset: {0:d} value less than zero.".format(
-              self._current_offset))
+        Raises:
+          IOError: if the seek failed.
+        """
+        if self._current_offset < 0:
+            raise IOError(
+                "Invalid current offset: {0:d} value less than zero.".format(
+                    self._current_offset
+                )
+            )
 
-    if whence == os.SEEK_CUR:
-      offset += self._current_offset
-    elif whence == os.SEEK_END:
-      offset += self._range_size
-    elif whence != os.SEEK_SET:
-      raise IOError("Unsupported whence.")
-    if offset < 0:
-      raise IOError("Invalid offset value less than zero.")
+        if whence == os.SEEK_CUR:
+            offset += self._current_offset
+        elif whence == os.SEEK_END:
+            offset += self._range_size
+        elif whence != os.SEEK_SET:
+            raise IOError("Unsupported whence.")
+        if offset < 0:
+            raise IOError("Invalid offset value less than zero.")
 
-    self._current_offset = offset
+        self._current_offset = offset
 
 
 class VolumeTypeTests(unittest.TestCase):
-  """Tests the volume type."""
+    """Tests the volume type."""
 
-  def test_signal_abort(self):
-    """Tests the signal_abort function."""
-    fvde_volume = pyfvde.volume()
+    def test_signal_abort(self):
+        """Tests the signal_abort function."""
+        fvde_volume = pyfvde.volume()
 
-    fvde_volume.signal_abort()
+        fvde_volume.signal_abort()
 
-  def test_open(self):
-    """Tests the open function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+    def test_open(self):
+        """Tests the open function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    test_offset = getattr(unittest, "offset", None)
-    if test_offset:
-      raise unittest.SkipTest("source defines offset")
+        test_offset = getattr(unittest, "offset", None)
+        if test_offset:
+            raise unittest.SkipTest("source defines offset")
 
-    fvde_volume = pyfvde.volume()
+        fvde_volume = pyfvde.volume()
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
 
-    fvde_volume.open(test_source)
+        fvde_volume.open(test_source)
 
-    with self.assertRaises(IOError):
-      fvde_volume.open(test_source)
+        with self.assertRaises(IOError):
+            fvde_volume.open(test_source)
 
-    fvde_volume.close()
-
-    with self.assertRaises(TypeError):
-      fvde_volume.open(None)
-
-    with self.assertRaises(ValueError):
-      fvde_volume.open(test_source, mode="w")
-
-  def test_open_file_object(self):
-    """Tests the open_file_object function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
-
-    if not os.path.isfile(test_source):
-      raise unittest.SkipTest("source not a regular file")
-
-    fvde_volume = pyfvde.volume()
-
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
-
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
-
-    test_offset = getattr(unittest, "offset", None)
-
-    with DataRangeFileObject(
-        test_source, test_offset or 0, None) as file_object:
-
-      fvde_volume.open_file_object(file_object)
-
-      with self.assertRaises(IOError):
-        fvde_volume.open_file_object(file_object)
-
-      fvde_volume.close()
-
-      with self.assertRaises(TypeError):
-        fvde_volume.open_file_object(None)
-
-      with self.assertRaises(ValueError):
-        fvde_volume.open_file_object(file_object, mode="w")
-
-  def test_close(self):
-    """Tests the close function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
-
-    fvde_volume = pyfvde.volume()
-
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
-
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
-
-    with self.assertRaises(IOError):
-      fvde_volume.close()
-
-  def test_open_close(self):
-    """Tests the open and close functions."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      return
-
-    test_offset = getattr(unittest, "offset", None)
-    if test_offset:
-      raise unittest.SkipTest("source defines offset")
-
-    fvde_volume = pyfvde.volume()
-
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
-
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
-
-    # Test open and close.
-    fvde_volume.open(test_source)
-    fvde_volume.close()
-
-    # Test open and close a second time to validate clean up on close.
-    fvde_volume.open(test_source)
-    fvde_volume.close()
-
-    if os.path.isfile(test_source):
-      with open(test_source, "rb") as file_object:
-
-        # Test open_file_object and close.
-        fvde_volume.open_file_object(file_object)
         fvde_volume.close()
 
-        # Test open_file_object and close a second time to validate clean up on close.
-        fvde_volume.open_file_object(file_object)
+        with self.assertRaises(TypeError):
+            fvde_volume.open(None)
+
+        with self.assertRaises(ValueError):
+            fvde_volume.open(test_source, mode="w")
+
+    def test_open_file_object(self):
+        """Tests the open_file_object function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
+
+        if not os.path.isfile(test_source):
+            raise unittest.SkipTest("source not a regular file")
+
+        fvde_volume = pyfvde.volume()
+
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
+
+        test_offset = getattr(unittest, "offset", None)
+
+        with DataRangeFileObject(test_source, test_offset or 0, None) as file_object:
+
+            fvde_volume.open_file_object(file_object)
+
+            with self.assertRaises(IOError):
+                fvde_volume.open_file_object(file_object)
+
+            fvde_volume.close()
+
+            with self.assertRaises(TypeError):
+                fvde_volume.open_file_object(None)
+
+            with self.assertRaises(ValueError):
+                fvde_volume.open_file_object(file_object, mode="w")
+
+    def test_close(self):
+        """Tests the close function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
+
+        fvde_volume = pyfvde.volume()
+
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
+
+        with self.assertRaises(IOError):
+            fvde_volume.close()
+
+    def test_open_close(self):
+        """Tests the open and close functions."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            return
+
+        test_offset = getattr(unittest, "offset", None)
+        if test_offset:
+            raise unittest.SkipTest("source defines offset")
+
+        fvde_volume = pyfvde.volume()
+
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
+
+        # Test open and close.
+        fvde_volume.open(test_source)
         fvde_volume.close()
 
-        # Test open_file_object and close and dereferencing file_object.
-        fvde_volume.open_file_object(file_object)
-        del file_object
+        # Test open and close a second time to validate clean up on close.
+        fvde_volume.open(test_source)
         fvde_volume.close()
 
-  def test_get_volume_group(self):
-    """Tests the get_volume_group function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+        if os.path.isfile(test_source):
+            with open(test_source, "rb") as file_object:
 
-    if not os.path.isfile(test_source):
-      raise unittest.SkipTest("source not a regular file")
+                # Test open_file_object and close.
+                fvde_volume.open_file_object(file_object)
+                fvde_volume.close()
 
-    fvde_volume = pyfvde.volume()
+                # Test open_file_object and close a second time to validate clean up on close.
+                fvde_volume.open_file_object(file_object)
+                fvde_volume.close()
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+                # Test open_file_object and close and dereferencing file_object.
+                fvde_volume.open_file_object(file_object)
+                del file_object
+                fvde_volume.close()
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+    def test_get_volume_group(self):
+        """Tests the get_volume_group function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    test_offset = getattr(unittest, "offset", None)
+        if not os.path.isfile(test_source):
+            raise unittest.SkipTest("source not a regular file")
 
-    with DataRangeFileObject(
-        test_source, test_offset or 0, None) as file_object:
+        fvde_volume = pyfvde.volume()
 
-      fvde_volume = pyfvde.volume()
-      fvde_volume.open_file_object(file_object)
-      fvde_volume.open_physical_volume_files_as_file_objects([file_object])
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
 
-      fvde_volume_group = fvde_volume.get_volume_group()
-      self.assertIsNotNone(fvde_volume_group)
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
 
-      fvde_volume.close()
+        test_offset = getattr(unittest, "offset", None)
 
-  # Deprecated functions
+        with DataRangeFileObject(test_source, test_offset or 0, None) as file_object:
 
-  def test_is_locked(self):
-    """Tests the is_locked function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+            fvde_volume = pyfvde.volume()
+            fvde_volume.open_file_object(file_object)
+            fvde_volume.open_physical_volume_files_as_file_objects([file_object])
 
-    test_offset = getattr(unittest, "offset", None)
-    if test_offset:
-      raise unittest.SkipTest("source defines offset")
+            fvde_volume_group = fvde_volume.get_volume_group()
+            self.assertIsNotNone(fvde_volume_group)
 
-    fvde_volume = pyfvde.volume()
+            fvde_volume.close()
 
-    fvde_volume.open(test_source)
+    # Deprecated functions
 
-    result = fvde_volume.is_locked()
+    def test_is_locked(self):
+        """Tests the is_locked function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    fvde_volume.close()
+        test_offset = getattr(unittest, "offset", None)
+        if test_offset:
+            raise unittest.SkipTest("source defines offset")
 
-    test_password = getattr(unittest, "password", None)
-    test_recovery_password = getattr(unittest, "recovery_password", None)
+        fvde_volume = pyfvde.volume()
 
-    if result and (test_password or test_recovery_password):
-      fvde_volume = pyfvde.volume()
-      if test_password:
-        fvde_volume.set_password(test_password)
-      if test_recovery_password:
-        fvde_volume.set_recovery_password(test_recovery_password)
+        fvde_volume.open(test_source)
 
-      fvde_volume.open(test_source)
+        result = fvde_volume.is_locked()
 
-      result = fvde_volume.is_locked()
-      self.assertFalse(result)
+        fvde_volume.close()
 
-      fvde_volume.close()
+        test_password = getattr(unittest, "password", None)
+        test_recovery_password = getattr(unittest, "recovery_password", None)
 
-  def test_read_buffer(self):
-    """Tests the read_buffer function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+        if result and (test_password or test_recovery_password):
+            fvde_volume = pyfvde.volume()
+            if test_password:
+                fvde_volume.set_password(test_password)
+            if test_recovery_password:
+                fvde_volume.set_recovery_password(test_recovery_password)
 
-    test_offset = getattr(unittest, "offset", None)
-    if test_offset:
-      raise unittest.SkipTest("source defines offset")
+            fvde_volume.open(test_source)
 
-    fvde_volume = pyfvde.volume()
+            result = fvde_volume.is_locked()
+            self.assertFalse(result)
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+            fvde_volume.close()
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+    def test_read_buffer(self):
+        """Tests the read_buffer function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    fvde_volume.open(test_source)
+        test_offset = getattr(unittest, "offset", None)
+        if test_offset:
+            raise unittest.SkipTest("source defines offset")
 
-    size = fvde_volume.get_size()
+        fvde_volume = pyfvde.volume()
 
-    if size < 4096:
-      # Test read without maximum size.
-      fvde_volume.seek_offset(0, os.SEEK_SET)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
 
-      data = fvde_volume.read_buffer()
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
 
-      self.assertIsNotNone(data)
-      self.assertEqual(len(data), size)
+        fvde_volume.open(test_source)
 
-    # Test read with maximum size.
-    fvde_volume.seek_offset(0, os.SEEK_SET)
+        size = fvde_volume.get_size()
 
-    data = fvde_volume.read_buffer(size=4096)
+        if size < 4096:
+            # Test read without maximum size.
+            fvde_volume.seek_offset(0, os.SEEK_SET)
 
-    self.assertIsNotNone(data)
-    self.assertEqual(len(data), min(size, 4096))
+            data = fvde_volume.read_buffer()
 
-    if size > 8:
-      fvde_volume.seek_offset(-8, os.SEEK_END)
+            self.assertIsNotNone(data)
+            self.assertEqual(len(data), size)
 
-      # Read buffer on size boundary.
-      data = fvde_volume.read_buffer(size=4096)
+        # Test read with maximum size.
+        fvde_volume.seek_offset(0, os.SEEK_SET)
 
-      self.assertIsNotNone(data)
-      self.assertEqual(len(data), 8)
+        data = fvde_volume.read_buffer(size=4096)
 
-      # Read buffer beyond size boundary.
-      data = fvde_volume.read_buffer(size=4096)
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), min(size, 4096))
 
-      self.assertIsNotNone(data)
-      self.assertEqual(len(data), 0)
+        if size > 8:
+            fvde_volume.seek_offset(-8, os.SEEK_END)
 
-    # Stress test read buffer.
-    fvde_volume.seek_offset(0, os.SEEK_SET)
+            # Read buffer on size boundary.
+            data = fvde_volume.read_buffer(size=4096)
 
-    remaining_size = size
+            self.assertIsNotNone(data)
+            self.assertEqual(len(data), 8)
 
-    for _ in range(1024):
-      read_size = int(random.random() * 4096)
+            # Read buffer beyond size boundary.
+            data = fvde_volume.read_buffer(size=4096)
 
-      data = fvde_volume.read_buffer(size=read_size)
+            self.assertIsNotNone(data)
+            self.assertEqual(len(data), 0)
 
-      self.assertIsNotNone(data)
-
-      data_size = len(data)
-
-      if read_size > remaining_size:
-        read_size = remaining_size
-
-      self.assertEqual(data_size, read_size)
-
-      remaining_size -= data_size
-
-      if not remaining_size:
+        # Stress test read buffer.
         fvde_volume.seek_offset(0, os.SEEK_SET)
 
         remaining_size = size
 
-    with self.assertRaises(ValueError):
-      fvde_volume.read_buffer(size=-1)
+        for _ in range(1024):
+            read_size = int(random.random() * 4096)
 
-    fvde_volume.close()
+            data = fvde_volume.read_buffer(size=read_size)
 
-    # Test the read without open.
-    with self.assertRaises(IOError):
-      fvde_volume.read_buffer(size=4096)
+            self.assertIsNotNone(data)
 
-  def test_read_buffer_file_object(self):
-    """Tests the read_buffer function on a file-like object."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+            data_size = len(data)
 
-    if not os.path.isfile(test_source):
-      raise unittest.SkipTest("source not a regular file")
+            if read_size > remaining_size:
+                read_size = remaining_size
 
-    fvde_volume = pyfvde.volume()
+            self.assertEqual(data_size, read_size)
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+            remaining_size -= data_size
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+            if not remaining_size:
+                fvde_volume.seek_offset(0, os.SEEK_SET)
 
-    test_offset = getattr(unittest, "offset", None)
+                remaining_size = size
 
-    with DataRangeFileObject(
-        test_source, test_offset or 0, None) as file_object:
+        with self.assertRaises(ValueError):
+            fvde_volume.read_buffer(size=-1)
 
-      fvde_volume.open_file_object(file_object)
+        fvde_volume.close()
 
-      size = fvde_volume.get_size()
+        # Test the read without open.
+        with self.assertRaises(IOError):
+            fvde_volume.read_buffer(size=4096)
 
-      # Test normal read.
-      data = fvde_volume.read_buffer(size=4096)
+    def test_read_buffer_file_object(self):
+        """Tests the read_buffer function on a file-like object."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-      self.assertIsNotNone(data)
-      self.assertEqual(len(data), min(size, 4096))
+        if not os.path.isfile(test_source):
+            raise unittest.SkipTest("source not a regular file")
 
-      fvde_volume.close()
+        fvde_volume = pyfvde.volume()
 
-  def test_read_buffer_at_offset(self):
-    """Tests the read_buffer_at_offset function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
 
-    test_offset = getattr(unittest, "offset", None)
-    if test_offset:
-      raise unittest.SkipTest("source defines offset")
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
 
-    fvde_volume = pyfvde.volume()
+        test_offset = getattr(unittest, "offset", None)
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+        with DataRangeFileObject(test_source, test_offset or 0, None) as file_object:
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+            fvde_volume.open_file_object(file_object)
 
-    fvde_volume.open(test_source)
+            size = fvde_volume.get_size()
 
-    size = fvde_volume.get_size()
+            # Test normal read.
+            data = fvde_volume.read_buffer(size=4096)
 
-    # Test normal read.
-    data = fvde_volume.read_buffer_at_offset(4096, 0)
+            self.assertIsNotNone(data)
+            self.assertEqual(len(data), min(size, 4096))
 
-    self.assertIsNotNone(data)
-    self.assertEqual(len(data), min(size, 4096))
+            fvde_volume.close()
 
-    if size > 8:
-      # Read buffer on size boundary.
-      data = fvde_volume.read_buffer_at_offset(4096, size - 8)
+    def test_read_buffer_at_offset(self):
+        """Tests the read_buffer_at_offset function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-      self.assertIsNotNone(data)
-      self.assertEqual(len(data), 8)
+        test_offset = getattr(unittest, "offset", None)
+        if test_offset:
+            raise unittest.SkipTest("source defines offset")
 
-      # Read buffer beyond size boundary.
-      data = fvde_volume.read_buffer_at_offset(4096, size + 8)
+        fvde_volume = pyfvde.volume()
 
-      self.assertIsNotNone(data)
-      self.assertEqual(len(data), 0)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
 
-    # Stress test read buffer.
-    for _ in range(1024):
-      random_number = random.random()
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
 
-      media_offset = int(random_number * size)
-      read_size = int(random_number * 4096)
+        fvde_volume.open(test_source)
 
-      data = fvde_volume.read_buffer_at_offset(read_size, media_offset)
+        size = fvde_volume.get_size()
 
-      self.assertIsNotNone(data)
+        # Test normal read.
+        data = fvde_volume.read_buffer_at_offset(4096, 0)
 
-      remaining_size = size - media_offset
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), min(size, 4096))
 
-      data_size = len(data)
+        if size > 8:
+            # Read buffer on size boundary.
+            data = fvde_volume.read_buffer_at_offset(4096, size - 8)
 
-      if read_size > remaining_size:
-        read_size = remaining_size
+            self.assertIsNotNone(data)
+            self.assertEqual(len(data), 8)
 
-      self.assertEqual(data_size, read_size)
+            # Read buffer beyond size boundary.
+            data = fvde_volume.read_buffer_at_offset(4096, size + 8)
 
-      remaining_size -= data_size
+            self.assertIsNotNone(data)
+            self.assertEqual(len(data), 0)
 
-      if not remaining_size:
-        fvde_volume.seek_offset(0, os.SEEK_SET)
+        # Stress test read buffer.
+        for _ in range(1024):
+            random_number = random.random()
 
-    with self.assertRaises(ValueError):
-      fvde_volume.read_buffer_at_offset(-1, 0)
+            media_offset = int(random_number * size)
+            read_size = int(random_number * 4096)
 
-    with self.assertRaises(ValueError):
-      fvde_volume.read_buffer_at_offset(4096, -1)
+            data = fvde_volume.read_buffer_at_offset(read_size, media_offset)
 
-    fvde_volume.close()
+            self.assertIsNotNone(data)
 
-    # Test the read without open.
-    with self.assertRaises(IOError):
-      fvde_volume.read_buffer_at_offset(4096, 0)
+            remaining_size = size - media_offset
 
-  def test_seek_offset(self):
-    """Tests the seek_offset function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+            data_size = len(data)
 
-    test_offset = getattr(unittest, "offset", None)
-    if test_offset:
-      raise unittest.SkipTest("source defines offset")
+            if read_size > remaining_size:
+                read_size = remaining_size
 
-    fvde_volume = pyfvde.volume()
+            self.assertEqual(data_size, read_size)
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+            remaining_size -= data_size
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+            if not remaining_size:
+                fvde_volume.seek_offset(0, os.SEEK_SET)
 
-    fvde_volume.open(test_source)
+        with self.assertRaises(ValueError):
+            fvde_volume.read_buffer_at_offset(-1, 0)
 
-    size = fvde_volume.get_size()
+        with self.assertRaises(ValueError):
+            fvde_volume.read_buffer_at_offset(4096, -1)
 
-    fvde_volume.seek_offset(16, os.SEEK_SET)
+        fvde_volume.close()
 
-    offset = fvde_volume.get_offset()
-    self.assertEqual(offset, 16)
+        # Test the read without open.
+        with self.assertRaises(IOError):
+            fvde_volume.read_buffer_at_offset(4096, 0)
 
-    fvde_volume.seek_offset(16, os.SEEK_CUR)
+    def test_seek_offset(self):
+        """Tests the seek_offset function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    offset = fvde_volume.get_offset()
-    self.assertEqual(offset, 32)
+        test_offset = getattr(unittest, "offset", None)
+        if test_offset:
+            raise unittest.SkipTest("source defines offset")
 
-    fvde_volume.seek_offset(-16, os.SEEK_CUR)
+        fvde_volume = pyfvde.volume()
 
-    offset = fvde_volume.get_offset()
-    self.assertEqual(offset, 16)
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
 
-    if size > 16:
-      fvde_volume.seek_offset(-16, os.SEEK_END)
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
 
-      offset = fvde_volume.get_offset()
-      self.assertEqual(offset, size - 16)
+        fvde_volume.open(test_source)
 
-    fvde_volume.seek_offset(16, os.SEEK_END)
+        size = fvde_volume.get_size()
 
-    offset = fvde_volume.get_offset()
-    self.assertEqual(offset, size + 16)
+        fvde_volume.seek_offset(16, os.SEEK_SET)
 
-    # TODO: change IOError into ValueError
-    with self.assertRaises(IOError):
-      fvde_volume.seek_offset(-1, os.SEEK_SET)
+        offset = fvde_volume.get_offset()
+        self.assertEqual(offset, 16)
 
-    # TODO: change IOError into ValueError
-    with self.assertRaises(IOError):
-      fvde_volume.seek_offset(-32 - size, os.SEEK_CUR)
+        fvde_volume.seek_offset(16, os.SEEK_CUR)
 
-    # TODO: change IOError into ValueError
-    with self.assertRaises(IOError):
-      fvde_volume.seek_offset(-32 - size, os.SEEK_END)
+        offset = fvde_volume.get_offset()
+        self.assertEqual(offset, 32)
 
-    # TODO: change IOError into ValueError
-    with self.assertRaises(IOError):
-      fvde_volume.seek_offset(0, -1)
+        fvde_volume.seek_offset(-16, os.SEEK_CUR)
 
-    fvde_volume.close()
+        offset = fvde_volume.get_offset()
+        self.assertEqual(offset, 16)
 
-    # Test the seek without open.
-    with self.assertRaises(IOError):
-      fvde_volume.seek_offset(16, os.SEEK_SET)
+        if size > 16:
+            fvde_volume.seek_offset(-16, os.SEEK_END)
 
-  def test_get_offset(self):
-    """Tests the get_offset function."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+            offset = fvde_volume.get_offset()
+            self.assertEqual(offset, size - 16)
 
-    if not os.path.isfile(test_source):
-      raise unittest.SkipTest("source not a regular file")
+        fvde_volume.seek_offset(16, os.SEEK_END)
 
-    fvde_volume = pyfvde.volume()
+        offset = fvde_volume.get_offset()
+        self.assertEqual(offset, size + 16)
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+        # TODO: change IOError into ValueError
+        with self.assertRaises(IOError):
+            fvde_volume.seek_offset(-1, os.SEEK_SET)
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+        # TODO: change IOError into ValueError
+        with self.assertRaises(IOError):
+            fvde_volume.seek_offset(-32 - size, os.SEEK_CUR)
 
-    test_offset = getattr(unittest, "offset", None)
+        # TODO: change IOError into ValueError
+        with self.assertRaises(IOError):
+            fvde_volume.seek_offset(-32 - size, os.SEEK_END)
 
-    with DataRangeFileObject(
-        test_source, test_offset or 0, None) as file_object:
+        # TODO: change IOError into ValueError
+        with self.assertRaises(IOError):
+            fvde_volume.seek_offset(0, -1)
 
-      fvde_volume = pyfvde.volume()
-      fvde_volume.open_file_object(file_object)
+        fvde_volume.close()
 
-      offset = fvde_volume.get_offset()
-      self.assertIsNotNone(offset)
+        # Test the seek without open.
+        with self.assertRaises(IOError):
+            fvde_volume.seek_offset(16, os.SEEK_SET)
 
-      fvde_volume.close()
+    def test_get_offset(self):
+        """Tests the get_offset function."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-  def test_get_size(self):
-    """Tests the get_size function and size property."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+        if not os.path.isfile(test_source):
+            raise unittest.SkipTest("source not a regular file")
 
-    if not os.path.isfile(test_source):
-      raise unittest.SkipTest("source not a regular file")
+        fvde_volume = pyfvde.volume()
 
-    fvde_volume = pyfvde.volume()
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
 
-    test_password = getattr(unittest, "password", None)
-    if test_password:
-      fvde_volume.set_password(test_password)
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
 
-    test_recovery_password = getattr(unittest, "recovery_password", None)
-    if test_recovery_password:
-      fvde_volume.set_recovery_password(test_recovery_password)
+        test_offset = getattr(unittest, "offset", None)
 
-    test_offset = getattr(unittest, "offset", None)
+        with DataRangeFileObject(test_source, test_offset or 0, None) as file_object:
 
-    with DataRangeFileObject(
-        test_source, test_offset or 0, None) as file_object:
+            fvde_volume = pyfvde.volume()
+            fvde_volume.open_file_object(file_object)
 
-      fvde_volume = pyfvde.volume()
-      fvde_volume.open_file_object(file_object)
+            offset = fvde_volume.get_offset()
+            self.assertIsNotNone(offset)
 
-      size = fvde_volume.get_size()
-      self.assertIsNotNone(size)
+            fvde_volume.close()
 
-      self.assertIsNotNone(fvde_volume.size)
+    def test_get_size(self):
+        """Tests the get_size function and size property."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-      fvde_volume.close()
+        if not os.path.isfile(test_source):
+            raise unittest.SkipTest("source not a regular file")
+
+        fvde_volume = pyfvde.volume()
+
+        test_password = getattr(unittest, "password", None)
+        if test_password:
+            fvde_volume.set_password(test_password)
+
+        test_recovery_password = getattr(unittest, "recovery_password", None)
+        if test_recovery_password:
+            fvde_volume.set_recovery_password(test_recovery_password)
+
+        test_offset = getattr(unittest, "offset", None)
+
+        with DataRangeFileObject(test_source, test_offset or 0, None) as file_object:
+
+            fvde_volume = pyfvde.volume()
+            fvde_volume.open_file_object(file_object)
+
+            size = fvde_volume.get_size()
+            self.assertIsNotNone(size)
+
+            self.assertIsNotNone(fvde_volume.size)
+
+            fvde_volume.close()
 
 
 if __name__ == "__main__":
-  argument_parser = argparse.ArgumentParser()
+    argument_parser = argparse.ArgumentParser()
 
-  argument_parser.add_argument(
-      "-o", "--offset", dest="offset", action="store", default=None,
-      type=int, help="offset of the source file.")
+    argument_parser.add_argument(
+        "-o",
+        "--offset",
+        dest="offset",
+        action="store",
+        default=None,
+        type=int,
+        help="offset of the source file.",
+    )
 
-  argument_parser.add_argument(
-      "-p", "--password", dest="password", action="store", default=None,
-      type=str, help="password to unlock the source file.")
+    argument_parser.add_argument(
+        "-p",
+        "--password",
+        dest="password",
+        action="store",
+        default=None,
+        type=str,
+        help="password to unlock the source file.",
+    )
 
-  argument_parser.add_argument(
-      "-r", "--recovery-password", "--recovery_password",
-      dest="recovery_password", action="store", default=None, type=str,
-      help="recovery password to unlock the source file.")
+    argument_parser.add_argument(
+        "-r",
+        "--recovery-password",
+        "--recovery_password",
+        dest="recovery_password",
+        action="store",
+        default=None,
+        type=str,
+        help="recovery password to unlock the source file.",
+    )
 
-  argument_parser.add_argument(
-      "source", nargs="?", action="store", metavar="PATH",
-      default=None, help="path of the source file.")
+    argument_parser.add_argument(
+        "source",
+        nargs="?",
+        action="store",
+        metavar="PATH",
+        default=None,
+        help="path of the source file.",
+    )
 
-  options, unknown_options = argument_parser.parse_known_args()
-  unknown_options.insert(0, sys.argv[0])
+    options, unknown_options = argument_parser.parse_known_args()
+    unknown_options.insert(0, sys.argv[0])
 
-  setattr(unittest, "offset", options.offset)
-  setattr(unittest, "password", options.password)
-  setattr(unittest, "recovery_password", options.recovery_password)
-  setattr(unittest, "source", options.source)
+    setattr(unittest, "offset", options.offset)
+    setattr(unittest, "password", options.password)
+    setattr(unittest, "recovery_password", options.recovery_password)
+    setattr(unittest, "source", options.source)
 
-  unittest.main(argv=unknown_options, verbosity=2)
+    unittest.main(argv=unknown_options, verbosity=2)
