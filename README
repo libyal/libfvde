@@ -34,7 +34,6 @@ Supported protection methods:
 Unsupported Core Storage format features:
 
 * multiple physical volumes
-* 1 TiB (or larger) volumes
 
 Also see:
 

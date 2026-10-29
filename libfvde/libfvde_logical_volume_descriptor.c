@@ -770,3 +770,109 @@ int libfvde_logical_volume_descriptor_get_segment_descriptor_by_index(
 	}
 	return( 1 );
 }
+
+/* Retrieves the segment descriptor that contains a specific logical block number
+ * Returns 1 if successful, 0 if no such segment descriptor or -1 on error
+ */
+int libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+     libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     uint64_t logical_block_number,
+     libfvde_segment_descriptor_t **segment_descriptor,
+     libcerror_error_t **error )
+{
+	libfvde_segment_descriptor_t *safe_segment_descriptor = NULL;
+	static char *function                                 = "libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number";
+	int lower_segment_index                               = 0;
+	int number_of_segment_descriptors                     = 0;
+	int segment_index                                     = 0;
+	int upper_segment_index                               = 0;
+
+	if( logical_volume_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid logical volume descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( segment_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid segment descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     logical_volume_descriptor->segment_descriptors,
+	     &number_of_segment_descriptors,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of segment descriptors from array.",
+		 function );
+
+		return( -1 );
+	}
+	/* The segment descriptors are sorted by logical block number
+	 */
+	upper_segment_index = number_of_segment_descriptors;
+
+	while( lower_segment_index < upper_segment_index )
+	{
+		segment_index = lower_segment_index + ( ( upper_segment_index - lower_segment_index ) / 2 );
+
+		if( libcdata_array_get_entry_by_index(
+		     logical_volume_descriptor->segment_descriptors,
+		     segment_index,
+		     (intptr_t **) &safe_segment_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve segment descriptor: %d from array.",
+			 function,
+			 segment_index );
+
+			return( -1 );
+		}
+		if( safe_segment_descriptor == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing segment descriptor: %d.",
+			 function,
+			 segment_index );
+
+			return( -1 );
+		}
+		if( logical_block_number < safe_segment_descriptor->logical_block_number )
+		{
+			upper_segment_index = segment_index;
+		}
+		else if( ( logical_block_number - safe_segment_descriptor->logical_block_number ) >= safe_segment_descriptor->number_of_blocks )
+		{
+			lower_segment_index = segment_index + 1;
+		}
+		else
+		{
+			*segment_descriptor = safe_segment_descriptor;
+
+			return( 1 );
+		}
+	}
+	return( 0 );
+}

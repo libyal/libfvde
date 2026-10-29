@@ -258,6 +258,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvde\libfvde_sector_data_vector.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvde\libfvde_segment_descriptor.c"
 				>
 			</File>
@@ -445,6 +449,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvde\libfvde_sector_data.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvde\libfvde_sector_data_vector.h"
 				>
 			</File>
 			<File
