@@ -12,9 +12,28 @@ AM_CPPFLAGS = \
 	@LIBBFIO_CPPFLAGS@
 
 bin_PROGRAMS = \
+	encryption_context_plist_fuzzer \
 	logical_volume_fuzzer \
 	volume_fuzzer \
 	volume_group_fuzzer
+
+encryption_context_plist_fuzzer_SOURCES = \
+	encryption_context_plist_fuzzer.cc \
+	ossfuzz_libbfio.h \
+	ossfuzz_libfvde.h
+
+encryption_context_plist_fuzzer_LDADD = \
+	@LIB_FUZZING_ENGINE@ \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libfvde/libfvde.la \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 logical_volume_fuzzer_SOURCES = \
 	logical_volume_fuzzer.cc \
@@ -76,6 +95,8 @@ DISTCLEANFILES = \
 	Makefile.in
 
 splint-local:
+	@echo "Running splint on encryption_context_plist_fuzzer ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(encryption_context_plist_fuzzer_SOURCES)
 	@echo "Running splint on logical_volume_fuzzer ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(logical_volume_fuzzer_SOURCES)
 	@echo "Running splint on volume_fuzzer ..."

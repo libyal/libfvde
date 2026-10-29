@@ -61,13 +61,16 @@ int LLVMFuzzerTestOneInput(
 	uint8_t utf8_string[ 64 ];
 	uint16_t utf16_string[ 64 ];
 
-	libbfio_handle_t *file_io_handle     = NULL;
-	libbfio_pool_t *file_io_pool         = NULL;
-	libfvde_volume_t *volume             = NULL;
-	libfvde_volume_group_t *volume_group = NULL;
-	size_t string_size                   = 0;
-	int entry_index                      = 0;
-	int number_of_volumes                = 0;
+	libbfio_handle_t *file_io_handle                 = NULL;
+	libbfio_pool_t *file_io_pool                     = NULL;
+	libfvde_volume_t *volume                         = NULL;
+	libfvde_volume_group_t *volume_group             = NULL;
+	libfvde_physical_volume_t *physical_volume       = NULL;
+	uint32_t encryption_method                       = 0;
+	size64_t volume_size                             = 0;
+	size_t string_size                               = 0;
+	int entry_index                                  = 0;
+	int number_of_volumes                            = 0;
 
 	if( libbfio_memory_range_initialize(
 	     &file_io_handle,
@@ -174,6 +177,43 @@ int LLVMFuzzerTestOneInput(
 		     NULL ) != 1 )
 		{
 			goto on_error_libfvde_volume_group;
+		}
+		if( number_of_volumes > 0 )
+		{
+			if( libfvde_volume_group_get_physical_volume_by_index(
+			     volume_group,
+			     0,
+			     &physical_volume,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_volume_group;
+			}
+			if( libfvde_physical_volume_get_identifier(
+			     physical_volume,
+			     uuid,
+			     16,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_physical_volume;
+			}
+			if( libfvde_physical_volume_get_encryption_method(
+			     physical_volume,
+			     &encryption_method,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_physical_volume;
+			}
+			if( libfvde_physical_volume_get_size(
+			     physical_volume,
+			     &volume_size,
+			     NULL ) != 1 )
+			{
+				goto on_error_libfvde_physical_volume;
+			}
+on_error_libfvde_physical_volume:
+			libfvde_physical_volume_free(
+			 &physical_volume,
+			 NULL );
 		}
 		if( libfvde_volume_group_get_number_of_logical_volumes(
 		     volume_group,

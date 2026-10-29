@@ -2495,7 +2495,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	const uint8_t *xml_plist_data                                  = NULL;
 	static char *function                                          = "libfvde_encrypted_metadata_read_type_0x001a";
 	size_t block_data_offset                                       = 0;
-	size_t xml_length                                              = 0;
+	size_t xml_size                                                = 0;
 	uint64_t logical_volume_size                                   = 0;
 	uint64_t object_identifier                                     = 0;
 	uint64_t object_identifier_0x0305                              = 0;
@@ -2786,19 +2786,16 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 #endif
 /* TODO for now determine the XML string length */
 /* TODO refactor this to a separate function */
-		xml_length = narrow_string_length(
-			      (char *) xml_plist_data );
-
-		if( xml_length > (size_t) ( INT_MAX - 1 ) )
+		for( xml_size = 5;
+		     xml_size < xml_plist_data_size;
+		     xml_size++ )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid XML length value out of bounds.",
-			 function );
+			if( xml_plist_data[ xml_size ] == 0 )
+			{
+				xml_size++;
 
-			goto on_error;
+				break;
+			}
 		}
 		if( libfplist_property_list_initialize(
 		     &property_list,
@@ -2816,7 +2813,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		if( libfplist_property_list_copy_from_byte_stream(
 		     property_list,
 		     xml_plist_data,
-		     xml_length + 1,
+		     xml_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3796,7 +3793,8 @@ int libfvde_encrypted_metadata_read_type_0x0024(
 
 			goto on_error;
 		}
-		if( xml_plist_data_size > ( encrypted_metadata->compressed_data_size - encrypted_metadata->compressed_data_offset ) )
+		if( ( xml_plist_data_size > ( encrypted_metadata->compressed_data_size - encrypted_metadata->compressed_data_offset ) )
+		 || ( xml_plist_data_size > ( block_data_size - 16 ) ) )
 		{
 			libcerror_error_set(
 			 error,

@@ -61,6 +61,15 @@ int LLVMFuzzerTestOneInput(
 	uint8_t uuid[ 16 ];
 	uint8_t utf8_string[ 64 ];
 	uint16_t utf16_string[ 64 ];
+	uint8_t volume_master_key[ 16 ] = {
+		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10
+	};
+	uint16_t utf16_password[ 9 ] = {
+		0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x00
+	};
+	uint16_t utf16_recovery_password[ 9 ] = {
+		0x72, 0x65, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x00
+	};
 
 	libbfio_handle_t *file_io_handle         = NULL;
 	libbfio_pool_t *file_io_pool             = NULL;
@@ -68,6 +77,7 @@ int LLVMFuzzerTestOneInput(
 	libfvde_logical_volume_t *logical_volume = NULL;
 	libfvde_volume_group_t *volume_group     = NULL;
 	off64_t volume_offset                    = 0;
+	off64_t stream_offset                    = 0;
 	size64_t volume_size                     = 0;
 	size_t string_size                       = 0;
 	int entry_index                          = 0;
@@ -197,6 +207,70 @@ int LLVMFuzzerTestOneInput(
 			{
 				goto on_error_libfvde_logical_volume;
 			}
+			libfvde_logical_volume_is_locked(
+			 logical_volume,
+			 NULL );
+
+			libfvde_logical_volume_set_utf8_password(
+			 logical_volume,
+			 (uint8_t *) "password",
+			 8,
+			 NULL );
+
+			libfvde_logical_volume_set_utf16_password(
+			 logical_volume,
+			 utf16_password,
+			 sizeof( utf16_password ),
+			 NULL );
+
+			libfvde_logical_volume_set_utf8_recovery_password(
+			 logical_volume,
+			 (uint8_t *) "recovery_password",
+			 17,
+			 NULL );
+
+			libfvde_logical_volume_set_utf16_recovery_password(
+			 logical_volume,
+			 utf16_recovery_password,
+			 sizeof( utf16_recovery_password ),
+			 NULL );
+
+			libfvde_logical_volume_set_key(
+			 logical_volume,
+			 volume_master_key,
+			 16,
+			 NULL );
+
+			libfvde_logical_volume_unlock(
+			 logical_volume,
+			 NULL );
+
+			libfvde_logical_volume_is_locked(
+			 logical_volume,
+			 NULL );
+
+			libfvde_logical_volume_get_offset(
+			 logical_volume,
+			 &stream_offset,
+			 NULL );
+
+			libfvde_logical_volume_read_buffer(
+			 logical_volume,
+			 buffer,
+			 512,
+			 NULL );
+
+			libfvde_logical_volume_get_offset(
+			 logical_volume,
+			 &stream_offset,
+			 NULL );
+
+			libfvde_logical_volume_seek_offset(
+			 logical_volume,
+			 0,
+			 0,
+			 NULL );
+
 			for( read_iterator = 0;
 			     read_iterator < 128;
 			     read_iterator++ )

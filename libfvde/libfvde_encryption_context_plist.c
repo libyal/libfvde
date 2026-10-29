@@ -305,6 +305,17 @@ int libfvde_encryption_context_plist_copy_data(
 
 		return( -1 );
 	}
+	if( internal_plist->data_decrypted == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid plist - missing decrypted data.",
+		 function );
+
+		return( -1 );
+	}
 	if( (size64_t) data_size < internal_plist->data_size )
 	{
 		libcerror_error_set(
