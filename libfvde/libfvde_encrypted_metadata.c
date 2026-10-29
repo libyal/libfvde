@@ -5229,12 +5229,12 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
 	static char *function                                          = "libfvde_encrypted_metadata_read_type_0x0505";
 	size_t block_data_offset                                       = 0;
+	uint64_t number_of_blocks                                      = 0;
 	uint64_t physical_block_number                                 = 0;
 	uint32_t entry_index                                           = 0;
 	uint32_t number_of_entries                                     = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint64_t value_64bit                                           = 0;
 	uint32_t value_32bit                                           = 0;
 #endif
 
@@ -5340,21 +5340,21 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 	     entry_index++ )
 	{
 		byte_stream_copy_to_uint64_little_endian(
+		 &( block_data[ block_data_offset ] ),
+		 number_of_blocks );
+
+		byte_stream_copy_to_uint64_little_endian(
 		 &( block_data[ block_data_offset + 8 ] ),
 		 physical_block_number );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			byte_stream_copy_to_uint64_little_endian(
-			 &( block_data[ block_data_offset ] ),
-			 value_64bit );
-
 			libcnotify_printf(
 			 "%s: entry: %03d number of blocks\t: %" PRIu64 "\n",
 			 function,
 			 entry_index,
-			 value_64bit );
+			 number_of_blocks );
 
 			libcnotify_printf(
 			 "%s: entry: %03d physical block number\t: %" PRIu64 "\n",
@@ -5385,6 +5385,15 @@ int libfvde_encrypted_metadata_read_type_0x0505(
 		 function );
 
 		return( -1 );
+	}
+	/* An entry without blocks, as seen after an in-place conversion had completed,
+	 * does not define a base physical block number
+	 * The physical block numbers of the segment descriptors in metadata block type 0x0305
+	 * are then relative from the start of the physical volume
+	 */
+	if( number_of_blocks == 0 )
+	{
+		physical_block_number = 0;
 	}
 	if( ( physical_block_number >> 48 ) > 0 )
 	{
