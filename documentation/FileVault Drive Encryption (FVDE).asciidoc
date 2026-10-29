@@ -377,6 +377,11 @@ object identifiers.
 
 [yellow-background]*If not present in the transaction do object identifiers reference previous transactions?*
 
+[NOTE]
+Object identifiers can refer to metadata blocks of previous transactions, e.g.
+on a volume converted in-place to FileVault 2 a metadata block type 0x0019 of
+transaction 15656 referred to metadata blocks type 0x0024 of transaction 15651.
+
 === [[metadata_block_type_0x0011]]Metadata block data type 0x0011
 
 Metadata block data type 0x0011 contains information about [yellow-background]*TODO: describe*
@@ -854,6 +859,11 @@ metadata block will be of type 0x0019 and followed by metadata blocks of type
 0x0024. The total uncompressed data size indicates the size of the data. Also
 see: <<metadata_block_0x0024,Metadata block data type 0x0024>>.
 
+[NOTE]
+The encrypted metadata can contain multiple (non LVFwiped) metadata blocks of
+type 0x0019 with the same object identifier, e.g. of transactions 15651 and
+15656. The one of the most recent transaction should be used.
+
 ==== XML plist data
 
 XML plist main dict containing:
@@ -1062,6 +1072,20 @@ Contains 0 if there is no next object
 | 12 | 4 | | [yellow-background]*Unknown*
 | 16 | ... | XML plist data
 |===
+
+[NOTE]
+The metadata blocks of a chain are not necessarily stored in chain order, e.g.
+on a volume converted in-place to FileVault 2 the metadata block with object
+identifier 21 was followed by object identifier 132, which was stored about 190
+metadata blocks further. The chain should be read by looking up the metadata
+block of each next object identifier.
+
+[NOTE]
+The metadata blocks of a chain can be part of an older transaction than the
+corresponding metadata block type 0x0019, e.g. a more recent 0x0019 metadata
+block can still refer to the same 0x0024 metadata blocks. The object identifier
+of a 0x0024 metadata block can also be used by metadata blocks of other types
+in other transactions, e.g. 0x0025.
 
 === Metadata block data type 0x0025
 
