@@ -20,13 +20,16 @@
  */
 
 #include <common.h>
+#include <byte_stream.h>
 #include <file_stream.h>
+#include <memory.h>
 #include <types.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
 #endif
 
+#include "fvde_test_libcaes.h"
 #include "fvde_test_libcdata.h"
 #include "fvde_test_libcerror.h"
 #include "fvde_test_libfvde.h"
@@ -34,7 +37,10 @@
 #include "fvde_test_memory.h"
 #include "fvde_test_unused.h"
 
+#include "../libfvde/libfvde_checksum.h"
+#include "../libfvde/libfvde_definitions.h"
 #include "../libfvde/libfvde_encrypted_metadata.h"
+#include "../libfvde/libfvde_encryption_context.h"
 #include "../libfvde/libfvde_io_handle.h"
 #include "../libfvde/libfvde_logical_volume_descriptor.h"
 
@@ -493,6 +499,52 @@ uint8_t fvde_test_encrypted_metadata_block_data_0x0022[ 112 ] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 /* TODO: add tests for libfvde_encrypted_metadata_read_type_0x0024 */
+
+/* The XML plist data stored zlib compressed in the chain of metadata blocks type 0x0024
+ */
+uint8_t fvde_test_encrypted_metadata_plist_data[ 163 ] = {
+	0x3c, 0x64, 0x69, 0x63, 0x74, 0x3e, 0x3c, 0x6b, 0x65, 0x79, 0x3e, 0x63, 0x6f, 0x6d, 0x2e, 0x61,
+	0x70, 0x70, 0x6c, 0x65, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
+	0x2e, 0x6c, 0x76, 0x66, 0x2e, 0x65, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x2e,
+	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x3c, 0x2f, 0x6b, 0x65, 0x79, 0x3e, 0x3c, 0x64, 0x69,
+	0x63, 0x74, 0x3e, 0x3c, 0x6b, 0x65, 0x79, 0x3e, 0x43, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x73, 0x69,
+	0x6f, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x3c, 0x2f, 0x6b, 0x65, 0x79, 0x3e, 0x3c, 0x64, 0x69, 0x63,
+	0x74, 0x3e, 0x3c, 0x6b, 0x65, 0x79, 0x3e, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x43, 0x6f, 0x6e,
+	0x74, 0x65, 0x78, 0x74, 0x3c, 0x2f, 0x6b, 0x65, 0x79, 0x3e, 0x3c, 0x69, 0x6e, 0x74, 0x65, 0x67,
+	0x65, 0x72, 0x3e, 0x31, 0x3c, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x3e, 0x3c, 0x2f,
+	0x64, 0x69, 0x63, 0x74, 0x3e, 0x3c, 0x2f, 0x64, 0x69, 0x63, 0x74, 0x3e, 0x3c, 0x2f, 0x64, 0x69,
+	0x63, 0x74, 0x3e };
+
+/* The zlib compressed XML plist data, split into: 16 bytes stored in the metadata block type 0x0019
+ * followed by 30, 40 and 20 bytes stored in metadata blocks type 0x0024 with object identifiers 10, 132 and 42
+ */
+uint8_t fvde_test_encrypted_metadata_compressed_plist_data[ 106 ] = {
+	0x78, 0xda, 0x65, 0x8b, 0x41, 0x0a, 0x84, 0x30, 0x10, 0x04, 0x7f, 0x94, 0xb0, 0xf7, 0x21, 0x17,
+	0x4f, 0x7b, 0xf7, 0x03, 0x21, 0xb6, 0x21, 0xa8, 0x33, 0x61, 0x1c, 0x44, 0x7f, 0xbf, 0x11, 0x91,
+	0x45, 0x3c, 0x75, 0x37, 0xd5, 0x45, 0x43, 0x49, 0x16, 0x68, 0xc2, 0x11, 0x92, 0x2c, 0x2e, 0xd6,
+	0x3a, 0xc3, 0x25, 0x51, 0xac, 0x26, 0x1a, 0x33, 0xdc, 0xbc, 0x8d, 0x0e, 0x9c, 0xf4, 0xa8, 0x56,
+	0x84, 0x1b, 0x62, 0xc3, 0x6e, 0xe4, 0x4f, 0x83, 0xfe, 0x72, 0x27, 0xbc, 0x41, 0xd7, 0x76, 0xf9,
+	0xf2, 0x28, 0x2f, 0xdc, 0x47, 0xcd, 0xb0, 0xee, 0x21, 0x97, 0x36, 0x32, 0x34, 0x7c, 0xc8, 0xdf,
+	0x95, 0xfc, 0xa5, 0x3c, 0xe2, 0x07, 0x97, 0x9e, 0x3b, 0xfc };
+
+/* Arbitrary keys to encrypt the test metadata blocks
+ */
+uint8_t fvde_test_encrypted_metadata_key[ 16 ] = {
+	0x3d, 0x5a, 0x0f, 0x8e, 0x41, 0xc2, 0x77, 0x19, 0xa6, 0x2b, 0xd0, 0x64, 0x93, 0xee, 0x05, 0xb8 };
+
+uint8_t fvde_test_encrypted_metadata_tweak_key[ 16 ] = {
+	0xc4, 0x11, 0x9b, 0x60, 0x2e, 0xf5, 0x83, 0x4a, 0x07, 0xdc, 0x39, 0xb2, 0x5e, 0x96, 0x1d, 0x70 };
+
+/* The object and transaction identifiers of the metadata blocks type 0x0024 per metadata block number
+ * The chain 10 -> 132 -> 42 is not stored in chain order, the object identifiers 132 and 42 are also
+ * used by stale metadata blocks with a smaller transaction identifier, 7 -> 8 -> 7 is a loop without
+ * data and 9 -> 9 is a loop of chunks that exceeds the size of the compressed data
+ */
+uint64_t fvde_test_encrypted_metadata_0x0024_object_identifiers[ 8 ] = {
+	42, 132, 9, 42, 10, 132, 7, 8 };
+
+uint64_t fvde_test_encrypted_metadata_0x0024_transaction_identifiers[ 8 ] = {
+	15500, 15651, 15651, 15651, 15651, 15500, 15651, 15651 };
 
 uint8_t fvde_test_encrypted_metadata_block_data_0x0025[ 1408 ] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -3099,6 +3151,1124 @@ on_error:
 	return( 0 );
 }
 
+/* Creates an encrypted metadata block type 0x0024
+ * Returns 1 if successful or -1 on error
+ */
+int fvde_test_encrypted_metadata_create_block_0x0024(
+     libcaes_tweaked_context_t *tweaked_context,
+     uint64_t block_number,
+     uint64_t transaction_identifier,
+     uint64_t object_identifier,
+     uint64_t next_object_identifier,
+     const uint8_t *chunk_data,
+     uint32_t chunk_data_size,
+     uint8_t *encrypted_data,
+     size_t encrypted_data_size,
+     libcerror_error_t **error )
+{
+	uint8_t block_data[ 8192 ];
+	uint8_t tweak_value[ 16 ];
+
+	static char *function = "fvde_test_encrypted_metadata_create_block_0x0024";
+	uint32_t checksum     = 0;
+
+	if( encrypted_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( encrypted_data_size < 8192 )
+	 || ( encrypted_data_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid encrypted data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( chunk_data == NULL )
+	 && ( chunk_data_size > 0 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid chunk data.",
+		 function );
+
+		return( -1 );
+	}
+	if( chunk_data_size > ( 8192 - 80 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid chunk data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( memory_set(
+	     block_data,
+	     0,
+	     8192 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear block data.",
+		 function );
+
+		return( -1 );
+	}
+	/* The metadata block header
+	 */
+	byte_stream_copy_from_uint32_little_endian(
+	 &( block_data[ 4 ] ),
+	 0xffffffffUL );
+
+	byte_stream_copy_from_uint16_little_endian(
+	 &( block_data[ 8 ] ),
+	 1 );
+
+	byte_stream_copy_from_uint16_little_endian(
+	 &( block_data[ 10 ] ),
+	 0x0024 );
+
+	byte_stream_copy_from_uint64_little_endian(
+	 &( block_data[ 16 ] ),
+	 transaction_identifier );
+
+	byte_stream_copy_from_uint64_little_endian(
+	 &( block_data[ 24 ] ),
+	 object_identifier );
+
+	byte_stream_copy_from_uint64_little_endian(
+	 &( block_data[ 32 ] ),
+	 block_number );
+
+	byte_stream_copy_from_uint32_little_endian(
+	 &( block_data[ 48 ] ),
+	 8192 );
+
+	/* The metadata block type 0x0024 data
+	 */
+	byte_stream_copy_from_uint64_little_endian(
+	 &( block_data[ 64 ] ),
+	 next_object_identifier );
+
+	byte_stream_copy_from_uint32_little_endian(
+	 &( block_data[ 72 ] ),
+	 chunk_data_size );
+
+	if( chunk_data_size > 0 )
+	{
+		if( memory_copy(
+		     &( block_data[ 80 ] ),
+		     chunk_data,
+		     (size_t) chunk_data_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy chunk data.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( libfvde_checksum_calculate_weak_crc32(
+	     &checksum,
+	     &( block_data[ 8 ] ),
+	     8184,
+	     0xffffffffUL,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 "%s: unable to calculate weak CRC-32.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_from_uint32_little_endian(
+	 &( block_data[ 0 ] ),
+	 checksum );
+
+	/* The metadata block is encrypted with AES-XTS using the metadata block number as tweak value
+	 */
+	if( memory_set(
+	     tweak_value,
+	     0,
+	     16 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear tweak value.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_from_uint64_little_endian(
+	 tweak_value,
+	 block_number );
+
+	if( libcaes_crypt_xts(
+	     tweaked_context,
+	     LIBCAES_CRYPT_MODE_ENCRYPT,
+	     tweak_value,
+	     16,
+	     block_data,
+	     8192,
+	     encrypted_data,
+	     8192,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+		 LIBCERROR_ENCRYPTION_ERROR_ENCRYPT_FAILED,
+		 "%s: unable to encrypt block data.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Tests the libfvde_encrypted_metadata_read_type_0x0024_chain function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_encrypted_metadata_read_type_0x0024_chain(
+     void )
+{
+	uint8_t garbage_data[ 40 ];
+
+	libcaes_tweaked_context_t *tweaked_context       = NULL;
+	libcerror_error_t *error                         = NULL;
+	libfvde_encrypted_metadata_t *encrypted_metadata = NULL;
+	libfvde_encryption_context_t *encryption_context = NULL;
+	uint8_t *encrypted_data                          = NULL;
+	void *memcpy_result                              = NULL;
+	void *memset_result                              = NULL;
+	size_t encrypted_data_size                       = 0;
+	int result                                       = 0;
+
+#if defined( HAVE_FVDE_TEST_MEMORY )
+	int number_of_malloc_fail_tests                  = 2;
+	int test_number                                  = 0;
+#endif
+
+	/* Initialize test
+	 */
+	result = libfvde_encrypted_metadata_initialize(
+	          &encrypted_metadata,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfvde_encryption_context_initialize(
+	          &encryption_context,
+	          LIBFVDE_ENCRYPTION_METHOD_AES_128_XTS,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encryption_context",
+	 encryption_context );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfvde_encryption_context_set_keys(
+	          encryption_context,
+	          fvde_test_encrypted_metadata_key,
+	          128,
+	          fvde_test_encrypted_metadata_tweak_key,
+	          128,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libcaes_tweaked_context_initialize(
+	          &tweaked_context,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "tweaked_context",
+	 tweaked_context );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libcaes_tweaked_context_set_keys(
+	          tweaked_context,
+	          LIBCAES_CRYPT_MODE_ENCRYPT,
+	          fvde_test_encrypted_metadata_key,
+	          128,
+	          fvde_test_encrypted_metadata_tweak_key,
+	          128,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	encrypted_data_size = 8 * 8192;
+
+	encrypted_data = (uint8_t *) memory_allocate(
+	                              sizeof( uint8_t ) * encrypted_data_size );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_data",
+	 encrypted_data );
+
+	memset_result = memory_set(
+	                 encrypted_data,
+	                 0,
+	                 sizeof( uint8_t ) * encrypted_data_size );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 garbage_data,
+	                 0xff,
+	                 sizeof( uint8_t ) * 40 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	/* Metadata block 0 contains a stale copy of object identifier 42
+	 */
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          0,
+	          15500,
+	          42,
+	          0,
+	          garbage_data,
+	          20,
+	          &( encrypted_data[ 0 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Metadata block 1 contains object identifier 132, the second part of the chain
+	 */
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          1,
+	          15651,
+	          132,
+	          42,
+	          &( fvde_test_encrypted_metadata_compressed_plist_data[ 46 ] ),
+	          40,
+	          &( encrypted_data[ 1 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Metadata block 2 contains object identifier 9 that refers to itself
+	 */
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          2,
+	          15651,
+	          9,
+	          9,
+	          garbage_data,
+	          40,
+	          &( encrypted_data[ 2 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Metadata block 3 contains object identifier 42, the last part of the chain
+	 */
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          3,
+	          15651,
+	          42,
+	          0,
+	          &( fvde_test_encrypted_metadata_compressed_plist_data[ 86 ] ),
+	          20,
+	          &( encrypted_data[ 3 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Metadata block 4 contains object identifier 10, the first part of the chain
+	 */
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          4,
+	          15651,
+	          10,
+	          132,
+	          &( fvde_test_encrypted_metadata_compressed_plist_data[ 16 ] ),
+	          30,
+	          &( encrypted_data[ 4 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Metadata block 5 contains a stale copy of object identifier 132
+	 */
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          5,
+	          15500,
+	          132,
+	          42,
+	          garbage_data,
+	          40,
+	          &( encrypted_data[ 5 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Metadata blocks 6 and 7 contain object identifiers 7 and 8 that refer to each other
+	 * The chunks contain no data hence only the maximum number of chain blocks ends the loop
+	 */
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          6,
+	          15651,
+	          7,
+	          8,
+	          NULL,
+	          0,
+	          &( encrypted_data[ 6 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = fvde_test_encrypted_metadata_create_block_0x0024(
+	          tweaked_context,
+	          7,
+	          15651,
+	          8,
+	          7,
+	          NULL,
+	          0,
+	          &( encrypted_data[ 7 * 8192 ] ),
+	          8192,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libcaes_tweaked_context_free(
+	          &tweaked_context,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "tweaked_context",
+	 tweaked_context );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->encryption_context_plist_data",
+	 encrypted_metadata->encryption_context_plist_data );
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          NULL,
+	          encrypted_data,
+	          0,
+	          NULL,
+	          NULL,
+	          0,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->encryption_context_plist_data",
+	 encrypted_metadata->encryption_context_plist_data );
+
+	/* Test reading a chain that is not stored in chain order
+	 * The compressed data is set as libfvde_encrypted_metadata_read_type_0x0019 sets it
+	 */
+	encrypted_metadata->compressed_data = (uint8_t *) memory_allocate(
+	                                                   sizeof( uint8_t ) * 106 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	memcpy_result = memory_copy(
+	                 encrypted_metadata->compressed_data,
+	                 fvde_test_encrypted_metadata_compressed_plist_data,
+	                 sizeof( uint8_t ) * 16 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "memcpy_result",
+	 memcpy_result );
+
+	encrypted_metadata->compressed_data_size              = 106;
+	encrypted_metadata->compressed_data_offset            = 16;
+	encrypted_metadata->uncompressed_data_size            = 163;
+	encrypted_metadata->compressed_data_object_identifier = 10;
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "encrypted_metadata->compressed_data_object_identifier",
+	 encrypted_metadata->compressed_data_object_identifier,
+	 (uint64_t) 0 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata->encryption_context_plist_data",
+	 encrypted_metadata->encryption_context_plist_data );
+
+	FVDE_TEST_ASSERT_EQUAL_SIZE(
+	 "encrypted_metadata->encryption_context_plist_data_size",
+	 encrypted_metadata->encryption_context_plist_data_size,
+	 (size_t) 163 );
+
+	result = memory_compare(
+	          encrypted_metadata->encryption_context_plist_data,
+	          fvde_test_encrypted_metadata_plist_data,
+	          163 );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+	memory_free(
+	 encrypted_metadata->encryption_context_plist_data );
+
+	encrypted_metadata->encryption_context_plist_data      = NULL;
+	encrypted_metadata->encryption_context_plist_data_size = 0;
+
+	/* Test error cases
+	 */
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          NULL,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          NULL,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          (size_t) SSIZE_MAX + 1,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          9,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          NULL,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          NULL,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Test reading a chain with a missing object identifier, which is not an error
+	 * but discards the compressed data
+	 */
+	encrypted_metadata->compressed_data = (uint8_t *) memory_allocate(
+	                                                   sizeof( uint8_t ) * 106 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	memcpy_result = memory_copy(
+	                 encrypted_metadata->compressed_data,
+	                 fvde_test_encrypted_metadata_compressed_plist_data,
+	                 sizeof( uint8_t ) * 16 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "memcpy_result",
+	 memcpy_result );
+
+	encrypted_metadata->compressed_data_size              = 106;
+	encrypted_metadata->compressed_data_offset            = 16;
+	encrypted_metadata->uncompressed_data_size            = 163;
+	encrypted_metadata->compressed_data_object_identifier = 99;
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->encryption_context_plist_data",
+	 encrypted_metadata->encryption_context_plist_data );
+
+	/* Test reading a chain that contains a loop, which is not an error
+	 * but discards the compressed data
+	 */
+	encrypted_metadata->compressed_data = (uint8_t *) memory_allocate(
+	                                                   sizeof( uint8_t ) * 106 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	memcpy_result = memory_copy(
+	                 encrypted_metadata->compressed_data,
+	                 fvde_test_encrypted_metadata_compressed_plist_data,
+	                 sizeof( uint8_t ) * 16 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "memcpy_result",
+	 memcpy_result );
+
+	encrypted_metadata->compressed_data_size              = 106;
+	encrypted_metadata->compressed_data_offset            = 16;
+	encrypted_metadata->uncompressed_data_size            = 163;
+	encrypted_metadata->compressed_data_object_identifier = 7;
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->encryption_context_plist_data",
+	 encrypted_metadata->encryption_context_plist_data );
+
+	/* Test reading a chain that contains a loop of chunks that exceeds the size
+	 * of the compressed data, which is not an error but discards the compressed data
+	 */
+	encrypted_metadata->compressed_data = (uint8_t *) memory_allocate(
+	                                                   sizeof( uint8_t ) * 106 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	memcpy_result = memory_copy(
+	                 encrypted_metadata->compressed_data,
+	                 fvde_test_encrypted_metadata_compressed_plist_data,
+	                 sizeof( uint8_t ) * 16 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "memcpy_result",
+	 memcpy_result );
+
+	encrypted_metadata->compressed_data_size              = 106;
+	encrypted_metadata->compressed_data_offset            = 16;
+	encrypted_metadata->uncompressed_data_size            = 163;
+	encrypted_metadata->compressed_data_object_identifier = 9;
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          encryption_context,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata->encryption_context_plist_data",
+	 encrypted_metadata->encryption_context_plist_data );
+
+	/* Test reading a chain without an encryption context
+	 */
+	encrypted_metadata->compressed_data = (uint8_t *) memory_allocate(
+	                                                   sizeof( uint8_t ) * 106 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "encrypted_metadata->compressed_data",
+	 encrypted_metadata->compressed_data );
+
+	memcpy_result = memory_copy(
+	                 encrypted_metadata->compressed_data,
+	                 fvde_test_encrypted_metadata_compressed_plist_data,
+	                 sizeof( uint8_t ) * 16 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "memcpy_result",
+	 memcpy_result );
+
+	encrypted_metadata->compressed_data_size              = 106;
+	encrypted_metadata->compressed_data_offset            = 16;
+	encrypted_metadata->uncompressed_data_size            = 163;
+	encrypted_metadata->compressed_data_object_identifier = 10;
+
+	result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+	          encrypted_metadata,
+	          NULL,
+	          encrypted_data,
+	          encrypted_data_size,
+	          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+	          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+	          8,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_FVDE_TEST_MEMORY )
+
+	/* Do not read the chain so that only the allocations of the metadata block data
+	 * and metadata block can fail
+	 */
+	encrypted_metadata->compressed_data_object_identifier = 0;
+
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
+	{
+		/* Test libfvde_encrypted_metadata_read_type_0x0024_chain with malloc failing
+		 */
+		fvde_test_malloc_attempts_before_fail = test_number;
+
+		result = libfvde_encrypted_metadata_read_type_0x0024_chain(
+		          encrypted_metadata,
+		          encryption_context,
+		          encrypted_data,
+		          encrypted_data_size,
+		          fvde_test_encrypted_metadata_0x0024_object_identifiers,
+		          fvde_test_encrypted_metadata_0x0024_transaction_identifiers,
+		          8,
+		          &error );
+
+		if( fvde_test_malloc_attempts_before_fail != -1 )
+		{
+			fvde_test_malloc_attempts_before_fail = -1;
+		}
+		else
+		{
+			FVDE_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FVDE_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+#endif /* defined( HAVE_FVDE_TEST_MEMORY ) */
+
+	/* Clean up
+	 */
+	result = libfvde_encryption_context_free(
+	          &encryption_context,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encryption_context",
+	 encryption_context );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	memory_free(
+	 encrypted_data );
+
+	encrypted_data = NULL;
+
+	result = libfvde_encrypted_metadata_free(
+	          &encrypted_metadata,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "encrypted_metadata",
+	 encrypted_metadata );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( tweaked_context != NULL )
+	{
+		libcaes_tweaked_context_free(
+		 &tweaked_context,
+		 NULL );
+	}
+	if( encryption_context != NULL )
+	{
+		libfvde_encryption_context_free(
+		 &encryption_context,
+		 NULL );
+	}
+	if( encrypted_data != NULL )
+	{
+		memory_free(
+		 encrypted_data );
+	}
+	if( encrypted_metadata != NULL )
+	{
+		libfvde_encrypted_metadata_free(
+		 &encrypted_metadata,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the libfvde_encrypted_metadata_read_type_0x0025 function
  * Returns 1 if successful or 0 if not
  */
@@ -4393,6 +5563,10 @@ int main(
 	 fvde_test_encrypted_metadata_read_type_0x0022 );
 
 	/* TODO: add tests for libfvde_encrypted_metadata_read_type_0x0024 */
+
+	FVDE_TEST_RUN(
+	 "libfvde_encrypted_metadata_read_type_0x0024_chain",
+	 fvde_test_encrypted_metadata_read_type_0x0024_chain );
 
 	FVDE_TEST_RUN(
 	 "libfvde_encrypted_metadata_read_type_0x0025",

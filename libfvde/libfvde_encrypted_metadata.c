@@ -3854,7 +3854,7 @@ int libfvde_encrypted_metadata_read_type_0x0024(
 			}
 			if( libfvde_decompress_data(
 			     encrypted_metadata->compressed_data,
-			     encrypted_metadata->compressed_data_size,
+			     encrypted_metadata->compressed_data_offset,
 			     LIBFVDE_COMPRESSION_METHOD_DEFLATE,
 			     uncompressed_data,
 			     &uncompressed_data_size,
@@ -3920,6 +3920,328 @@ on_error:
 	{
 		memory_free(
 		 uncompressed_data );
+	}
+	return( -1 );
+}
+
+/* Reads the chain of encrypted metadata blocks type 0x0024 that contains the remainder
+ * of the compressed XML plist data started by a metadata block type 0x0019
+ * The metadata blocks of a chain are not necessarily stored in chain order, hence they
+ * are looked up by object identifier
+ * If multiple metadata blocks type 0x0024 have the same object identifier the one
+ * with the largest transaction identifier is used
+ * If the chain cannot be followed the compressed XML plist data is discarded
+ * Returns 1 if successful or -1 on error
+ */
+int libfvde_encrypted_metadata_read_type_0x0024_chain(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     libfvde_encryption_context_t *encryption_context,
+     const uint8_t *encrypted_data,
+     size_t encrypted_data_size,
+     const uint64_t *object_identifiers,
+     const uint64_t *transaction_identifiers,
+     uint64_t number_of_blocks,
+     libcerror_error_t **error )
+{
+	libfvde_metadata_block_t *metadata_block = NULL;
+	uint8_t *metadata_block_data             = NULL;
+	static char *function                    = "libfvde_encrypted_metadata_read_type_0x0024_chain";
+	uint64_t block_index                     = 0;
+	uint64_t chain_block_index               = 0;
+	uint64_t number_of_chain_blocks          = 0;
+	uint64_t object_identifier               = 0;
+	uint32_t chain_data_size                 = 0;
+	uint8_t chain_block_found                = 0;
+
+	if( encrypted_metadata == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted metadata.",
+		 function );
+
+		return( -1 );
+	}
+	if( encrypted_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid encrypted data.",
+		 function );
+
+		return( -1 );
+	}
+	if( encrypted_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid encrypted data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_blocks > ( (uint64_t) encrypted_data_size / 8192 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of blocks value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( number_of_blocks > 0 )
+	 && ( object_identifiers == NULL ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid object identifiers.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( number_of_blocks > 0 )
+	 && ( transaction_identifiers == NULL ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid transaction identifiers.",
+		 function );
+
+		return( -1 );
+	}
+	metadata_block_data = (uint8_t *) memory_allocate(
+	                                   sizeof( uint8_t ) * 8192 );
+
+	if( metadata_block_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create metadata block data.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfvde_metadata_block_initialize(
+	     &metadata_block,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create metadata block.",
+		 function );
+
+		goto on_error;
+	}
+	while( ( encrypted_metadata->compressed_data != NULL )
+	    && ( encrypted_metadata->compressed_data_object_identifier != 0 ) )
+	{
+		/* Every metadata block can be part of the chain only once
+		 */
+		if( number_of_chain_blocks >= number_of_blocks )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: invalid number of chain blocks value out of bounds.\n",
+				 function );
+			}
+#endif
+			break;
+		}
+		object_identifier = encrypted_metadata->compressed_data_object_identifier;
+		chain_block_found = 0;
+
+		for( block_index = 0;
+		     block_index < number_of_blocks;
+		     block_index++ )
+		{
+			if( object_identifiers[ block_index ] != object_identifier )
+			{
+				continue;
+			}
+			if( ( chain_block_found == 0 )
+			 || ( transaction_identifiers[ block_index ] >= transaction_identifiers[ chain_block_index ] ) )
+			{
+				chain_block_index = block_index;
+				chain_block_found = 1;
+			}
+		}
+		if( chain_block_found == 0 )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: missing metadata block type 0x0024 with object identifier: %" PRIu64 ".\n",
+				 function,
+				 object_identifier );
+			}
+#endif
+			break;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: reading metadata block: %" PRIu64 " with object identifier: %" PRIu64 "\n",
+			 function,
+			 chain_block_index,
+			 object_identifier );
+		}
+#endif
+		if( libfvde_encryption_context_crypt(
+		     encryption_context,
+		     LIBFVDE_ENCRYPTION_CRYPT_MODE_DECRYPT,
+		     &( encrypted_data[ chain_block_index * 8192 ] ),
+		     8192,
+		     metadata_block_data,
+		     8192,
+		     chain_block_index,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+			 LIBCERROR_ENCRYPTION_ERROR_DECRYPT_FAILED,
+			 "%s: unable to decrypt metadata data block: %" PRIu64 " data.",
+			 function,
+			 chain_block_index );
+
+			goto on_error;
+		}
+		if( libfvde_metadata_block_read_data(
+		     metadata_block,
+		     metadata_block_data,
+		     8192,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read metadata block: %" PRIu64 ".",
+			 function,
+			 chain_block_index );
+
+			goto on_error;
+		}
+		/* A chain block that contains more data than remains of the compressed XML plist data,
+		 * e.g. due to a loop, cannot be followed
+		 */
+		byte_stream_copy_to_uint32_little_endian(
+		 &( ( metadata_block->data )[ 8 ] ),
+		 chain_data_size );
+
+		if( ( (size_t) chain_data_size > ( metadata_block->data_size - 16 ) )
+		 || ( (size_t) chain_data_size > ( encrypted_metadata->compressed_data_size - encrypted_metadata->compressed_data_offset ) ) )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: invalid metadata block type 0x0024 with object identifier: %" PRIu64 " data size: %" PRIu32 " value out of bounds.\n",
+				 function,
+				 object_identifier,
+				 chain_data_size );
+			}
+#endif
+			break;
+		}
+		if( libfvde_encrypted_metadata_read_type_0x0024(
+		     encrypted_metadata,
+		     metadata_block->object_identifier,
+		     metadata_block->data,
+		     metadata_block->data_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read metadata block type 0x0024 with object identifier: %" PRIu64 ".",
+			 function,
+			 object_identifier );
+
+			goto on_error;
+		}
+		number_of_chain_blocks++;
+	}
+	/* A chain that cannot be followed, e.g. due to missing or wiped metadata blocks
+	 * or a loop, is not considered an error, the encryption context plist is not set
+	 * in that case
+	 */
+	if( ( encrypted_metadata->compressed_data != NULL )
+	 && ( encrypted_metadata->compressed_data_object_identifier != 0 ) )
+	{
+		memory_free(
+		 encrypted_metadata->compressed_data );
+
+		encrypted_metadata->compressed_data = NULL;
+	}
+	if( libfvde_metadata_block_free(
+	     &metadata_block,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free metadata block.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_set(
+	     metadata_block_data,
+	     0,
+	     8192 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear metadata block data.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 metadata_block_data );
+
+	return( 1 );
+
+on_error:
+	if( metadata_block != NULL )
+	{
+		libfvde_metadata_block_free(
+		 &metadata_block,
+		 NULL );
+	}
+	if( metadata_block_data != NULL )
+	{
+		memory_set(
+		 metadata_block_data,
+		 0,
+		 8192 );
+		memory_free(
+		 metadata_block_data );
 	}
 	return( -1 );
 }
@@ -5468,12 +5790,16 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 {
 	libfvde_encryption_context_t *encryption_context = NULL;
 	libfvde_metadata_block_t *metadata_block         = NULL;
+	uint64_t *object_identifiers_0x0024              = NULL;
+	uint64_t *transaction_identifiers_0x0024         = NULL;
 	uint8_t *encrypted_data                          = NULL;
 	uint8_t *metadata_block_data                     = NULL;
 	static char *function                            = "libfvde_encrypted_metadata_read_from_file_io_handle";
 	size_t encrypted_data_offset                     = 0;
 	ssize_t read_count                               = 0;
 	uint64_t calculated_block_number                 = 0;
+	uint64_t number_of_blocks                        = 0;
+	uint64_t transaction_identifier_0x0019           = 0;
 	uint8_t empty_block_found                        = 0;
 	int result                                       = 0;
 
@@ -5524,6 +5850,70 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 		 function );
 
 		goto on_error;
+	}
+	/* The object and transaction identifiers of the metadata blocks type 0x0024
+	 * are stored per block number so that the chain can be read in chain order
+	 */
+	number_of_blocks = encrypted_metadata_size / 8192;
+
+	if( number_of_blocks > 0 )
+	{
+		object_identifiers_0x0024 = (uint64_t *) memory_allocate(
+		                                          sizeof( uint64_t ) * (size_t) number_of_blocks );
+
+		if( object_identifiers_0x0024 == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create object identifiers.",
+			 function );
+
+			goto on_error;
+		}
+		if( memory_set(
+		     object_identifiers_0x0024,
+		     0,
+		     sizeof( uint64_t ) * (size_t) number_of_blocks ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear object identifiers.",
+			 function );
+
+			goto on_error;
+		}
+		transaction_identifiers_0x0024 = (uint64_t *) memory_allocate(
+		                                               sizeof( uint64_t ) * (size_t) number_of_blocks );
+
+		if( transaction_identifiers_0x0024 == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create transaction identifiers.",
+			 function );
+
+			goto on_error;
+		}
+		if( memory_set(
+		     transaction_identifiers_0x0024,
+		     0,
+		     sizeof( uint64_t ) * (size_t) number_of_blocks ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear transaction identifiers.",
+			 function );
+
+			goto on_error;
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -5780,6 +6170,26 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 						break;
 
 					case 0x0019:
+						/* Only use the most recent metadata block type 0x0019
+						 */
+						if( metadata_block->transaction_identifier < transaction_identifier_0x0019 )
+						{
+#if defined( HAVE_DEBUG_OUTPUT )
+							if( libcnotify_verbose != 0 )
+							{
+								libcnotify_printf(
+								 "%s: skipping metadata block type 0x0019 with transaction identifier: %" PRIu64 " (most recent: %" PRIu64 ").\n\n",
+								 function,
+								 metadata_block->transaction_identifier,
+								 transaction_identifier_0x0019 );
+							}
+#endif
+							result = 1;
+
+							break;
+						}
+						transaction_identifier_0x0019 = metadata_block->transaction_identifier;
+
 						result = libfvde_encrypted_metadata_read_type_0x0019(
 							  encrypted_metadata,
 							  metadata_block->data,
@@ -5828,12 +6238,27 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 						break;
 
 					case 0x0024:
-						result = libfvde_encrypted_metadata_read_type_0x0024(
-							  encrypted_metadata,
-							  metadata_block->object_identifier,
-							  metadata_block->data,
-							  metadata_block->data_size,
-							  error );
+						/* The metadata blocks type 0x0024 are not necessarily stored
+						 * in chain order, hence the chain is read after all metadata
+						 * blocks have been read
+						 */
+						if( calculated_block_number < number_of_blocks )
+						{
+							object_identifiers_0x0024[ calculated_block_number ]      = metadata_block->object_identifier;
+							transaction_identifiers_0x0024[ calculated_block_number ] = metadata_block->transaction_identifier;
+						}
+#if defined( HAVE_DEBUG_OUTPUT )
+						if( libcnotify_verbose != 0 )
+						{
+							libcnotify_printf(
+							 "%s: recorded metadata block type 0x0024 with object identifier: %" PRIu64 " and transaction identifier: %" PRIu64 ".\n\n",
+							 function,
+							 metadata_block->object_identifier,
+							 metadata_block->transaction_identifier );
+						}
+#endif
+						result = 1;
+
 						break;
 
 					case 0x0025:
@@ -5933,6 +6358,39 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 		encrypted_data_offset += 8192;
 
 		calculated_block_number += 1;
+	}
+	if( libfvde_encrypted_metadata_read_type_0x0024_chain(
+	     encrypted_metadata,
+	     encryption_context,
+	     encrypted_data,
+	     (size_t) encrypted_metadata_size,
+	     object_identifiers_0x0024,
+	     transaction_identifiers_0x0024,
+	     number_of_blocks,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read metadata block type 0x0024 chain.",
+		 function );
+
+		goto on_error;
+	}
+	if( transaction_identifiers_0x0024 != NULL )
+	{
+		memory_free(
+		 transaction_identifiers_0x0024 );
+
+		transaction_identifiers_0x0024 = NULL;
+	}
+	if( object_identifiers_0x0024 != NULL )
+	{
+		memory_free(
+		 object_identifiers_0x0024 );
+
+		object_identifiers_0x0024 = NULL;
 	}
 	if( libfvde_metadata_block_free(
 	     &metadata_block,
@@ -6054,6 +6512,16 @@ on_error:
 		libfvde_encryption_context_free(
 		 &encryption_context,
 		 NULL );
+	}
+	if( transaction_identifiers_0x0024 != NULL )
+	{
+		memory_free(
+		 transaction_identifiers_0x0024 );
+	}
+	if( object_identifiers_0x0024 != NULL )
+	{
+		memory_free(
+		 object_identifiers_0x0024 );
 	}
 	if( encrypted_data != NULL )
 	{
