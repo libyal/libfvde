@@ -157,6 +157,7 @@ stamp-h[1-9]
 /tests/fvde_test_physical_volume
 /tests/fvde_test_physical_volume_descriptor
 /tests/fvde_test_sector_data
+/tests/fvde_test_sector_data_vector
 /tests/fvde_test_segment_descriptor
 /tests/fvde_test_support
 /tests/fvde_test_tools_output
