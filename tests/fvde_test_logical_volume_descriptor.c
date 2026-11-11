@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #endif
 
+#include "fvde_test_libcdata.h"
 #include "fvde_test_libcerror.h"
 #include "fvde_test_libfvde.h"
 #include "fvde_test_macros.h"
@@ -34,6 +35,7 @@
 #include "fvde_test_unused.h"
 
 #include "../libfvde/libfvde_logical_volume_descriptor.h"
+#include "../libfvde/libfvde_segment_descriptor.h"
 
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
@@ -270,6 +272,296 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number function
+ * Returns 1 if successful or 0 if not
+ */
+int fvde_test_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+     void )
+{
+	uint64_t logical_block_numbers[ 3 ]                            = { 16, 64, 0x100000000UL };
+	uint64_t number_of_blocks[ 3 ]                                 = { 16, 64, 0x80000000UL };
+	libcerror_error_t *error                                       = NULL;
+	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
+	libfvde_segment_descriptor_t *found_segment_descriptor         = NULL;
+	libfvde_segment_descriptor_t *segment_descriptor               = NULL;
+	int entry_index                                                = 0;
+	int result                                                     = 0;
+	int segment_index                                              = 0;
+
+	/* Initialize test
+	 */
+	result = libfvde_logical_volume_descriptor_initialize(
+	          &logical_volume_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "logical_volume_descriptor",
+	 logical_volume_descriptor );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	for( segment_index = 0;
+	     segment_index < 3;
+	     segment_index++ )
+	{
+		result = libfvde_segment_descriptor_initialize(
+		          &segment_descriptor,
+		          &error );
+
+		FVDE_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		FVDE_TEST_ASSERT_IS_NOT_NULL(
+		 "segment_descriptor",
+		 segment_descriptor );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		segment_descriptor->logical_block_number  = logical_block_numbers[ segment_index ];
+		segment_descriptor->number_of_blocks      = number_of_blocks[ segment_index ];
+		segment_descriptor->physical_block_number = 1000 * ( segment_index + 1 );
+
+		result = libcdata_array_append_entry(
+		          logical_volume_descriptor->segment_descriptors,
+		          &entry_index,
+		          (intptr_t *) segment_descriptor,
+		          &error );
+
+		FVDE_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		FVDE_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		segment_descriptor = NULL;
+	}
+	/* Test regular cases
+	 */
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          logical_volume_descriptor,
+	          16,
+	          &found_segment_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "found_segment_descriptor",
+	 found_segment_descriptor );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "found_segment_descriptor->physical_block_number",
+	 found_segment_descriptor->physical_block_number,
+	 (uint64_t) 1000 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	found_segment_descriptor = NULL;
+
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          logical_volume_descriptor,
+	          127,
+	          &found_segment_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "found_segment_descriptor",
+	 found_segment_descriptor );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "found_segment_descriptor->physical_block_number",
+	 found_segment_descriptor->physical_block_number,
+	 (uint64_t) 2000 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	found_segment_descriptor = NULL;
+
+	/* Logical block numbers beyond 32-bit
+	 */
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          logical_volume_descriptor,
+	          0x17fffffffUL,
+	          &found_segment_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "found_segment_descriptor",
+	 found_segment_descriptor );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "found_segment_descriptor->physical_block_number",
+	 found_segment_descriptor->physical_block_number,
+	 (uint64_t) 3000 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	found_segment_descriptor = NULL;
+
+	/* Logical block numbers that are not mapped
+	 */
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          logical_volume_descriptor,
+	          15,
+	          &found_segment_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          logical_volume_descriptor,
+	          32,
+	          &found_segment_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          logical_volume_descriptor,
+	          0x180000000UL,
+	          &found_segment_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "found_segment_descriptor",
+	 found_segment_descriptor );
+
+	/* Test error cases
+	 */
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          NULL,
+	          16,
+	          &found_segment_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+	          logical_volume_descriptor,
+	          16,
+	          NULL,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = libfvde_logical_volume_descriptor_free(
+	          &logical_volume_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "logical_volume_descriptor",
+	 logical_volume_descriptor );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( segment_descriptor != NULL )
+	{
+		libfvde_segment_descriptor_free(
+		 &segment_descriptor,
+		 NULL );
+	}
+	if( logical_volume_descriptor != NULL )
+	{
+		libfvde_logical_volume_descriptor_free(
+		 &logical_volume_descriptor,
+		 NULL );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 
 /* The main program
@@ -296,6 +588,10 @@ int main(
 	FVDE_TEST_RUN(
 	 "libfvde_logical_volume_descriptor_free",
 	 fvde_test_logical_volume_descriptor_free );
+
+	FVDE_TEST_RUN(
+	 "libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number",
+	 fvde_test_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT ) */
 

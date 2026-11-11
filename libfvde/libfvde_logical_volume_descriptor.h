@@ -149,6 +149,12 @@ int libfvde_logical_volume_descriptor_get_segment_descriptor_by_index(
      libfvde_segment_descriptor_t **segment_descriptor,
      libcerror_error_t **error );
 
+int libfvde_logical_volume_descriptor_get_segment_descriptor_by_logical_block_number(
+     libfvde_logical_volume_descriptor_t *logical_volume_descriptor,
+     uint64_t logical_block_number,
+     libfvde_segment_descriptor_t **segment_descriptor,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

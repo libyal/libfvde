@@ -39,6 +39,7 @@
 #include "libfvde_logical_volume_descriptor.h"
 #include "libfvde_password.h"
 #include "libfvde_sector_data.h"
+#include "libfvde_sector_data_vector.h"
 #include "libfvde_segment_descriptor.h"
 #include "libfvde_types.h"
 #include "libfvde_volume_data_handle.h"
@@ -279,17 +280,13 @@ int libfvde_internal_logical_volume_open_read(
 
 	libfvde_segment_descriptor_t *segment_descriptor = NULL;
 	static char *function                            = "libfvde_internal_logical_volume_open_read";
-	size64_t segment_size                            = 0;
 	ssize_t read_count                               = 0;
-	off64_t segment_offset                           = 0;
 	off64_t volume_offset                            = 0;
 	uint64_t expected_logical_block_number           = 0;
-	uint32_t segment_flags                           = 0;
 	int file_io_pool_entry                           = 0;
 	int number_of_segment_descriptors                = 0;
 	int result                                       = 0;
 	int segment_descriptor_index                     = 0;
-	int segment_index                                = 0;
 
 	if( internal_logical_volume == NULL )
 	{
@@ -324,24 +321,13 @@ int libfvde_internal_logical_volume_open_read(
 
 		return( -1 );
 	}
-	if( internal_logical_volume->sectors_vector != NULL )
+	if( internal_logical_volume->sector_data_vector != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid logical volume - sectors vector value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_logical_volume->sectors_cache != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid logical volume - sectors cache value already set.",
+		 "%s: invalid logical volume - sector data vector value already set.",
 		 function );
 
 		return( -1 );
@@ -493,26 +479,6 @@ int libfvde_internal_logical_volume_open_read(
 			goto on_error;
 		}
 	}
-	if( libfdata_vector_initialize(
-	     &( internal_logical_volume->sectors_vector ),
-	     (size64_t) internal_logical_volume->io_handle->bytes_per_sector,
-	     (intptr_t *) internal_logical_volume->volume_data_handle,
-	     NULL,
-	     NULL,
-	     (int (*)(intptr_t *, intptr_t *, libfdata_vector_t *, libfdata_cache_t *, int, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libfvde_volume_data_handle_read_sector,
-	     NULL,
-	     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create sectors vector.",
-		 function );
-
-		goto on_error;
-	}
 	if( libfvde_logical_volume_descriptor_get_number_of_segment_descriptors(
 	     internal_logical_volume->logical_volume_descriptor,
 	     &number_of_segment_descriptors,
@@ -527,6 +493,9 @@ int libfvde_internal_logical_volume_open_read(
 
 		goto on_error;
 	}
+	/* The segment descriptors are sorted by logical block number, make sure they do not overlap
+	 * Logical blocks that are not mapped by a segment descriptor are sparse
+	 */
 	expected_logical_block_number = 0;
 
 	for( segment_descriptor_index = 0;
@@ -573,100 +542,33 @@ int libfvde_internal_logical_volume_open_read(
 
 			goto on_error;
 		}
-		else if( segment_descriptor->logical_block_number > expected_logical_block_number )
-		{
-			segment_size  = segment_descriptor->logical_block_number - expected_logical_block_number;
-			segment_size *= internal_logical_volume->io_handle->block_size;
-
-			if( libfdata_vector_append_segment(
-			     internal_logical_volume->sectors_vector,
-			     &segment_index,
-			     0,
-			     0,
-			     segment_size,
-			     LIBFVDE_RANGE_FLAG_IS_SPARSE,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to append sparse segment to sectors vector.",
-				 function );
-
-				goto on_error;
-			}
-			expected_logical_block_number = segment_descriptor->logical_block_number;
-		}
-		segment_offset  = internal_logical_volume->logical_volume_descriptor->base_physical_block_number;
-		segment_offset += segment_descriptor->physical_block_number;
-		segment_offset *= internal_logical_volume->io_handle->block_size;
-		segment_size    = segment_descriptor->number_of_blocks;
-		segment_size   *= internal_logical_volume->io_handle->block_size;
-
-		if( internal_logical_volume->volume_data_handle->is_encrypted != 0 )
-		{
-			segment_flags = LIBFVDE_RANGE_FLAG_IS_ENCRYPTED;
-		}
-		else
-		{
-			segment_flags = 0;
-		}
-		if( libfdata_vector_append_segment(
-		     internal_logical_volume->sectors_vector,
-		     &segment_index,
-		     (int) segment_descriptor->physical_volume_index,
-		     segment_offset,
-		     segment_size,
-		     segment_flags,
-		     error ) != 1 )
+		if( segment_descriptor->number_of_blocks > ( UINT64_MAX - segment_descriptor->logical_block_number ) )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append segment to sectors vector.",
-			 function );
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid number of blocks of segment descriptor: %d value out of bounds.",
+			 function,
+			 segment_descriptor_index );
 
 			goto on_error;
 		}
-		expected_logical_block_number += segment_descriptor->number_of_blocks;
+		expected_logical_block_number = segment_descriptor->logical_block_number + segment_descriptor->number_of_blocks;
 	}
-	segment_size = (size64_t) expected_logical_block_number * internal_logical_volume->io_handle->block_size;
-
-	if( segment_size < internal_logical_volume->volume_size )
-	{
-		segment_size = internal_logical_volume->volume_size - segment_size;
-
-		if( libfdata_vector_append_segment(
-		     internal_logical_volume->sectors_vector,
-		     &segment_index,
-		     0,
-		     0,
-		     segment_size,
-		     LIBFVDE_RANGE_FLAG_IS_SPARSE,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append sparse segment to sectors vector.",
-			 function );
-
-			goto on_error;
-		}
-	}
-	if( libfcache_cache_initialize(
-	     &( internal_logical_volume->sectors_cache ),
-	     LIBFVDE_MAXIMUM_CACHE_ENTRIES_SECTORS,
+	if( libfvde_sector_data_vector_initialize(
+	     &( internal_logical_volume->sector_data_vector ),
+	     internal_logical_volume->io_handle->bytes_per_sector,
+	     internal_logical_volume->io_handle->block_size,
+	     internal_logical_volume->logical_volume_descriptor,
+	     internal_logical_volume->volume_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create sectors cache.",
+		 "%s: unable to create sector data vector.",
 		 function );
 
 		goto on_error;
@@ -674,18 +576,6 @@ int libfvde_internal_logical_volume_open_read(
 	return( 1 );
 
 on_error:
-	if( internal_logical_volume->sectors_cache != NULL )
-	{
-		libfcache_cache_free(
-		 &( internal_logical_volume->sectors_cache ),
-		 NULL );
-	}
-	if( internal_logical_volume->sectors_vector != NULL )
-	{
-		libfdata_vector_free(
-		 &( internal_logical_volume->sectors_vector ),
-		 NULL );
-	}
 	if( internal_logical_volume->volume_data_handle != NULL )
 	{
 		libfvde_volume_data_handle_free(
@@ -1263,33 +1153,17 @@ int libfvde_internal_logical_volume_close(
 			result = -1;
 		}
 	}
-	if( internal_logical_volume->sectors_vector != NULL )
+	if( internal_logical_volume->sector_data_vector != NULL )
 	{
-		if( libfdata_vector_free(
-		     &( internal_logical_volume->sectors_vector ),
+		if( libfvde_sector_data_vector_free(
+		     &( internal_logical_volume->sector_data_vector ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free sectors vector.",
-			 function );
-
-			result = -1;
-		}
-	}
-	if( internal_logical_volume->sectors_cache != NULL )
-	{
-		if( libfcache_cache_free(
-		     &( internal_logical_volume->sectors_cache ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free sectors cache.",
+			 "%s: unable to free sector data vector.",
 			 function );
 
 			result = -1;
@@ -1491,7 +1365,6 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 {
 	libfvde_sector_data_t *sector_data = NULL;
 	static char *function              = "libfvde_internal_logical_volume_read_buffer_from_file_io_pool";
-	off64_t element_data_offset        = 0;
 	size_t buffer_offset               = 0;
 	size_t read_size                   = 0;
 	size_t sector_data_offset          = 0;
@@ -1525,6 +1398,28 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid logical volume - missing logical volume descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_logical_volume->volume_data_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid logical volume - missing volume data handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_logical_volume->sector_data_vector == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid logical volume - missing sector data vector.",
 		 function );
 
 		return( -1 );
@@ -1587,21 +1482,20 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 
 	while( buffer_offset < buffer_size )
 	{
-		if( libfdata_vector_get_element_value_at_offset(
-		     internal_logical_volume->sectors_vector,
-		     (intptr_t *) file_io_pool,
-		     (libfdata_cache_t *) internal_logical_volume->sectors_cache,
-		     internal_logical_volume->current_offset,
-		     &element_data_offset,
-		     (intptr_t **) &sector_data,
-		     0,
+		if( libfvde_sector_data_vector_get_sector_data_at_offset(
+		     internal_logical_volume->sector_data_vector,
+		     file_io_pool,
+		     internal_logical_volume->volume_data_handle->encryption_context,
+		     internal_logical_volume->volume_data_handle->is_encrypted,
+		     internal_logical_volume->current_offset - (off64_t) sector_data_offset,
+		     &sector_data,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve sector data at offset: %" PRIi64 " (0x%08 " PRIx64 ").",
+			 "%s: unable to retrieve sector data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 			 function,
 			 internal_logical_volume->current_offset,
 			 internal_logical_volume->current_offset );
@@ -1614,7 +1508,7 @@ ssize_t libfvde_internal_logical_volume_read_buffer_from_file_io_pool(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing sector data at offset: %" PRIi64 " (0x%08 " PRIx64 ").",
+			 "%s: missing sector data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 			 function,
 			 internal_logical_volume->current_offset,
 			 internal_logical_volume->current_offset );
