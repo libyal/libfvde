@@ -1,7 +1,7 @@
 /*
  * Tools signal functions test program
  *
- * Copyright (C) 2010-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2010-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *

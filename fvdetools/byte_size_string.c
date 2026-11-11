@@ -1,7 +1,7 @@
 /*
  * Byte size string functions
  *
- * Copyright (C) 2011-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -430,13 +430,17 @@ int byte_size_string_convert_with_decimal_point(
 	{
 		units = BYTE_SIZE_STRING_UNIT_MEBIBYTE;
 
+#if defined( HAVE_VERBOSE_OUTPUT )
 		byte_size_string_iterator += 2;
+#endif
 	}
 	else if( byte_size_string[ byte_size_string_iterator ] == (system_character_t) 'B' )
 	{
 		units = BYTE_SIZE_STRING_UNIT_MEGABYTE;
 
+#if defined( HAVE_VERBOSE_OUTPUT )
 		byte_size_string_iterator++;
+#endif
 	}
 	else
 	{

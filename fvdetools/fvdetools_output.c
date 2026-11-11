@@ -1,7 +1,7 @@
 /*
  * Common output functions for the fvdetools
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -101,11 +101,9 @@ void fvdetools_output_copyright_fprint(
 	{
 		return;
 	}
-	/* TRANSLATORS: These are proper names.
-	 */
 	fprintf(
 	 stream,
-	 _( "Copyright (C) 2011-2025, %s.\n" ),
+	 _( "Copyright (C) 2011-2026, %s.\n" ),
 	 _( "Omar Choudary, Joachim Metz" ) );
 
 	fprintf(
@@ -113,14 +111,9 @@ void fvdetools_output_copyright_fprint(
 	 _( "This is free software; see the source for copying conditions. There is NO\n"
 	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n" ) );
 
-	/* TRANSLATORS: The placeholder indicates the bug-reporting address
-	 * for this package.  Please add _another line_ saying
-	 * "Report translation bugs to <...>\n" with the address for translation
-	 * bugs (typically your translation team's web or email address).
-	 */
 	fprintf(
 	 stream,
-	 _( "Report bugs to <%s>.\n" ),
+	 _( "Report issues via: %s\n" ),
 	 PACKAGE_BUGREPORT );
 }
 

@@ -1,7 +1,7 @@
 Name: libfvde
 Version: @VERSION@
 Release: 1
-Summary: Library to access the FileVault Drive Encryption (FVDE) format
+Summary: Library to access the Core Storage (CS) format
 Group: System Environment/Libraries
 License: LGPL-3.0-or-later
 Source: %{name}-%{version}.tar.gz
@@ -10,10 +10,10 @@ URL: https://github.com/libyal/libfvde
 BuildRequires: gcc @ax_libbfio_spec_build_requires@ @ax_libcaes_spec_build_requires@ @ax_libcdata_spec_build_requires@ @ax_libcerror_spec_build_requires@ @ax_libcfile_spec_build_requires@ @ax_libclocale_spec_build_requires@ @ax_libcnotify_spec_build_requires@ @ax_libcpath_spec_build_requires@ @ax_libcrypto_spec_build_requires@ @ax_libcsplit_spec_build_requires@ @ax_libcthreads_spec_build_requires@ @ax_libfcache_spec_build_requires@ @ax_libfdata_spec_build_requires@ @ax_libfguid_spec_build_requires@ @ax_libfplist_spec_build_requires@ @ax_libfvalue_spec_build_requires@ @ax_libhmac_spec_build_requires@ @ax_libuna_spec_build_requires@ @ax_zlib_spec_build_requires@
 
 %description -n libfvde
-Library to access the FileVault Drive Encryption (FVDE) format
+Library to access the Core Storage (CS) format
 
 %package -n libfvde-static
-Summary: Library to access the FileVault Drive Encryption (FVDE) format
+Summary: Library to access the Core Storage (CS) format
 Group: Development/Libraries
 Requires: libfvde = %{version}-%{release}
 
@@ -38,13 +38,13 @@ BuildRequires: python3-devel python3-setuptools
 Python 3 bindings for libfvde
 
 %package -n libfvde-tools
-Summary: Several tools for reading FileVault Drive Encryption volumes
+Summary: Several tools for reading Core Storage (CS) volumes
 Group: Applications/System
 Requires: libfvde = %{version}-%{release} @ax_libfuse_spec_requires@
 @libfvde_spec_tools_build_requires@ @ax_libfuse_spec_build_requires@
 
 %description -n libfvde-tools
-Several tools for reading FileVault Drive Encryption volumes
+Several tools for reading Core Storage (CS) volumes
 
 %prep
 %setup -q

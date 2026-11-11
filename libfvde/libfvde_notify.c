@@ -1,7 +1,7 @@
 /*
  * Notification functions
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.

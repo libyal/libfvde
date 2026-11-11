@@ -1,6 +1,6 @@
 # Script that runs the tests
 #
-# Version: 20220103
+# Version: 20260615
 
 $ExitSuccess = 0
 $ExitFailure = 1
@@ -29,27 +29,23 @@ Foreach (${Line} in ${Lines})
 		{
 			${Line} = ${Line}.Substring(0, ${Line}.Length - 2)
 		}
-		If (-Not (${Line}.EndsWith(".sh")))
-		{
-			Continue
-		}
-		${Line} = ${Line}.Substring(0, ${Line}.Length - 3)
 		${Line} = ".\${Line}.ps1"
 
 		Try
 		{
 			Invoke-Expression ${Line}
+			$LastResult = $global:LastExitCode
 		}
 		Catch
 		{
-			$LastExitCode = ${ExitIgnore}
+			$LastResult = ${ExitIgnore}
 		}
-		If (${LastExitCode} -eq ${ExitFailure})
+		If (${LastResult} -eq ${ExitFailure})
 		{
 			$Result = ${ExitFailure}
 			Write-Host "FAIL" -foreground Red -nonewline
 		}
-		ElseIf (${LastExitCode} -eq ${ExitIgnore})
+		ElseIf (${LastResult} -eq ${ExitIgnore})
 		{
 			Write-Host "SKIP" -foreground Cyan -nonewline
 		}
@@ -59,7 +55,7 @@ Foreach (${Line} in ${Lines})
 		}
 		Write-Host ": ${Line}"
 	}
-	ElseIf (${Line}.StartsWith("TESTS = "))
+	ElseIf (${Line}.StartsWith("check_AUTOTESTS = "))
 	{
 		${InTests} = $TRUE
 	}

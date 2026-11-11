@@ -1,7 +1,7 @@
 /*
  * Volume functions
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -1078,7 +1078,7 @@ int libfvde_volume_open_physical_volume_files(
 		goto on_error;
 	}
 #endif
-	return( 1 );
+	return( result );
 
 on_error:
 	if( file_io_pool != NULL )
@@ -1291,7 +1291,7 @@ int libfvde_volume_open_physical_volume_files_wide(
 		goto on_error;
 	}
 #endif
-	return( 1 );
+	return( result );
 
 on_error:
 	if( file_io_pool != NULL )

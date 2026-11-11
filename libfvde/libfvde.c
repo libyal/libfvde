@@ -1,7 +1,7 @@
 /*
- * Library to access the FileVault Drive Encryption (FVDE) format
+ * Library to access the Core Storage (CS) format
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -38,6 +38,8 @@
 #pragma managed( push, off )
 #endif
 
+/* LCOV_EXCL_START */
+
 /* Defines the entry point for the DLL
  */
 BOOL WINAPI DllMain(
@@ -65,6 +67,8 @@ BOOL WINAPI DllMain(
 	}
 	return( TRUE );
 }
+
+/* LCOV_EXCL_STOP */
 
 /* Function that indicates the library is a DLL
  * Returns 1

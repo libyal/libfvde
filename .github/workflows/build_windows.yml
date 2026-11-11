@@ -1,0 +1,129 @@
+# Build from source on Windows.
+name: build_windows
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+on:
+  pull_request:
+  push:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: windows-11-arm
+          visual_studio_version: 2026
+        - os: windows-2022
+          visual_studio_version: 2022
+        - os: windows-2025
+          visual_studio_version: 2026
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: '3.12'
+    - name: Install build dependencies
+      run: |
+        git clone https://github.com/libyal/vstools.git ..\vstools
+        .\syncwinflexbison.ps1
+        .\synczlib.ps1
+    - name: Download test data
+      run: |
+        if (Test-Path .\synctestdata.ps1) { .\synctestdata.ps1 }
+    - name: Build from source
+      env:
+        PYTHON_LOCATION: ${{ env.pythonLocation }}
+      run: |
+        .\synclibs.ps1 -UseHead
+        .\autogen.ps1
+        .\build.ps1 -VisualStudioVersion ${{ matrix.visual_studio_version }} -Configuration Release -Platform x64 -PythonPath "$env:PYTHON_LOCATION" -VSToolsOptions "--extend-with-x64 --no-python-dll"
+    - name: Run tests
+      run: |
+        .\runtests.ps1
+  build_cygwin:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+        - configure_options: ''
+        - configure_options: '--enable-python'
+    steps:
+    - name: Configure git
+      run: git config --global core.autocrlf false
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install Cygwin and build dependencies
+      uses: cygwin/cygwin-install-action@5a1b0cd107181fa6bb6bf3f90d500f4fb3132f18 # v7
+      with:
+        packages: autoconf, automake, binutils, bison, curl, cygfuse, flex, gcc-core, gettext-devel, git, libssl-devel, libtool, make, pkg-config, python312, python312-devel, zlib-devel
+        platform: x86_64
+        add-to-path: true
+    - name: Download test data
+      shell: bash --login -e -o pipefail -o igncr {0}
+      working-directory: ${{ github.workspace }}
+      env:
+        CHERE_INVOKING: 1
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      shell: bash --login -e -o pipefail -o igncr {0}
+      working-directory: ${{ github.workspace }}
+      env:
+        CHERE_INVOKING: 1
+        CONFIGURE_OPTIONS: ${{ matrix.configure_options }}
+        LD: ld
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${CONFIGURE_OPTIONS}
+        make -j4 > /dev/null
+    - name: Run tests
+      shell: bash --login -e -o pipefail -o igncr {0}
+      working-directory: ${{ github.workspace }}
+      env:
+        CHERE_INVOKING: 1
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1
+  build_msys2_mingw:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+        - configure_options: '--disable-winapi --enable-wide-character-type'
+        - configure_options: '--enable-winapi --enable-wide-character-type'
+        - configure_options: '--disable-nls --disable-shared-libs --enable-python'
+    steps:
+    - name: Configure git
+      run: git config --global core.autocrlf false
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up MSYS2 with MinGW-w64
+      uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
+      with:
+        msystem: MINGW64
+        update: true
+        install: autoconf automake curl git libtool make mingw-w64-x86_64-gcc mingw-w64-x86_64-gettext-runtime mingw-w64-x86_64-gettext-tools mingw-w64-x86_64-python3 mingw-w64-x86_64-zlib msys/bison msys/flex pkg-config
+    - name: Download test data
+      shell: msys2 {0}
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      shell: msys2 {0}
+      env:
+        CONFIGURE_OPTIONS: ${{ matrix.configure_options }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${CONFIGURE_OPTIONS}
+        make -j4 > /dev/null
+    - name: Run tests
+      shell: msys2 {0}
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1

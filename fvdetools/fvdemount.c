@@ -1,7 +1,7 @@
 /*
- * Mounts a FileVault Drive Encrypted (FVDE) volume.
+ * Mounts a Core Storage (CS) volume.
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -28,6 +28,10 @@
 
 #include <stdio.h>
 
+#if defined( HAVE_FCNTL_H ) || defined( WINAPI )
+#include <fcntl.h>
+#endif
+
 #if defined( HAVE_IO_H ) || defined( WINAPI )
 #include <io.h>
 #endif
@@ -42,7 +46,6 @@
 
 #include "fvdetools_getopt.h"
 #include "fvdetools_i18n.h"
-#include "fvdetools_input.h"
 #include "fvdetools_libcerror.h"
 #include "fvdetools_libclocale.h"
 #include "fvdetools_libcnotify.h"
@@ -56,37 +59,6 @@
 
 mount_handle_t *fvdemount_mount_handle = NULL;
 int fvdemount_abort                    = 0;
-
-/* Prints usage information
- */
-void usage_fprint(
-      FILE *stream )
-{
-	if( stream == NULL )
-	{
-		return;
-	}
-	fprintf( stream, "Use fvdemount to mount a FileVault Drive Encrypted (FVDE) volume\n\n" );
-
-	fprintf( stream, "Usage: fvdemount [ -e plist_path ] [ -k key ] [ -o offset ] [ -p password ]\n"
-	                 "                 [ -r recovery_password ] [ -X extended_options ] [ -huvV ]\n"
-	                 "                 sources mount_point\n\n" );
-
-	fprintf( stream, "\tsources:     one or more source files or devices\n\n" );
-	fprintf( stream, "\tmount_point: the directory to serve as mount point\n\n" );
-
-	fprintf( stream, "\t-e:          specify the path of the EncryptedRoot.plist.wipekey file\n" );
-	fprintf( stream, "\t-h:          shows this help\n" );
-	fprintf( stream, "\t-k:          specify the volume master key formatted in base16\n" );
-	fprintf( stream, "\t-o:          specify the volume offset in bytes\n" );
-	fprintf( stream, "\t-p:          specify the password/passphrase\n" );
-	fprintf( stream, "\t-r:          specify the recovery password/passphrase\n" );
-	fprintf( stream, "\t-u:          unattended mode (disables user interaction)\n" );
-	fprintf( stream, "\t-v:          verbose output to stderr, while fvdemount will remain running in the\n"
-	                 "\t             foreground\n" );
-	fprintf( stream, "\t-V:          print version\n" );
-	fprintf( stream, "\t-X:          extended options to pass to sub system\n" );
-}
 
 /* Signal handler for fvdemount
  */
@@ -140,42 +112,73 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	system_character_t * const *sources                  = NULL;
-	libfvde_error_t *error                               = NULL;
-	system_character_t *mount_point                      = NULL;
-	system_character_t *option_encrypted_root_plist_path = NULL;
-	system_character_t *option_extended_options          = NULL;
-	system_character_t *option_key                       = NULL;
-	system_character_t *option_offset                    = NULL;
-	system_character_t *option_password                  = NULL;
-	system_character_t *option_recovery_password         = NULL;
-	const system_character_t *path_prefix                = NULL;
-	char *program                                        = "fvdemount";
-	system_integer_t option                              = 0;
-	size_t path_prefix_size                              = 0;
-	int number_of_sources                                = 0;
-	int result                                           = 0;
-	int unattended_mode                                  = 0;
-	int verbose                                          = 0;
+	const char *description = \
+		"Use fvdemount to mount a Core Storage (CS) volume.";
+
+	fvdetools_option_t options[ ] = {
+		{ 'e', "plist_path", "specify the path of the EncryptedRoot.plist.wipekey file" },
+		{ 'h', NULL, "shows this help" },
+		{ 'k', "key", "specify the volume master key formatted in base16" },
+		{ 'o', "offset", "specify the volume offset in bytes" },
+		{ 'p', "password", "specify the password (or passphrase)" },
+		{ 'r', "recovery_password", "specify the recovery password (or passphrase)" },
+		{ 'u', NULL, "unattended mode (disables user interaction)" },
+		{ 'v', NULL, "verbose output to stderr, while fvdemount will remain running in the foreground" },
+		{ 'V', NULL, "print version" },
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
+		{ 'X', "extended_options", "extended options to pass to sub system" },
+#endif
+		{ 0, "volume", "a FileVault Drive Encrypted (FVDE) volume" },
+		{ 0, "mount_point", "the directory to serve as mount point" },
+	};
+	system_character_t options_string[ 32 ];
+
+	system_character_t * const *sources          = NULL;
+	const system_character_t *path_prefix        = NULL;
+	libfvde_error_t *error                       = NULL;
+	size_t path_prefix_size                      = 0;
+	system_character_t *option_key               = NULL;
+	system_character_t *option_offset            = NULL;
+	system_character_t *option_password          = NULL;
+	system_character_t *option_plist_path        = NULL;
+	system_character_t *option_recovery_password = NULL;
+	char *program                                = "fvdemount";
+	system_integer_t option                      = 0;
+	int number_of_options                        = (int) ( sizeof( options ) / sizeof( fvdetools_option_t ) );
+	int number_of_sources                        = 0;
+	int unattended_mode                          = 0;
+	int verbose                                  = 0;
+
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE ) || defined( HAVE_LIBDOKAN )
+	system_character_t *mount_point              = NULL;
+	int result                                   = 0;
+#endif
 
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
 	struct fuse_operations fvdemount_fuse_operations;
+
+	system_character_t *option_extended_options  = NULL;
 
 #if defined( HAVE_LIBFUSE3 )
 	/* Need to set this to 1 even if there no arguments, otherwise this causes
 	 * fuse: empty argv passed to fuse_session_new()
 	 */
-	char *fuse_argv[ 2 ]                                 = { program, NULL };
-	struct fuse_args fvdemount_fuse_arguments            = FUSE_ARGS_INIT(1, fuse_argv);
+	char *fuse_argv[ 2 ]                         = { program, NULL };
+	struct fuse_args fvdemount_fuse_arguments    = FUSE_ARGS_INIT(1, fuse_argv);
 #else
-	struct fuse_args fvdemount_fuse_arguments            = FUSE_ARGS_INIT(0, NULL);
-	struct fuse_chan *fvdemount_fuse_channel             = NULL;
+	struct fuse_args fvdemount_fuse_arguments    = FUSE_ARGS_INIT(0, NULL);
+	struct fuse_chan *fvdemount_fuse_channel     = NULL;
 #endif
-	struct fuse *fvdemount_fuse_handle                   = NULL;
+	struct fuse *fvdemount_fuse_handle           = NULL;
 
 #elif defined( HAVE_LIBDOKAN )
 	DOKAN_OPERATIONS fvdemount_dokan_operations;
 	DOKAN_OPTIONS fvdemount_dokan_options;
+#endif
+
+#if defined( __MINGW32__ ) && defined( HAVE_MINGW_BINMODE )
+	_setmode( _fileno( stdout ), _O_BINARY );
+	_setmode( _fileno( stderr ), _O_BINARY );
 #endif
 
 	libcnotify_stream_set(
@@ -208,10 +211,22 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
+	if( fvdetools_getopt_get_options_string(
+	     options,
+	     number_of_options,
+	     options_string,
+	     32 ) != 1 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to determine options string.\n" );
+
+		goto on_error;
+	}
 	while( ( option = fvdetools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "e:hk:o:p:r:uvVX:" ) ) ) != (system_integer_t) -1 )
+	                   options_string ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -222,19 +237,27 @@ int main( int argc, char * const argv[] )
 				 "Invalid argument: %" PRIs_SYSTEM "\n",
 				 argv[ optind - 1 ] );
 
-				usage_fprint(
-				 stdout );
+				fvdetools_getopt_usage_fprint(
+				 stdout,
+				 program,
+				 description,
+				 options,
+				 number_of_options );
 
 				return( EXIT_FAILURE );
 
 			case (system_integer_t) 'e':
-				option_encrypted_root_plist_path = optarg;
+				option_plist_path = optarg;
 
 				break;
 
 			case (system_integer_t) 'h':
-				usage_fprint(
-				 stdout );
+				fvdetools_getopt_usage_fprint(
+				 stdout,
+				 program,
+				 description,
+				 options,
+				 number_of_options );
 
 				return( EXIT_SUCCESS );
 
@@ -274,20 +297,26 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_SUCCESS );
 
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
 			case (system_integer_t) 'X':
 				option_extended_options = optarg;
 
 				break;
+#endif
 		}
 	}
 	if( optind == argc )
 	{
 		fprintf(
 		 stderr,
-		 "Missing source volume.\n" );
+		 "Missing source files or devices.\n" );
 
-		usage_fprint(
-		 stdout );
+		fvdetools_getopt_usage_fprint(
+		 stdout,
+		 program,
+		 description,
+		 options,
+		 number_of_options );
 
 		return( EXIT_FAILURE );
 	}
@@ -300,13 +329,18 @@ int main( int argc, char * const argv[] )
 		 stderr,
 		 "Missing mount point.\n" );
 
-		usage_fprint(
-		 stdout );
+		fvdetools_getopt_usage_fprint(
+		 stdout,
+		 program,
+		 description,
+		 options,
+		 number_of_options );
 
 		return( EXIT_FAILURE );
 	}
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE ) || defined( HAVE_LIBDOKAN )
 	mount_point = argv[ argc - 1 ];
-
+#endif
 	libcnotify_verbose_set(
 	 verbose );
 	libfvde_notify_set_stream(
@@ -326,16 +360,16 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( option_encrypted_root_plist_path != NULL )
+	if( option_plist_path != NULL )
 	{
 		if( mount_handle_set_encrypted_root_plist(
 		     fvdemount_mount_handle,
-		     option_encrypted_root_plist_path,
+		     option_plist_path,
 		     &error ) != 1 )
 		{
 			fprintf(
 			 stderr,
-			 "Unable to set path of EncryptedRoot.plist.wipekey file.\n" );
+			 "Unable to set encrypted root plist.\n" );
 
 			goto on_error;
 		}
@@ -424,11 +458,22 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to open: %" PRIs_SYSTEM ".\n",
-		 sources[ 0 ] );
+		 "Unable to open source volume\n" );
 
 		goto on_error;
 	}
+/* TODO add is locked support
+	if( mount_handle_is_locked(
+	     fvdemount_mount_handle,
+	     &error ) != 0 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to unlock source volume\n" );
+
+		goto on_error;
+	}
+*/
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
 	if( option_extended_options != NULL )
 	{
@@ -570,6 +615,14 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+#if defined( HAVE_LIBFUSE3 )
+	fuse_unmount(
+	 fvdemount_fuse_handle );
+#else
+	fuse_unmount(
+	 mount_point,
+	 fvdemount_fuse_channel );
+#endif
 	fuse_destroy(
 	 fvdemount_fuse_handle );
 
@@ -741,7 +794,7 @@ int main( int argc, char * const argv[] )
 #else
 	fprintf(
 	 stderr,
-	 "No sub system to mount FVDE format.\n" );
+	 "No sub system to mount Core Storage (CS) format.\n" );
 
 	return( EXIT_FAILURE );
 

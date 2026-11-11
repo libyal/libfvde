@@ -1,7 +1,7 @@
 /*
  * Python object wrapper of libfvde_volume_t
  *
- * Copyright (C) 2011-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -518,7 +518,7 @@ PyObject *pyfvde_volume_open(
 	int result                   = 0;
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	const wchar_t *filename_wide = NULL;
+	wchar_t *filename_wide       = NULL;
 #else
 	PyObject *utf8_string_object = NULL;
 #endif
@@ -2645,7 +2645,7 @@ PyObject *pyfvde_volume_read_encrypted_root_plist(
 	libcerror_error_t *error     = NULL;
 	static char *function        = "pyfvde_volume_read_encrypted_root_plist";
 	static char *keyword_list[]  = { "filename", NULL };
-	const wchar_t *filename_wide = NULL;
+	wchar_t *filename_wide       = NULL;
 	const char *filename_narrow  = NULL;
 	int result                   = 0;
 

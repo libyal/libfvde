@@ -1,21 +1,57 @@
 # Build Python wheels from source using cibuildwheel.
 name: build_wheels
-on: [push, pull_request]
-permissions: read-all
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+  # Allow trigger via API
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
+  build_sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt update
+        sudo apt -y install autoconf automake autopoint build-essential git libtool pkg-config python3-build
+    - name: Prepare build
+      run: |
+        ./synclibs.sh
+        ./autogen.sh
+        ./configure
+        make sources >/dev/null
+    - name: Build sdist
+      run: |
+        python -m build --sdist
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: cibw-sdist
+        path: dist/*.tar.gz
   build_wheels_linux:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-        - os: ubuntu-24.04-arm
-        - os: ubuntu-latest
+        - os: ubuntu-26.04
+        - os: ubuntu-26.04-arm
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config
+        sudo apt -y install autoconf automake autopoint build-essential git libtool pkg-config
     - name: Prepare build
       run: |
         ./synclibs.sh
@@ -23,14 +59,15 @@ jobs:
         ./configure
         make sources >/dev/null
     - name: Build Python wheels
-      uses: pypa/cibuildwheel@v3.3.0
+      uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
       env:
+        CIBW_ENABLE: ${{ !(github.event_name == 'release' && github.event.action == 'published') && 'cpython-prerelease' || '' }}
         CIBW_TEST_COMMAND: python tests/runtests.py
         CIBW_TEST_SOURCES: tests
       with:
         package-dir: .
         output-dir: dist
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
         path: dist/*.whl
@@ -40,15 +77,16 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: macos-14
-        - os: macos-15-intel
+        - os: macos-26
+        - os: macos-26-intel
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
     - name: Install build dependencies
       run: |
         brew update -q
         brew install -q autoconf automake gettext gnu-sed libtool pkg-config || true
-        brew link --force gettext
         ln -s /usr/local/bin/glibtoolize /usr/local/bin/libtoolize
     - name: Prepare build
       run: |
@@ -57,14 +95,15 @@ jobs:
         ./configure
         make sources >/dev/null
     - name: Build Python wheels
-      uses: pypa/cibuildwheel@v3.3.0
+      uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
       env:
+        CIBW_ENABLE: ${{ !(github.event_name == 'release' && github.event.action == 'published') && 'cpython-prerelease' || '' }}
         CIBW_TEST_COMMAND: python tests/runtests.py
         CIBW_TEST_SOURCES: tests
       with:
         package-dir: .
         output-dir: dist
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
         path: dist/*.whl
@@ -77,20 +116,54 @@ jobs:
         - os: windows-11-arm
         - os: windows-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
     - name: Prepare build
       run: |
+        .\syncwinflexbison.ps1
         .\synclibs.ps1
         .\autogen.ps1
     - name: Build Python wheels
-      uses: pypa/cibuildwheel@v3.3.0
+      uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
       env:
+        CIBW_ENABLE: ${{ !(github.event_name == 'release' && github.event.action == 'published') && 'cpython-prerelease' || '' }}
         CIBW_TEST_COMMAND: python tests/runtests.py
         CIBW_TEST_SOURCES: tests
       with:
         package-dir: .
         output-dir: dist
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
         path: dist/*.whl
+  upload_test_pypi:
+    needs: [build_sdist, build_wheels_linux, build_wheels_macos, build_wheels_windows]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          repository-url: https://test.pypi.org/legacy/
+  upload_pypi:
+    needs: [upload_test_pypi]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3

@@ -1,19 +1,22 @@
 #!/bin/sh
 # Script to run tests
 #
-# Version: 20201121
+# Version: 20260714
 
-if test -f ${PWD}/libfvde/.libs/libfvde.1.dylib && test -f ./pyfvde/.libs/pyfvde.so;
+if [ -f "${PWD}/libfvde/.libs/libfvde.1.dylib" ] && [ -f ./pyfvde/.libs/pyfvde.so ]
 then
-	install_name_tool -change /usr/local/lib/libfvde.1.dylib ${PWD}/libfvde/.libs/libfvde.1.dylib ./pyfvde/.libs/pyfvde.so;
+    install_name_tool -change /usr/local/lib/libfvde.1.dylib "${PWD}/libfvde/.libs/libfvde.1.dylib" ./pyfvde/.libs/pyfvde.so
 fi
 
-make check CHECK_WITH_STDERR=1;
-RESULT=$?;
+make check-build > /dev/null
 
-if test ${RESULT} -ne 0 && test -f tests/test-suite.log;
+# shellcheck disable=SC2068
+make check $@
+RESULT=$?
+
+if [ ${RESULT} -ne 0 ]
 then
-	cat tests/test-suite.log;
+    find . -name \*.log -path \*.dir/\*/\*.log -print -exec cat {} \;
 fi
-exit ${RESULT};
+exit ${RESULT}
 

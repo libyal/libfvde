@@ -1,7 +1,7 @@
 /*
  * Library volume type test program
  *
- * Copyright (C) 2011-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -886,6 +886,10 @@ int fvde_test_volume_open_file_io_handle(
 	libfvde_volume_t *volume         = NULL;
 	size_t string_length             = 0;
 	int result                       = 0;
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "source",
+	 source );
 
 	/* Initialize test
 	 */

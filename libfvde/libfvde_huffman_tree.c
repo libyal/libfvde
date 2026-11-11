@@ -1,7 +1,7 @@
 /*
  * Huffman tree functions
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -270,6 +270,17 @@ int libfvde_huffman_tree_build(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid Huffman tree.",
+		 function );
+
+		return( -1 );
+	}
+	if( huffman_tree->maximum_code_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid Huffman tree - maximum code size value out of bounds.",
 		 function );
 
 		return( -1 );

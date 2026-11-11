@@ -1,7 +1,7 @@
 /*
  * Python bindings module for libfvde (pyfvde)
  *
- * Copyright (C) 2011-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -66,14 +66,14 @@ PyMethodDef pyfvde_module_methods[] = {
 	  METH_VARARGS | METH_KEYWORDS,
 	  "check_volume_signature(filename) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature." },
+	  "Checks if a volume has a Core Storage (CS) volume signature." },
 
 	{ "check_volume_signature_file_object",
 	  (PyCFunction) pyfvde_check_volume_signature_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "check_volume_signature_file_object(file_object) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature using a file-like object." },
+	  "Checks if a volume has a Core Storage (CS) volume signature using a file-like object." },
 
 	{ "open",
 	  (PyCFunction) pyfvde_open_new_volume,
@@ -125,7 +125,7 @@ PyObject *pyfvde_get_version(
 	         NULL ) );
 }
 
-/* Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature
+/* Checks if a volume has a Core Storage (CS) volume signature
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfvde_check_volume_signature(
@@ -133,15 +133,15 @@ PyObject *pyfvde_check_volume_signature(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *string_object     = NULL;
-	libcerror_error_t *error    = NULL;
-	const char *filename_narrow = NULL;
-	static char *function       = "pyfvde_check_volume_signature";
-	static char *keyword_list[] = { "filename", NULL };
-	int result                  = 0;
+	PyObject *string_object      = NULL;
+	libcerror_error_t *error     = NULL;
+	const char *filename_narrow  = NULL;
+	static char *function        = "pyfvde_check_volume_signature";
+	static char *keyword_list[]  = { "filename", NULL };
+	int result                   = 0;
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	const wchar_t *filename_wide = NULL;
+	wchar_t *filename_wide       = NULL;
 #else
 	PyObject *utf8_string_object = NULL;
 #endif
@@ -332,7 +332,7 @@ PyObject *pyfvde_check_volume_signature(
 	return( NULL );
 }
 
-/* Checks if a volume has a FileVault Drive Encryption (FVDE) volume signature using a file-like object
+/* Checks if a volume has a Core Storage (CS) volume signature using a file-like object
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfvde_check_volume_signature_file_object(

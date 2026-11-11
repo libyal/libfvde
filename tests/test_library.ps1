@@ -1,209 +1,21 @@
 # Tests library functions and types.
-#
-# Version: 20230410
-
-$ExitSuccess = 0
-$ExitFailure = 1
-$ExitIgnore = 77
 
 $LibraryTests = "bit_stream checksum compression deflate encrypted_metadata encryption_context encryption_context_plist error huffman_tree io_handle keyring logical_volume logical_volume_descriptor metadata metadata_block notify physical_volume physical_volume_descriptor sector_data segment_descriptor volume_data_handle volume_group volume_header"
 $LibraryTestsWithInput = "support volume"
-$OptionSets = "offset password recovery_password"
+$OptionSets = "offset password recovery_password" -split " "
 
-$InputGlob = "*"
-
-Function GetTestExecutablesDirectory
-{
-	$TestExecutablesDirectory = ""
-
-	ForEach (${VSDirectory} in ("msvscpp", "vs2008", "vs2010", "vs2012", "vs2013", "vs2015", "vs2017", "vs2019", "vs2022"))
-	{
-		ForEach (${VSConfiguration} in ("Release", "VSDebug"))
-		{
-			ForEach (${VSPlatform} in ("Win32", "x64"))
-			{
-				$TestExecutablesDirectory = "..\${VSDirectory}\${VSConfiguration}\${VSPlatform}"
-
-				If (Test-Path ${TestExecutablesDirectory})
-				{
-					Return ${TestExecutablesDirectory}
-				}
-			}
-			$TestExecutablesDirectory = "..\${VSDirectory}\${VSConfiguration}"
-
-			If (Test-Path ${TestExecutablesDirectory})
-			{
-				Return ${TestExecutablesDirectory}
-			}
-		}
-	}
-	Return ${TestExecutablesDirectory}
-}
-
-Function ReadIgnoreList
-{
-	param( [string]$TestProfileDirectory )
-
-	$IgnoreFile = "${TestProfileDirectory}\ignore"
-	$IgnoreList = ""
-
-	If (Test-Path -Path ${IgnoreFile} -PathType "Leaf")
-	{
-		$IgnoreList = Get-Content -Path ${IgnoreFile} | Where {$_ -notmatch '^#.*'}
-	}
-	Return $IgnoreList
-}
-
-Function RunTest
-{
-	param( [string]$TestType )
-
-	$TestDescription = "Testing: ${TestName}"
-	$TestExecutable = "${TestExecutablesDirectory}\fvde_test_${TestName}.exe"
-
-	If (-Not (Test-Path -Path ${TestExecutable} -PathType "Leaf"))
-	{
-		Write-Host "${TestDescription} (" -nonewline
-		Write-Host "SKIP" -foreground Cyan -nonewline
-		Write-Host ")"
-
-		Return ${ExitIgnore}
-	}
-	$Output = Invoke-Expression ${TestExecutable}
-	$Result = ${LastExitCode}
-
-	If (${Result} -ne ${ExitSuccess})
-	{
-		Write-Host ${Output} -foreground Red
-	}
-	Write-Host "${TestDescription} (" -nonewline
-
-	If (${Result} -ne ${ExitSuccess})
-	{
-		Write-Host "FAIL" -foreground Red -nonewline
-	}
-	Else
-	{
-		Write-Host "PASS" -foreground Green -nonewline
-	}
-	Write-Host ")"
-
-	Return ${Result}
-}
-
-Function RunTestWithInput
-{
-	param( [string]$TestType )
-
-	$TestDescription = "Testing: ${TestName}"
-	$TestExecutable = "${TestExecutablesDirectory}\fvde_test_${TestName}.exe"
-
-	If (-Not (Test-Path -Path ${TestExecutable} -PathType "Leaf"))
-	{
-		Write-Host "${TestDescription} (" -nonewline
-		Write-Host "SKIP" -foreground Cyan -nonewline
-		Write-Host ")"
-
-		Return ${ExitIgnore}
-	}
-	$TestProfileDirectory = "input\.libfvde"
-
-	If (-Not (Test-Path -Path ${TestProfileDirectory} -PathType "Container"))
-	{
-		New-Item -ItemType "directory" -Path ${TestProfileDirectory}
-	}
-	$IgnoreList = ReadIgnoreList ${TestProfileDirectory}
-
-	$Result = ${ExitSuccess}
-
-	ForEach ($TestSetInputDirectory in Get-ChildItem -Path "input" -Exclude ".*")
-	{
-		If (-Not (Test-Path -Path ${TestSetInputDirectory} -PathType "Container"))
-		{
-			Continue
-		}
-		If (${TestSetInputDirectory} -Contains ${IgnoreList})
-		{
-			Continue
-		}
-		$TestSetName = ${TestSetInputDirectory}.Name
-
-		If (Test-Path -Path "${TestProfileDirectory}\${TestSetName}\files" -PathType "Leaf")
-		{
-			$InputFiles = Get-Content -Path "${TestProfileDirectory}\${TestSetName}\files" | Where {$_ -ne ""}
-		}
-		Else
-		{
-			$InputFiles = Get-ChildItem -Path ${TestSetInputDirectory} -Include ${InputGlob}
-		}
-		ForEach ($InputFile in ${InputFiles})
-		{
-			$TestedWithOptions = $False
-
-			ForEach ($OptionSet in ${OptionSets} -split " ")
-			{
-				$InputFileName = ${InputFile}.Name
-				$TestDataOptionFile = "${TestProfileDirectory}\${TestSetName}\${InputFileName}.${OptionSet}"
-
-				If (-Not (Test-Path -Path "${TestDataOptionFile}" -PathType "Leaf"))
-				{
-					Continue
-				}
-				$InputOptions = Get-content -Path "${TestDataOptionFile}" -First 1
-
-				$Output = Invoke-Expression "${TestExecutable} ${InputOptions} ${InputFile}"
-				$Result = $LastExitCode
-
-				If (${Result} -ne ${ExitSuccess})
-				{
-					Break
-				}
-				$TestedWithOptions = $True
-			}
-			If ((${Result} -eq ${ExitSuccess}) -And (-Not (${TestedWithOptions})))
-			{
-				$Output = Invoke-Expression "${TestExecutable} ${InputFile}"
-				$Result = ${LastExitCode}
-			}
-			If (${Result} -ne ${ExitSuccess})
-			{
-				Break
-			}
-		}
-		If (${Result} -ne ${ExitSuccess})
-		{
-			Break
-		}
-	}
-	If (${Result} -ne ${ExitSuccess})
-	{
-		Write-Host ${Output} -foreground Red
-	}
-	Write-Host "${TestDescription} (" -nonewline
-
-	If (${Result} -ne ${ExitSuccess})
-	{
-		Write-Host "FAIL" -foreground Red -nonewline
-	}
-	Else
-	{
-		Write-Host "PASS" -foreground Green -nonewline
-	}
-	Write-Host ")"
-
-	Return ${Result}
-}
+. .\test_functions.ps1
 
 $TestExecutablesDirectory = GetTestExecutablesDirectory
 
 If (-Not (Test-Path ${TestExecutablesDirectory}))
 {
-	Write-Host "Missing test executables directory." -foreground Red
+	Write-Error "Missing test executables directory"
 
 	Exit ${ExitFailure}
 }
 
-$Result = ${ExitIgnore}
+$Result = ${ExitSuccess}
 
 Foreach (${TestName} in ${LibraryTests} -split " ")
 {
@@ -212,13 +24,15 @@ Foreach (${TestName} in ${LibraryTests} -split " ")
 	{
 		Continue
 	}
-	$Result = RunTest ${TestName}
+	$ResultRun = RunTestBinary ${TestExecutablesDirectory} "fvde_test_${TestName}"
 
-	If ((${Result} -ne ${ExitSuccess}) -And (${Result} -ne ${ExitIgnore}))
+	If ((${ResultRun} -ne ${ExitSuccess}) -And (${ResultRun} -ne ${ExitIgnore}))
 	{
-		Break
+		$Result = ${ResultRun}
 	}
 }
+
+$TestInputs = GenerateTestInputs "libfvde" ${OptionSets}
 
 Foreach (${TestName} in ${LibraryTestsWithInput} -split " ")
 {
@@ -227,19 +41,15 @@ Foreach (${TestName} in ${LibraryTestsWithInput} -split " ")
 	{
 		Continue
 	}
-	If (Test-Path -Path "input" -PathType "Container")
+	ForEach ($TestInput in ${TestInputs})
 	{
-		$Result = RunTestWithInput ${TestName}
-	}
-	Else
-	{
-		$Result = RunTest ${TestName}
-	}
-	If ((${Result} -ne ${ExitSuccess}) -And (${Result} -ne ${ExitIgnore}))
-	{
-		Break
+		$ResultRun = RunTestBinaryWithInput ${TestExecutablesDirectory} "fvde_test_${TestName}" ${TestInput}
+
+		If ((${ResultRun} -ne ${ExitSuccess}) -And (${ResultRun} -ne ${ExitIgnore}))
+		{
+			$Result = ${ResultRun}
+		}
 	}
 }
 
 Exit ${Result}
-

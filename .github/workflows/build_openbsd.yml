@@ -1,0 +1,45 @@
+# Build from source on OpenBSD.
+name: build_openbsd
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+on:
+  pull_request:
+  push:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Start VM
+      uses: vmactions/openbsd-vm@f1ca8bc8ecc5b6ef7218e5b914836e067e1546d3 # v1.4.9
+      with:
+        usesh: true
+        prepare: |
+          pkg_add -I autoconf%2.72 automake%1.16 bison curl gettext-tools git gmake libtool python%3.13
+    - name: Build
+      shell: openbsd {0}
+      run: |
+        export AUTOCONF_VERSION="2.72"
+        export AUTOMAKE_VERSION="1.16"
+        export CFLAGS="-I/usr/local/include"
+        export LDFLAGS="-L/usr/local/lib"
+        export YACC="bison -y"
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure --enable-python --with-libfuse
+        gmake -j4
+    - name: Run tests
+      shell: openbsd {0}
+      run: |
+        export AUTOCONF_VERSION="2.72"
+        export AUTOMAKE_VERSION="1.16"
+        export CFLAGS="-I/usr/local/include"
+        export LDFLAGS="-L/usr/local/lib"
+        export YACC="bison -y"
+        tests/runtests.sh -j4 VERBOSE=1

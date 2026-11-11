@@ -1,7 +1,7 @@
 /*
  * Decrypts a EncryptedRoot.plist.wipekey file
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -26,12 +26,20 @@
 #include <system_string.h>
 #include <types.h>
 
-#if defined( HAVE_UNISTD_H )
-#include <unistd.h>
+#if defined( HAVE_FCNTL_H ) || defined( WINAPI )
+#include <fcntl.h>
+#endif
+
+#if defined( HAVE_IO_H ) || defined( WINAPI )
+#include <io.h>
 #endif
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
+#endif
+
+#if defined( HAVE_UNISTD_H )
+#include <unistd.h>
 #endif
 
 #include "fvdetools_getopt.h"
@@ -127,6 +135,11 @@ int main( int argc, char * const argv[] )
 	system_integer_t option                           = 0;
 	int result                                        = 0;
 	int verbose                                       = 0;
+
+#if defined( __MINGW32__ ) && defined( HAVE_MINGW_BINMODE )
+	_setmode( _fileno( stdout ), _O_BINARY );
+	_setmode( _fileno( stderr ), _O_BINARY );
+#endif
 
 	libcnotify_stream_set(
 	 stderr,

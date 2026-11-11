@@ -1,7 +1,7 @@
 /*
  * Encrypted metadata functions
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -2495,7 +2495,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 	const uint8_t *xml_plist_data                                  = NULL;
 	static char *function                                          = "libfvde_encrypted_metadata_read_type_0x001a";
 	size_t block_data_offset                                       = 0;
-	size_t xml_length                                              = 0;
+	size_t xml_size                                                = 0;
 	uint64_t logical_volume_size                                   = 0;
 	uint64_t object_identifier                                     = 0;
 	uint64_t object_identifier_0x0305                              = 0;
@@ -2786,19 +2786,16 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 #endif
 /* TODO for now determine the XML string length */
 /* TODO refactor this to a separate function */
-		xml_length = narrow_string_length(
-			      (char *) xml_plist_data );
-
-		if( xml_length > (size_t) ( INT_MAX - 1 ) )
+		for( xml_size = 5;
+		     xml_size < xml_plist_data_size;
+		     xml_size++ )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid XML length value out of bounds.",
-			 function );
+			if( xml_plist_data[ xml_size ] == 0 )
+			{
+				xml_size++;
 
-			goto on_error;
+				break;
+			}
 		}
 		if( libfplist_property_list_initialize(
 		     &property_list,
@@ -2816,7 +2813,7 @@ int libfvde_encrypted_metadata_read_type_0x001a(
 		if( libfplist_property_list_copy_from_byte_stream(
 		     property_list,
 		     xml_plist_data,
-		     xml_length + 1,
+		     xml_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3468,8 +3465,11 @@ int libfvde_encrypted_metadata_read_type_0x0021(
      libcerror_error_t **error )
 {
 	static char *function      = "libfvde_encrypted_metadata_read_type_0x0021";
+
+#if defined( HAVE_DEBUG_OUTPUT )
 	uint32_t number_of_blocks  = 0;
 	uint16_t number_of_entries = 0;
+#endif
 
 	if( encrypted_metadata == NULL )
 	{
@@ -3505,15 +3505,14 @@ int libfvde_encrypted_metadata_read_type_0x0021(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
 	byte_stream_copy_to_uint16_little_endian(
 	 &( block_data[ 0 ] ),
 	 number_of_entries );
-
 	byte_stream_copy_to_uint32_little_endian(
 	 &( block_data[ 2 ] ),
 	 number_of_blocks );
 
-#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
@@ -3794,7 +3793,8 @@ int libfvde_encrypted_metadata_read_type_0x0024(
 
 			goto on_error;
 		}
-		if( xml_plist_data_size > ( encrypted_metadata->compressed_data_size - encrypted_metadata->compressed_data_offset ) )
+		if( ( xml_plist_data_size > ( encrypted_metadata->compressed_data_size - encrypted_metadata->compressed_data_offset ) )
+		 || ( xml_plist_data_size > ( block_data_size - 16 ) ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -4327,9 +4327,8 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 	libfvde_segment_descriptor_t *segment_descriptor = NULL;
 	static char *function                            = "libfvde_encrypted_metadata_read_type_0x0304";
 	size_t block_data_offset                         = 0;
-	uint32_t block_number                            = 0xffffffffUL;
+	uint64_t block_number                            = 0xffffffffffffffffUL;
 	uint32_t entry_index                             = 0;
-	uint32_t number_of_blocks                        = 0;
 	uint32_t number_of_entries                       = 0;
 	int result                                       = 0;
 	int segment_descriptor_index                     = 0;
@@ -4563,7 +4562,6 @@ int libfvde_encrypted_metadata_read_type_0x0304(
 		{
 			block_number = segment_descriptor->physical_block_number;
 		}
-		number_of_blocks  += segment_descriptor->number_of_blocks;
 		segment_descriptor = NULL;
 	}
 	return( 1 );
@@ -4592,9 +4590,8 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 	libfvde_segment_descriptor_t *segment_descriptor               = NULL;
 	static char *function                                          = "libfvde_encrypted_metadata_read_type_0x0305";
 	size_t block_data_offset                                       = 0;
-	uint32_t block_number                                          = 0xffffffffUL;
+	uint64_t block_number                                          = 0xffffffffffffffffUL;
 	uint32_t entry_index                                           = 0;
-	uint32_t number_of_blocks                                      = 0;
 	uint32_t number_of_entries                                     = 0;
 	int result                                                     = 0;
 	int segment_descriptor_index                                   = 0;
@@ -4853,7 +4850,6 @@ int libfvde_encrypted_metadata_read_type_0x0305(
 		{
 			block_number = segment_descriptor->physical_block_number;
 		}
-		number_of_blocks  += segment_descriptor->number_of_blocks;
 		segment_descriptor = NULL;
 	}
 	logical_volume_descriptor->object_identifier_0x0305 = object_identifier;
@@ -5634,7 +5630,7 @@ int libfvde_encrypted_metadata_read_from_file_io_handle(
 			 "%s: unable to determine if encrypted medadata block data is empty.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		else
 		{

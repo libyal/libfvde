@@ -1,37 +1,115 @@
-# Build from source.
+# Build from source on Mac OS.
 name: build_macos
-on: [push, pull_request]
-permissions: read-all
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+on:
+  pull_request:
+  push:
+permissions:
+  contents: read
 jobs:
-  build_macos:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-        - os: macos-14
-          configure_options: ''
         - os: macos-15
-          configure_options: ''
-        - os: macos-15-intel
+          compiler: 'clang'
           configure_options: ''
         - os: macos-26
+          compiler: 'clang'
+          configure_options: ''
+        - os: macos-26
+          compiler: 'gcc'
+          configure_options: ''
+        - os: macos-26-intel
+          compiler: 'clang'
           configure_options: ''
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
     - name: Install build dependencies
       run: |
         brew update -q
         brew install -q autoconf automake gettext gnu-sed libtool pkg-config || true
-        brew link --force gettext
         ln -s /usr/local/bin/glibtoolize /usr/local/bin/libtoolize
     - name: Download test data
       run: |
         if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
-    - name: Building from source
+    - name: Build from source
       env:
         CC: ${{ matrix.compiler }}
       run: |
-        tests/build.sh ${{ matrix.configure_options }}
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
     - name: Run tests
       run: |
-        tests/runtests.sh
+        tests/runtests.sh -j4 VERBOSE=1
+  build_macfuse:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: macos-15
+          compiler: 'clang'
+          configure_options: ''
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        brew update -q
+        brew install -q autoconf automake gettext gnu-sed libtool pkg-config || true
+        ln -s /usr/local/bin/glibtoolize /usr/local/bin/libtoolize
+    - name: Install macFUSE
+      run: brew install --cask macfuse
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1
+  build_python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: macos-26
+          compiler: 'gcc'
+          configure_options: '--enable-python'
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        brew update -q
+        brew install -q autoconf automake gettext gnu-sed libtool pkg-config || true
+        ln -s /usr/local/bin/glibtoolize /usr/local/bin/libtoolize
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }} PYTHON="$(brew --prefix python3)/bin/python3"
+        make -j4 > /dev/null
+    - name: Run tests
+      run: |
+        tests/runtests.sh -j4 PYTHON="$(brew --prefix python3)/bin/python3" VERBOSE=1

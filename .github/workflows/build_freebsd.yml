@@ -1,21 +1,45 @@
 # Build from source on FreeBSD.
 name: build_freebsd
-on: [push]
-permissions: read-all
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+on:
+  pull_request:
+  push:
+permissions:
+  contents: read
 jobs:
-  build_freebsd:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+        - configure_options: ''
     steps:
-    - uses: actions/checkout@v5
-    - name: Building from source
-      id: build_freebsd
-      uses: vmactions/freebsd-vm@v1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Start VM
+      uses: vmactions/freebsd-vm@c46abacb49f09938ca4e1702d15d836285d694cc # v1.5.9
       with:
         usesh: true
         mem: 4096
-        # Note that the test scripts require bash
         prepare: |
-          pkg install -y autoconf automake bash byacc flex fusefs-libs gettext git libtool openssl pkgconf
-        run: |
-          tests/build.sh
-          tests/runtests.sh
+          pkg install -y autoconf automake byacc curl flex fusefs-libs gettext git libtool openssl pkgconf
+    - name: Download test data
+      shell: freebsd {0}
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      shell: freebsd {0}
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      shell: freebsd {0}
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1

@@ -1,7 +1,7 @@
 /*
  * Configuration file for WINAPI
  *
- * Copyright (C) 2011-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -36,7 +36,9 @@
 
 /* Define to the address where bug reports for this package should be sent.
  */
-#define PACKAGE_BUGREPORT		"joachim.metz@gmail.com"
+#if !defined( PACKAGE_BUGREPORT )
+#define PACKAGE_BUGREPORT "https://github.com/libyal/libfvde/issues"
+#endif
 
 /* Define the size of the integer for WINAPI
  */

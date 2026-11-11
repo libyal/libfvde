@@ -1,7 +1,7 @@
 /*
  * LVF encryption context and EncryptedRoot.plist file functions
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -92,7 +92,7 @@ int libfvde_encryption_context_plist_initialize(
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 		 "%s: unable to clear plist.",
 		 function );
-	
+
 		memory_free(
 		 internal_plist );
 
@@ -301,6 +301,17 @@ int libfvde_encryption_context_plist_copy_data(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_plist->data_decrypted == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid plist - missing decrypted data.",
 		 function );
 
 		return( -1 );

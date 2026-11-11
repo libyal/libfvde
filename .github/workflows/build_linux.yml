@@ -1,0 +1,257 @@
+# Build from source on Linux.
+name: build_linux
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+on:
+  pull_request:
+  push:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-26.04
+          compiler: 'clang'
+          configure_options: ''
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: ''
+        - os: ubuntu-26.04-arm
+          compiler: 'clang'
+          configure_options: ''
+        - os: ubuntu-26.04-arm
+          compiler: 'gcc'
+          configure_options: ''
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--with-pthread=no'
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--enable-wide-character-type'
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--with-zlib=no'
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--with-openssl=no'
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--disable-openssl-evp-cipher --disable-openssl-evp-md'
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--enable-openssl-evp-cipher --enable-openssl-evp-md'
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--disable-multi-threading-support --enable-static-executables'
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt -y update
+        sudo apt -y install autoconf automake autopoint build-essential byacc flex git libssl-dev libtool pkg-config zlib1g-dev
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1
+  build_dist:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: ''
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt -y update
+        sudo apt -y install autoconf automake autopoint build-essential byacc flex git libssl-dev libtool pkg-config zlib1g-dev
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      run: |
+        make distcheck AM_MAKEFLAGS="-j4" VERBOSE=1
+  build_fuse:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: ''
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt -y update
+        sudo apt -y install autoconf automake autopoint build-essential byacc flex git libssl-dev libtool pkg-config zlib1g-dev libfuse-dev
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1
+  build_fuse3:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: ''
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt -y update
+        sudo apt -y install autoconf automake autopoint build-essential byacc flex git libssl-dev libtool pkg-config zlib1g-dev libfuse3-dev
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1
+  build_python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--enable-python'
+          python_version: ''
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt -y update
+        sudo apt -y install autoconf automake autopoint build-essential byacc flex git libssl-dev libtool pkg-config zlib1g-dev python3-dev
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      env:
+        PYTHON_VERSION: ${{ matrix.python_version }}
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1
+  build_pyproject:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: ''
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt -y update
+        sudo apt -y install autoconf automake autopoint build-essential byacc flex git libssl-dev libtool pkg-config zlib1g-dev python3 python3-build python3-dev
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Build Python module
+      run: |
+        python -m build
+  build_shared:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: ''
+        - os: ubuntu-26.04
+          compiler: 'gcc'
+          configure_options: '--enable-wide-character-type'
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install build dependencies
+      run: |
+        sudo apt -y update
+        sudo apt -y install autoconf automake autopoint build-essential byacc flex git libssl-dev libtool pkg-config zlib1g-dev
+    - name: Download test data
+      run: |
+        if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
+    - name: Prepare shared libraries
+      run: |
+        tests/syncsharedlibs.sh --use-head
+    - name: Build from source
+      env:
+        CC: ${{ matrix.compiler }}
+      run: |
+        ./synclibs.sh --use-head
+        ./autogen.sh
+        ./configure ${{ matrix.configure_options }}
+        make -j4 > /dev/null
+    - name: Run tests
+      run: |
+        tests/runtests.sh -j4 VERBOSE=1

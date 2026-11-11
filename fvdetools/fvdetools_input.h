@@ -1,7 +1,7 @@
 /*
  * Common input functions for the fvdetools
  *
- * Copyright (C) 2011-2025, Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2026, Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *

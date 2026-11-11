@@ -2,8 +2,8 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [libfvde],
-  [20251216],
-  [joachim.metz@gmail.com])
+  [20261111],
+  [https://github.com/libyal/libfvde/issues])
 
 AC_CONFIG_SRCDIR(
   [include/libfvde.h.in])
@@ -13,6 +13,8 @@ AM_EXTRA_RECURSIVE_TARGETS([sources splint])
 
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_CONFIG_TESTDIR([tests])
+
 dnl Check for host type
 AC_CANONICAL_HOST
 
@@ -21,7 +23,6 @@ LT_INIT([win32-dll])
 
 dnl Checks for programs
 AC_PROG_CC
-AC_PROG_GCC_TRADITIONAL
 AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
@@ -45,6 +46,15 @@ AC_SYS_LARGEFILE
 
 dnl Check if shared library support should be disabled
 AX_COMMON_CHECK_DISABLE_SHARED_LIBS
+
+dnl Check if asan support should be enabled
+AX_TESTS_CHECK_ENABLE_ASAN
+
+dnl Check if ubsan support should be enabled
+AX_TESTS_CHECK_ENABLE_UBSAN
+
+dnl Check if code coverage support should be enabled
+AX_TESTS_CHECK_ENABLE_CODE_COVERAGE
 
 dnl Check if tools should be build as static executables
 AX_COMMON_CHECK_ENABLE_STATIC_EXECUTABLES
@@ -224,7 +234,9 @@ AC_CONFIG_FILES([dpkg/changelog])
 AC_CONFIG_FILES([libfvde/libfvde.rc])
 AC_CONFIG_FILES([libfvde.pc])
 AC_CONFIG_FILES([libfvde.spec])
-AC_CONFIG_FILES([setup.cfg])
+AC_CONFIG_FILES([pyproject.toml])
+dnl Generate test configuration files
+AC_CONFIG_FILES([tests/atlocal])
 dnl Generate a source configuration file
 AC_CONFIG_HEADERS([common/config.h])
 

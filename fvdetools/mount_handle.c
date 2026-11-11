@@ -1,7 +1,7 @@
 /*
  * Mount handle
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -1251,7 +1251,7 @@ on_error:
 }
 
 /* Closes the mount handle
- * Returns the 0 if succesful or -1 on error
+ * Returns the 0 if successful or -1 on error
  */
 int mount_handle_close(
      mount_handle_t *mount_handle,
@@ -1289,7 +1289,7 @@ int mount_handle_close(
 		return( -1 );
 	}
 	for( logical_volume_index = number_of_logical_volumes - 1;
-	     logical_volume_index > 0;
+	     logical_volume_index >= 0;
 	     logical_volume_index-- )
 	{
 		if( mount_file_system_get_logical_volume_by_index(

@@ -4,7 +4,7 @@
  * This header should be included in header files that export or import
  * library functions
  *
- * Copyright (C) 2011-2025, Omar Choudary <choudary.omar@gmail.com>,
+ * Copyright (C) 2011-2026, Omar Choudary <choudary.omar@gmail.com>,
  *                          Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
@@ -32,14 +32,17 @@
  */
 #if defined( LIBFVDE_DLL_EXPORT )
 #define LIBFVDE_EXTERN __declspec(dllexport)
+#define LIBFVDE_EXTERN_VARIABLE extern __declspec(dllexport)
 
 #elif defined( LIBFVDE_DLL_IMPORT )
-#define LIBFVDE_EXTERN extern __declspec(dllimport)
+#define LIBFVDE_EXTERN __declspec(dllimport)
+#define LIBFVDE_EXTERN_VARIABLE extern __declspec(dllimport)
 
 #else
 #define LIBFVDE_EXTERN extern
+#define LIBFVDE_EXTERN_VARIABLE extern
 
-#endif
+#endif /* defined( LIBFVDE_DLL_EXPORT ) */
 
 #endif /* !defined( _LIBFVDE_EXTERN_H ) */
 
