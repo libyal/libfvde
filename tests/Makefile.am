@@ -122,6 +122,7 @@ fvde_test_deflate_LDADD = \
 
 fvde_test_encrypted_metadata_SOURCES = \
 	fvde_test_encrypted_metadata.c \
+	fvde_test_libcaes.h \
 	fvde_test_libcdata.h \
 	fvde_test_libcerror.h \
 	fvde_test_libfvde.h \
@@ -130,9 +131,11 @@ fvde_test_encrypted_metadata_SOURCES = \
 	fvde_test_unused.h
 
 fvde_test_encrypted_metadata_LDADD = \
+	@LIBCAES_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
 	../libfvde/libfvde.la \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBCRYPTO_LIBADD@
 
 fvde_test_encryption_context_SOURCES = \
 	fvde_test_encryption_context.c \

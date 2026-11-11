@@ -26,6 +26,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfvde_encryption_context.h"
 #include "libfvde_encryption_context_plist.h"
 #include "libfvde_io_handle.h"
 #include "libfvde_keyring.h"
@@ -184,6 +185,16 @@ int libfvde_encrypted_metadata_read_type_0x0024(
      uint64_t object_identifier,
      const uint8_t *block_data,
      size_t block_data_size,
+     libcerror_error_t **error );
+
+int libfvde_encrypted_metadata_read_type_0x0024_chain(
+     libfvde_encrypted_metadata_t *encrypted_metadata,
+     libfvde_encryption_context_t *encryption_context,
+     const uint8_t *encrypted_data,
+     size_t encrypted_data_size,
+     const uint64_t *object_identifiers,
+     const uint64_t *transaction_identifiers,
+     uint64_t number_of_blocks,
      libcerror_error_t **error );
 
 int libfvde_encrypted_metadata_read_type_0x0025(
