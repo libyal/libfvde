@@ -49,6 +49,15 @@ int libfvde_volume_open_file_io_handle(
      int access_flags,
      libfvde_error_t **error );
 
+/* Reads the encrypted root plist file (EncryptedRoot.plist) using a Basic File IO (bfio) handle
+ * Returns 1 if successful or -1 on error
+ */
+LIBFVDE_EXTERN \
+int libfvde_volume_read_encrypted_root_plist_file_io_handle(
+     libfvde_volume_t *volume,
+     libbfio_handle_t *file_io_handle,
+     libfvde_error_t **error );
+
 /* Opens the physical volume files
  * This function assumes the physical volume files are in same order as defined by the metadata
  * Returns 1 if successful or -1 on error
@@ -119,6 +128,11 @@ int LLVMFuzzerTestOneInput(
 	{
 		goto on_error_libfvde_volume;
 	}
+	libfvde_volume_read_encrypted_root_plist_file_io_handle(
+	 volume,
+	 file_io_handle,
+	 NULL );
+
 	if( libbfio_pool_append_handle(
 	     file_io_pool,
 	     &entry_index,

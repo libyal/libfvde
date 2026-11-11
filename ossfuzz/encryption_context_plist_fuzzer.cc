@@ -21,6 +21,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 /* Note that some of the OSS-Fuzz engines use C++
  */
@@ -42,19 +43,28 @@ int libfvde_encryption_context_plist_read_file_io_handle(
 
 #endif /* !defined( LIBFVDE_HAVE_BFIO ) */
 
+#include "../libfvde/libfvde_encryption_context_plist.h"
+
 int LLVMFuzzerTestOneInput(
      const uint8_t *data,
      size_t size )
 {
 	uint8_t copy_buffer[ 512 ];
 
-	libbfio_handle_t *file_io_handle                 = NULL;
-	libfvde_encryption_context_plist_t *plist        = NULL;
-	size64_t data_size                               = 0;
+	uint8_t *conversion_status           = NULL;
+	uint8_t *passphrase_wrapped_kek      = NULL;
+	uint8_t *kek_wrapped_volume_key      = NULL;
+	size_t conversion_status_size        = 0;
+	size_t passphrase_wrapped_kek_size   = 0;
+	size_t kek_wrapped_volume_key_size   = 0;
+
+	libbfio_handle_t *file_io_handle             = NULL;
+	libfvde_encryption_context_plist_t *plist    = NULL;
+	size64_t data_size                           = 0;
 
 	/* The decryption key
 	 */
-	const uint8_t key[ 16 ] =
+	uint8_t key[ 16 ] =
 	{
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10
@@ -77,6 +87,9 @@ int LLVMFuzzerTestOneInput(
 		 NULL );
 		return( 0 );
 	}
+	/* Reads the encryption context plist file (EncryptedRoot.plist)
+	 * using a Basic File IO (bfio) handle
+	 */
 	if( libfvde_encryption_context_plist_initialize(
 	     &plist,
 	     NULL ) != 1 )
@@ -125,7 +138,245 @@ int LLVMFuzzerTestOneInput(
 			 NULL );
 		}
 	}
+	libfvde_encryption_context_plist_decrypt(
+	 plist,
+	 key,
+	 128,
+	 NULL );
+	if( libfvde_encryption_context_plist_get_data_size(
+	     plist,
+	     &data_size,
+	     NULL ) == 1 )
+	{
+		if( ( data_size > 0 )
+		 && ( data_size <= (size64_t) sizeof( copy_buffer ) ) )
+		{
+			libfvde_encryption_context_plist_copy_data(
+			 plist,
+			 copy_buffer,
+			 sizeof( copy_buffer ),
+			 NULL );
+		}
+	}
+	if( libfvde_encryption_context_plist_get_conversion_status(
+	     plist,
+	     &conversion_status,
+	     &conversion_status_size,
+	     NULL ) == 1 )
+	{
+		free( conversion_status );
+
+		conversion_status       = NULL;
+		conversion_status_size  = 0;
+	}
+	if( libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
+	     plist,
+	     0,
+	     &passphrase_wrapped_kek,
+	     &passphrase_wrapped_kek_size,
+	     NULL ) == 1 )
+	{
+		free( passphrase_wrapped_kek );
+
+		passphrase_wrapped_kek      = NULL;
+		passphrase_wrapped_kek_size = 0;
+	}
+	if( libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
+	     plist,
+	     &kek_wrapped_volume_key,
+	     &kek_wrapped_volume_key_size,
+	     NULL ) == 1 )
+	{
+		free( kek_wrapped_volume_key );
+
+		kek_wrapped_volume_key      = NULL;
+		kek_wrapped_volume_key_size = 0;
+	}
 on_error_libfvde_plist:
+	libfvde_encryption_context_plist_free(
+	 &plist,
+	 NULL );
+
+	plist = NULL;
+
+	/* Sets the (decrypted) encryption context plist file data
+	 */
+	if( libfvde_encryption_context_plist_initialize(
+	     &plist,
+	     NULL ) != 1 )
+	{
+		goto on_error_libbfio;
+	}
+	if( libfvde_encryption_context_plist_set_data(
+	     plist,
+	     data,
+	     size,
+	     NULL ) != 1 )
+	{
+		goto on_error_libfvde_plist2;
+	}
+	if( libfvde_encryption_context_plist_get_data_size(
+	     plist,
+	     &data_size,
+	     NULL ) == 1 )
+	{
+		if( ( data_size > 0 )
+		 && ( data_size <= (size64_t) sizeof( copy_buffer ) ) )
+		{
+			libfvde_encryption_context_plist_copy_data(
+			 plist,
+			 copy_buffer,
+			 sizeof( copy_buffer ),
+			 NULL );
+		}
+	}
+	libfvde_encryption_context_plist_decrypt(
+	 plist,
+	 key,
+	 128,
+	 NULL );
+	if( libfvde_encryption_context_plist_get_data_size(
+	     plist,
+	     &data_size,
+	     NULL ) == 1 )
+	{
+		if( ( data_size > 0 )
+		 && ( data_size <= (size64_t) sizeof( copy_buffer ) ) )
+		{
+			libfvde_encryption_context_plist_copy_data(
+			 plist,
+			 copy_buffer,
+			 sizeof( copy_buffer ),
+			 NULL );
+		}
+	}
+	if( libfvde_encryption_context_plist_get_conversion_status(
+	     plist,
+	     &conversion_status,
+	     &conversion_status_size,
+	     NULL ) == 1 )
+	{
+		free( conversion_status );
+
+		conversion_status       = NULL;
+		conversion_status_size  = 0;
+	}
+	if( libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
+	     plist,
+	     0,
+	     &passphrase_wrapped_kek,
+	     &passphrase_wrapped_kek_size,
+	     NULL ) == 1 )
+	{
+		free( passphrase_wrapped_kek );
+
+		passphrase_wrapped_kek      = NULL;
+		passphrase_wrapped_kek_size = 0;
+	}
+	if( libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
+	     plist,
+	     &kek_wrapped_volume_key,
+	     &kek_wrapped_volume_key_size,
+	     NULL ) == 1 )
+	{
+		free( kek_wrapped_volume_key );
+
+		kek_wrapped_volume_key      = NULL;
+		kek_wrapped_volume_key_size = 0;
+	}
+on_error_libfvde_plist2:
+	libfvde_encryption_context_plist_free(
+	 &plist,
+	 NULL );
+
+	plist = NULL;
+
+	/* Reads the XML from the encryption context plist file data
+	 */
+	if( libfvde_encryption_context_plist_initialize(
+	     &plist,
+	     NULL ) != 1 )
+	{
+		goto on_error_libbfio;
+	}
+	if( libfvde_encryption_context_plist_read_xml(
+	     plist,
+	     data,
+	     size,
+	     NULL ) != 1 )
+	{
+		goto on_error_libfvde_plist3;
+	}
+	if( libfvde_encryption_context_plist_get_data_size(
+	     plist,
+	     &data_size,
+	     NULL ) == 1 )
+	{
+		if( ( data_size > 0 )
+		 && ( data_size <= (size64_t) sizeof( copy_buffer ) ) )
+		{
+			libfvde_encryption_context_plist_copy_data(
+			 plist,
+			 copy_buffer,
+			 sizeof( copy_buffer ),
+			 NULL );
+		}
+	}
+	libfvde_encryption_context_plist_decrypt(
+	 plist,
+	 key,
+	 128,
+	 NULL );
+	if( libfvde_encryption_context_plist_get_data_size(
+	     plist,
+	     &data_size,
+	     NULL ) == 1 )
+	{
+		if( ( data_size > 0 )
+		 && ( data_size <= (size64_t) sizeof( copy_buffer ) ) )
+		{
+			libfvde_encryption_context_plist_copy_data(
+			 plist,
+			 copy_buffer,
+			 sizeof( copy_buffer ),
+			 NULL );
+		}
+	}
+	if( libfvde_encryption_context_plist_get_conversion_status(
+	     plist,
+	     &conversion_status,
+	     &conversion_status_size,
+	     NULL ) == 1 )
+	{
+		free( conversion_status );
+
+		conversion_status       = NULL;
+		conversion_status_size  = 0;
+	}
+	if( libfvde_encryption_context_plist_get_passphrase_wrapped_kek(
+	     plist,
+	     0,
+	     &passphrase_wrapped_kek,
+	     &passphrase_wrapped_kek_size,
+	     NULL ) == 1 )
+	{
+		free( passphrase_wrapped_kek );
+
+		passphrase_wrapped_kek      = NULL;
+		passphrase_wrapped_kek_size = 0;
+	}
+	if( libfvde_encryption_context_plist_get_kek_wrapped_volume_key(
+	     plist,
+	     &kek_wrapped_volume_key,
+	     &kek_wrapped_volume_key_size,
+	     NULL ) == 1 )
+	{
+		free( kek_wrapped_volume_key );
+
+		kek_wrapped_volume_key      = NULL;
+		kek_wrapped_volume_key_size = 0;
+	}
+on_error_libfvde_plist3:
 	libfvde_encryption_context_plist_free(
 	 &plist,
 	 NULL );

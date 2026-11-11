@@ -66,11 +66,13 @@ int LLVMFuzzerTestOneInput(
 	libfvde_volume_t *volume                         = NULL;
 	libfvde_volume_group_t *volume_group             = NULL;
 	libfvde_physical_volume_t *physical_volume       = NULL;
+	libfvde_logical_volume_t *logical_volume         = NULL;
 	uint32_t encryption_method                       = 0;
 	size64_t volume_size                             = 0;
 	size_t string_size                               = 0;
 	int entry_index                                  = 0;
 	int number_of_volumes                            = 0;
+	int volume_index                                 = 0;
 
 	if( libbfio_memory_range_initialize(
 	     &file_io_handle,
@@ -178,15 +180,17 @@ int LLVMFuzzerTestOneInput(
 		{
 			goto on_error_libfvde_volume_group;
 		}
-		if( number_of_volumes > 0 )
+		for( volume_index = 0;
+		     volume_index < number_of_volumes;
+		     volume_index++ )
 		{
 			if( libfvde_volume_group_get_physical_volume_by_index(
 			     volume_group,
-			     0,
+			     volume_index,
 			     &physical_volume,
 			     NULL ) != 1 )
 			{
-				goto on_error_libfvde_volume_group;
+				break;
 			}
 			if( libfvde_physical_volume_get_identifier(
 			     physical_volume,
@@ -194,26 +198,28 @@ int LLVMFuzzerTestOneInput(
 			     16,
 			     NULL ) != 1 )
 			{
-				goto on_error_libfvde_physical_volume;
+				libfvde_physical_volume_free(
+				 &physical_volume,
+				 NULL );
+
+				break;
 			}
-			if( libfvde_physical_volume_get_encryption_method(
-			     physical_volume,
-			     &encryption_method,
-			     NULL ) != 1 )
-			{
-				goto on_error_libfvde_physical_volume;
-			}
-			if( libfvde_physical_volume_get_size(
-			     physical_volume,
-			     &volume_size,
-			     NULL ) != 1 )
-			{
-				goto on_error_libfvde_physical_volume;
-			}
-on_error_libfvde_physical_volume:
-			libfvde_physical_volume_free(
-			 &physical_volume,
+			libfvde_physical_volume_get_encryption_method(
+			 physical_volume,
+			 &encryption_method,
 			 NULL );
+
+			libfvde_physical_volume_get_size(
+			 physical_volume,
+			 &volume_size,
+			 NULL );
+
+			if( libfvde_physical_volume_free(
+			     &physical_volume,
+			     NULL ) != 1 )
+			{
+				break;
+			}
 		}
 		if( libfvde_volume_group_get_number_of_logical_volumes(
 		     volume_group,
@@ -221,6 +227,64 @@ on_error_libfvde_physical_volume:
 		     NULL ) != 1 )
 		{
 			goto on_error_libfvde_volume_group;
+		}
+		for( volume_index = 0;
+		     volume_index < number_of_volumes;
+		     volume_index++ )
+		{
+			if( libfvde_volume_group_get_logical_volume_by_index(
+			     volume_group,
+			     volume_index,
+			     &logical_volume,
+			     NULL ) != 1 )
+			{
+				break;
+			}
+			if( libfvde_logical_volume_get_identifier(
+			     logical_volume,
+			     uuid,
+			     16,
+			     NULL ) != 1 )
+			{
+				libfvde_logical_volume_free(
+				 &logical_volume,
+				 NULL );
+
+				break;
+			}
+			libfvde_logical_volume_get_utf8_name_size(
+			 logical_volume,
+			 &string_size,
+			 NULL );
+
+			libfvde_logical_volume_get_utf8_name(
+			 logical_volume,
+			 utf8_string,
+			 64,
+			 NULL );
+
+			libfvde_logical_volume_get_utf16_name_size(
+			 logical_volume,
+			 &string_size,
+			 NULL );
+
+			libfvde_logical_volume_get_utf16_name(
+			 logical_volume,
+			 utf16_string,
+			 64,
+			 NULL );
+
+			libfvde_logical_volume_get_size(
+			 logical_volume,
+			 &volume_size,
+			 NULL );
+
+			if( libfvde_logical_volume_free(
+			     &logical_volume,
+			     NULL ) != 1 )
+			{
+				break;
+			}
 		}
 on_error_libfvde_volume_group:
 		libfvde_volume_group_free(
