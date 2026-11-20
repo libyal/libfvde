@@ -825,6 +825,12 @@ int libfvde_metadata_read_volume_group_plist(
 			      (char *) xml_plist_data,
 		              xml_plist_data_size );
 
+		/* Include the trailing 0 byte in the length */
+		if( xml_length < xml_plist_data_size )
+		{
+			xml_length += 1;
+		}
+
 		if( libfplist_property_list_initialize(
 		     &property_list,
 		     error ) != 1 )
@@ -841,7 +847,7 @@ int libfvde_metadata_read_volume_group_plist(
 		if( libfplist_property_list_copy_from_byte_stream(
 		     property_list,
 		     xml_plist_data,
-		     xml_length + 1,
+		     xml_length,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

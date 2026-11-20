@@ -3852,9 +3852,12 @@ int libfvde_encrypted_metadata_read_type_0x0024(
 
 				goto on_error;
 			}
+			/* Only decompress the compressed data that has been read,
+			 * the buffer may be larger than the actual compressed data size
+			 */
 			if( libfvde_decompress_data(
 			     encrypted_metadata->compressed_data,
-			     encrypted_metadata->compressed_data_size,
+			     encrypted_metadata->compressed_data_offset,
 			     LIBFVDE_COMPRESSION_METHOD_DEFLATE,
 			     uncompressed_data,
 			     &uncompressed_data_size,

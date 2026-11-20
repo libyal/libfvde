@@ -355,6 +355,7 @@ int libfvde_encryption_context_plist_set_data(
 {
 	libfvde_internal_encryption_context_plist_t *internal_plist = NULL;
 	static char *function                                       = "libfvde_encryption_context_plist_set_data";
+	size_t allocated_data_size                                  = 0;
 	int result                                                  = 0;
 
 	if( plist == NULL )
@@ -404,12 +405,14 @@ int libfvde_encryption_context_plist_set_data(
 
 		return( -1 );
 	}
+	allocated_data_size = data_size;
+
 	if( data[ data_size - 1 ] != 0 )
 	{
-		data_size += 1;
+		allocated_data_size += 1;
 	}
 	internal_plist->data_decrypted = memory_allocate(
-	                                  sizeof( uint8_t ) * data_size );
+	                                  sizeof( uint8_t ) * allocated_data_size );
 
 	if( internal_plist->data_decrypted == NULL )
 	{
@@ -439,9 +442,9 @@ int libfvde_encryption_context_plist_set_data(
 	/* Make sure the plist data has a trailing 0 byte before passing it
 	 * to libfvde_encryption_context_plist_read_xml
 	 */
-	internal_plist->data_decrypted[ data_size - 1 ] = 0;
+	internal_plist->data_decrypted[ allocated_data_size - 1 ] = 0;
 
-	internal_plist->data_size = (size64_t) data_size;
+	internal_plist->data_size = (size64_t) allocated_data_size;
 
 	result = libfvde_encryption_context_plist_read_xml(
 	          plist,
