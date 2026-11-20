@@ -1207,6 +1207,20 @@ The physical volume block number is relative from the corresponding entry in
 the metadata block data type 0x0505 if available, otherwise the block number
 is relative from the start of the physical volume.
 
+[yellow-background]*On a volume converted in-place to FileVault 2 the physical
+volume block numbers of all transactions were consistent with being relative
+from the start of the physical volume, also when the entry in metadata block
+data type 0x0505 had blocks. Only the state after the conversion had completed
+could be verified against the data. At that point the entry in metadata block
+data type 0x0505 had 0 blocks. Hence the 0x0505 entry is currently only used as
+base when its number of blocks is not 0.*
+
+[NOTE]
+During an in-place conversion to FileVault 2 the segments of the part that had
+not yet been converted had flags 0x00000000 and the segments of the part that
+had been converted had flags 0x00400000. Reading a volume during conversion is
+currently not supported, and such a volume is not detected.
+
 === Metadata block data type 0x0404
 
 Metadata block data type 0x0404 contains information about data and metadata
@@ -1315,6 +1329,17 @@ consists of:
 The block number is relative from the start of the physical volume
 | 14 | 2 | | Physical volume index, where 0 is the first physical volume
 |===
+
+[NOTE]
+On a volume converted in-place to FileVault 2 the entry contained the size of
+the part of the logical volume that had not yet been converted, e.g. 147751
+blocks, and the physical volume block number 65536. According to the 0x0305
+segment descriptors logical volume block n of the converted part was stored at
+physical volume block 65536 + n, e.g. logical volume block 147751 at physical
+volume block 213287. After the conversion had completed the entry contained 0
+blocks and the physical volume block number 65536, whereas the 0x0305 segment
+descriptor contained the physical volume block number 65536 relative from the
+start of the physical volume.
 
 [yellow-background]*TODO: determine how entries, other than the first, should
 be interpreted.*
@@ -1772,7 +1797,7 @@ LVFwiped
 
 Use the most recent transaction:
 
-* If available, use the information in metadata block data type 0x0505 to determine base offset
+* If available and its number of blocks is not 0, use the information in metadata block data type 0x0505 to determine base offset [yellow-background]*(an entry with 0 blocks was seen after an in-place conversion had completed)*
 * Use the information in metadata block data type 0x0305 to determine the block number of the first logical volume segment
 
 === Partial encrypted volume

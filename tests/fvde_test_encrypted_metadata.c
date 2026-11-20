@@ -636,6 +636,14 @@ uint8_t fvde_test_encrypted_metadata_block_data_0x0505[ 48 ] = {
 	0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
+/* Metadata block type 0x0505 as seen after an in-place conversion had completed:
+ * the entry has no blocks and physical block number 65536
+ */
+uint8_t fvde_test_encrypted_metadata_block_data_0x0505_no_blocks[ 48 ] = {
+	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
 #if defined( __GNUC__ ) && !defined( LIBFVDE_DLL_IMPORT )
 
 /* Tests the libfvde_encrypted_metadata_initialize function
@@ -3997,11 +4005,12 @@ on_error:
 int fvde_test_encrypted_metadata_read_type_0x0505(
      void )
 {
-	libcerror_error_t *error                                       = NULL;
-	libfvde_encrypted_metadata_t *encrypted_metadata               = NULL;
-	libfvde_logical_volume_descriptor_t *logical_volume_descriptor = NULL;
-	int entry_index                                                = 0;
-	int result                                                     = 0;
+	libcerror_error_t *error                                            = NULL;
+	libfvde_encrypted_metadata_t *encrypted_metadata                    = NULL;
+	libfvde_logical_volume_descriptor_t *last_logical_volume_descriptor = NULL;
+	libfvde_logical_volume_descriptor_t *logical_volume_descriptor      = NULL;
+	int entry_index                                                     = 0;
+	int result                                                          = 0;
 
 	/* Initialize test
 	 */
@@ -4056,7 +4065,51 @@ int fvde_test_encrypted_metadata_read_type_0x0505(
 
 	logical_volume_descriptor = NULL;
 
+	result = libfvde_encrypted_metadata_get_last_logical_volume_descriptor(
+	          encrypted_metadata,
+	          &last_logical_volume_descriptor,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NOT_NULL(
+	 "last_logical_volume_descriptor",
+	 last_logical_volume_descriptor );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	/* Test regular cases
+	 */
+
+	/* Test an entry without blocks does not define a base physical block number
+	 */
+	result = libfvde_encrypted_metadata_read_type_0x0505(
+	          encrypted_metadata,
+	          0,
+	          fvde_test_encrypted_metadata_block_data_0x0505_no_blocks,
+	          48,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "last_logical_volume_descriptor->base_physical_block_number",
+	 last_logical_volume_descriptor->base_physical_block_number,
+	 (uint64_t) 0 );
+
+	/* Test an entry with blocks defines a base physical block number
 	 */
 	result = libfvde_encrypted_metadata_read_type_0x0505(
 	          encrypted_metadata,
@@ -4073,6 +4126,35 @@ int fvde_test_encrypted_metadata_read_type_0x0505(
 	FVDE_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "last_logical_volume_descriptor->base_physical_block_number",
+	 last_logical_volume_descriptor->base_physical_block_number,
+	 (uint64_t) 65536 );
+
+	/* Test an entry without blocks that follows an entry with blocks resets
+	 * the base physical block number, as seen after an in-place conversion
+	 */
+	result = libfvde_encrypted_metadata_read_type_0x0505(
+	          encrypted_metadata,
+	          0,
+	          fvde_test_encrypted_metadata_block_data_0x0505_no_blocks,
+	          48,
+	          &error );
+
+	FVDE_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FVDE_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FVDE_TEST_ASSERT_EQUAL_UINT64(
+	 "last_logical_volume_descriptor->base_physical_block_number",
+	 last_logical_volume_descriptor->base_physical_block_number,
+	 (uint64_t) 0 );
 
 	/* Test error cases
 	 */
