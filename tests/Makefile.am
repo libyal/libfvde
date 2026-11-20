@@ -63,6 +63,7 @@ check_PROGRAMS = \
 	fvde_test_physical_volume \
 	fvde_test_physical_volume_descriptor \
 	fvde_test_sector_data \
+	fvde_test_sector_data_vector \
 	fvde_test_segment_descriptor \
 	fvde_test_support \
 	fvde_test_tools_output \
@@ -223,6 +224,7 @@ fvde_test_logical_volume_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fvde_test_logical_volume_descriptor_SOURCES = \
+	fvde_test_libcdata.h \
 	fvde_test_libcerror.h \
 	fvde_test_libfvde.h \
 	fvde_test_logical_volume_descriptor.c \
@@ -231,6 +233,7 @@ fvde_test_logical_volume_descriptor_SOURCES = \
 	fvde_test_unused.h
 
 fvde_test_logical_volume_descriptor_LDADD = \
+	@LIBCDATA_LIBADD@ \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
 
@@ -304,6 +307,32 @@ fvde_test_sector_data_SOURCES = \
 fvde_test_sector_data_LDADD = \
 	../libfvde/libfvde.la \
 	@LIBCERROR_LIBADD@
+
+fvde_test_sector_data_vector_SOURCES = \
+	fvde_test_functions.c fvde_test_functions.h \
+	fvde_test_libbfio.h \
+	fvde_test_libcaes.h \
+	fvde_test_libcdata.h \
+	fvde_test_libcerror.h \
+	fvde_test_libfvde.h \
+	fvde_test_macros.h \
+	fvde_test_memory.c fvde_test_memory.h \
+	fvde_test_sector_data_vector.c \
+	fvde_test_unused.h
+
+fvde_test_sector_data_vector_LDADD = \
+	@LIBCAES_LIBADD@ \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libfvde/libfvde.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBCRYPTO_LIBADD@
 
 fvde_test_segment_descriptor_SOURCES = \
 	fvde_test_libcerror.h \

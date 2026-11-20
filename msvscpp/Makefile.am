@@ -18,6 +18,7 @@ MSVSCPP_FILES = \
 	fvde_test_physical_volume/fvde_test_physical_volume.vcproj \
 	fvde_test_physical_volume_descriptor/fvde_test_physical_volume_descriptor.vcproj \
 	fvde_test_sector_data/fvde_test_sector_data.vcproj \
+	fvde_test_sector_data_vector/fvde_test_sector_data_vector.vcproj \
 	fvde_test_segment_descriptor/fvde_test_segment_descriptor.vcproj \
 	fvde_test_support/fvde_test_support.vcproj \
 	fvde_test_tools_output/fvde_test_tools_output.vcproj \

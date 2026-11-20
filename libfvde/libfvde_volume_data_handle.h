@@ -30,7 +30,6 @@
 #include "libfvde_io_handle.h"
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
-#include "libfvde_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -65,19 +64,6 @@ int libfvde_volume_data_handle_initialize(
 
 int libfvde_volume_data_handle_free(
      libfvde_volume_data_handle_t **volume_data_handle,
-     libcerror_error_t **error );
-
-int libfvde_volume_data_handle_read_sector(
-     libfvde_volume_data_handle_t *volume_data_handle,
-     libbfio_pool_t *file_io_pool,
-     libfdata_vector_t *vector,
-     libfdata_cache_t *cache,
-     int element_index,
-     int element_data_file_index,
-     off64_t element_data_offset,
-     size64_t element_data_size,
-     uint32_t element_data_flags,
-     uint8_t read_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

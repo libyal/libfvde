@@ -34,9 +34,8 @@
 #include "libfvde_libbfio.h"
 #include "libfvde_libcerror.h"
 #include "libfvde_libcthreads.h"
-#include "libfvde_libfcache.h"
-#include "libfvde_libfdata.h"
 #include "libfvde_logical_volume_descriptor.h"
+#include "libfvde_sector_data_vector.h"
 #include "libfvde_types.h"
 #include "libfvde_volume_data_handle.h"
 
@@ -80,13 +79,9 @@ struct libfvde_internal_logical_volume
 	 */
 	libfvde_volume_data_handle_t *volume_data_handle;
 
-	/* The sectors vector
+	/* The sector data vector
 	 */
-	libfdata_vector_t *sectors_vector;
-
-	/* The sectors cache
-	 */
-	libfcache_cache_t *sectors_cache;
+	libfvde_sector_data_vector_t *sector_data_vector;
 
 	/* Value to indicate if the logical volume is locked
 	 */

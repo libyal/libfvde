@@ -67,6 +67,7 @@ libfvde_la_SOURCES = \
 	libfvde_physical_volume.c libfvde_physical_volume.h \
 	libfvde_physical_volume_descriptor.c libfvde_physical_volume_descriptor.h \
 	libfvde_sector_data.c libfvde_sector_data.h \
+	libfvde_sector_data_vector.c libfvde_sector_data_vector.h \
 	libfvde_segment_descriptor.c libfvde_segment_descriptor.h \
 	libfvde_support.c libfvde_support.h \
 	libfvde_types.h \
